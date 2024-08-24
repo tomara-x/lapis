@@ -1,0 +1,28 @@
+[package]
+name = "lapis"
+version = "0.1.0"
+edition = "2021"
+authors = ["amy universe <nopenullnilvoid00@gmail.com>"]
+repository = "https://github.com/tomara-x/lapis"
+license = "MIT OR Apache-2.0"
+
+[dependencies]
+fundsp = {version = "0.18.2", default-features = false, features = ["std"]}
+cpal = {version = "0.15.3", features = ["jack"]}
+eframe = "0.28.1"
+egui_extras = { version = "0.28.1", default-features = false, features = ["syntect"] }
+
+# smol amount of optimization for our stuff
+[profile.dev]
+opt-level = 1
+
+# high optimizations and no debug symbols for deps
+[profile.dev.package."*"]
+opt-level = 3
+debug = false
+
+[profile.release]
+panic = 'abort'
+strip = true
+codegen-units = 1
+lto = "thin"
