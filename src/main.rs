@@ -1,17 +1,12 @@
 use eframe::egui;
+use syn::Expr;
 
 fn main() -> eframe::Result {
     let options = eframe::NativeOptions {
         viewport: egui::ViewportBuilder::default().with_inner_size([420.0, 240.0]),
         ..Default::default()
     };
-    eframe::run_native(
-        "awawawa",
-        options,
-        Box::new(|_| {
-            Ok(Box::<Lapis>::default())
-        }),
-    )
+    eframe::run_native("awawawa", options, Box::new(|_| Ok(Box::<Lapis>::default())))
 }
 
 struct Lapis {
@@ -22,11 +17,7 @@ struct Lapis {
 
 impl Default for Lapis {
     fn default() -> Self {
-        Self {
-            buffer: "".into(),
-            input: "".into(),
-            settings: false,
-        }
+        Self { buffer: "".into(), input: "".into(), settings: false }
     }
 }
 
@@ -37,28 +28,31 @@ impl eframe::App for Lapis {
 
             let mut layouter = |ui: &egui::Ui, string: &str, wrap_width: f32| {
                 let mut layout_job =
-                    egui_extras::syntax_highlighting::highlight(
-                        ui.ctx(), &theme, string, "rs".into()
-                    );
+                    egui_extras::syntax_highlighting::highlight(ui.ctx(), &theme, string, "rs");
                 layout_job.wrap.max_width = wrap_width;
                 ui.fonts(|f| f.layout_job(layout_job))
             };
-            let input_focused = ui.add(
-                egui::TextEdit::multiline(&mut self.input)
-                    .font(egui::TextStyle::Monospace)
-                    .code_editor()
-                    .desired_rows(1)
-                    .lock_focus(true)
-                    .desired_width(f32::INFINITY)
-                    .layouter(&mut layouter),
-            ).has_focus();
+            let input_focused = ui
+                .add(
+                    egui::TextEdit::multiline(&mut self.input)
+                        .font(egui::TextStyle::Monospace)
+                        .code_editor()
+                        .desired_rows(1)
+                        .lock_focus(true)
+                        .desired_width(f32::INFINITY)
+                        .layouter(&mut layouter),
+                )
+                .has_focus();
             let shortcut = egui::KeyboardShortcut {
                 modifiers: egui::Modifiers::COMMAND,
                 logical_key: egui::Key::Enter,
             };
             if input_focused && ctx.input_mut(|i| i.consume_shortcut(&shortcut)) {
-                self.buffer.push('\n');
-                self.buffer.push_str(&mut self.input);
+                if let Ok(expr) = syn::parse_str::<Expr>(&self.input) {
+                    self.buffer.push('\n');
+                    self.buffer.push_str(&self.input);
+                    println!("{:#?}", expr);
+                }
                 self.input.clear();
             }
         });
@@ -76,9 +70,7 @@ impl eframe::App for Lapis {
 
             let mut layouter = |ui: &egui::Ui, string: &str, wrap_width: f32| {
                 let mut layout_job =
-                    egui_extras::syntax_highlighting::highlight(
-                        ui.ctx(), &theme, string, "rs".into()
-                    );
+                    egui_extras::syntax_highlighting::highlight(ui.ctx(), &theme, string, "rs");
                 layout_job.wrap.max_width = wrap_width;
                 ui.fonts(|f| f.layout_job(layout_job))
             };

@@ -11,6 +11,7 @@ fundsp = {version = "0.18.2", default-features = false, features = ["std"]}
 cpal = {version = "0.15.3", features = ["jack"]}
 eframe = "0.28.1"
 egui_extras = { version = "0.28.1", default-features = false, features = ["syntect"] }
+syn = {version = "2.0.76", features = ["full", "extra-traits"]}
 
 # smol amount of optimization for our stuff
 [profile.dev]
