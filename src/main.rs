@@ -145,10 +145,9 @@ fn bin_expr_float(expr: &ExprBinary) -> Option<f32> {
 }
 
 fn lit_float(expr: &Lit) -> Option<f32> {
-    if let Lit::Float(expr) = expr {
-        if let Ok(n) = expr.base10_parse::<f32>() {
-            return Some(n);
-        }
+    match expr {
+        Lit::Float(expr) => expr.base10_parse::<f32>().ok(),
+        Lit::Int(expr) => expr.base10_parse::<f32>().ok(),
+        _ => None,
     }
-    None
 }
