@@ -167,6 +167,7 @@ fn lit_float(expr: &Lit) -> Option<f32> {
 
 fn paren_expr_float(expr: &Expr) -> Option<f32> {
     match expr {
+        Expr::Lit(expr) => lit_float(&expr.lit),
         Expr::Binary(expr) => bin_expr_float(expr),
         _ => None,
     }
