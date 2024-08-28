@@ -44,9 +44,15 @@ impl eframe::App for Lapis {
         });
         egui::CentralPanel::default().show(ctx, |ui| {
             let mut theme = egui_extras::syntax_highlighting::CodeTheme::from_memory(ui.ctx());
-            if ui.button("settings").clicked() {
-                self.settings = !self.settings;
-            }
+            ui.horizontal(|ui| {
+                if ui.button("settings").clicked() {
+                    self.settings = !self.settings;
+                }
+                if ui.button("clear map").clicked() {
+                    self.fmap.clear();
+                    self.fmap.shrink_to_fit();
+                }
+            });
             egui::Window::new("settings").open(&mut self.settings).show(ctx, |ui| {
                 ui.group(|ui| {
                     theme.ui(ui);
