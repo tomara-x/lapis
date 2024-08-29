@@ -37,11 +37,6 @@ fn eval_stmt(s: Stmt, lapis: &mut Lapis) {
     }
 }
 
-fn path_float(expr: &Path, lapis: &Lapis) -> Option<f32> {
-    let k = expr.segments.first()?.ident.to_string();
-    lapis.fmap.get(&k).copied()
-}
-
 fn half_binary_float(expr: &Expr, lapis: &Lapis) -> Option<f32> {
     match expr {
         Expr::Lit(expr) => lit_float(&expr.lit),
@@ -53,9 +48,10 @@ fn half_binary_float(expr: &Expr, lapis: &Lapis) -> Option<f32> {
     }
 }
 
-fn unary_float(expr: &ExprUnary, lapis: &Lapis) -> Option<f32> {
-    match expr.op {
-        UnOp::Neg(_) => Some(-half_binary_float(&expr.expr, lapis)?),
+fn lit_float(expr: &Lit) -> Option<f32> {
+    match expr {
+        Lit::Float(expr) => expr.base10_parse::<f32>().ok(),
+        Lit::Int(expr) => expr.base10_parse::<f32>().ok(),
         _ => None,
     }
 }
@@ -72,10 +68,14 @@ fn bin_expr_float(expr: &ExprBinary, lapis: &Lapis) -> Option<f32> {
     }
 }
 
-fn lit_float(expr: &Lit) -> Option<f32> {
-    match expr {
-        Lit::Float(expr) => expr.base10_parse::<f32>().ok(),
-        Lit::Int(expr) => expr.base10_parse::<f32>().ok(),
+fn path_float(expr: &Path, lapis: &Lapis) -> Option<f32> {
+    let k = expr.segments.first()?.ident.to_string();
+    lapis.fmap.get(&k).copied()
+}
+
+fn unary_float(expr: &ExprUnary, lapis: &Lapis) -> Option<f32> {
+    match expr.op {
+        UnOp::Neg(_) => Some(-half_binary_float(&expr.expr, lapis)?),
         _ => None,
     }
 }
