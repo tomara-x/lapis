@@ -23,15 +23,7 @@ fn eval_stmt(s: Stmt, lapis: &mut Lapis) {
             if let Pat::Ident(i) = expr.pat {
                 let k = i.ident.to_string();
                 if let Some(expr) = expr.init {
-                    let expr = *expr.expr;
-                    let v = match expr {
-                        Expr::Lit(expr) => lit_float(&expr.lit),
-                        Expr::Binary(expr) => bin_expr_float(&expr, lapis),
-                        Expr::Paren(expr) => half_binary_float(&expr.expr, lapis),
-                        Expr::Path(expr) => path_float(&expr.path, lapis),
-                        Expr::Unary(expr) => unary_float(&expr, lapis),
-                        _ => None,
-                    };
+                    let v = half_binary_float(&expr.expr, lapis);
                     if let Some(v) = v {
                         lapis.fmap.insert(k, v);
                     }
@@ -39,14 +31,7 @@ fn eval_stmt(s: Stmt, lapis: &mut Lapis) {
             }
         }
         Stmt::Expr(expr, _) => {
-            let n = match expr {
-                Expr::Path(expr) => path_float(&expr.path, lapis),
-                Expr::Binary(expr) => bin_expr_float(&expr, lapis),
-                Expr::Lit(expr) => lit_float(&expr.lit),
-                Expr::Paren(expr) => half_binary_float(&expr.expr, lapis),
-                Expr::Unary(expr) => unary_float(&expr, lapis),
-                _ => None,
-            };
+            let n = half_binary_float(&expr, lapis);
             lapis.buffer.push_str(&format!("\n>{:?}", n));
         }
         _ => {}
