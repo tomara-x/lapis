@@ -23,8 +23,7 @@ fn eval_stmt(s: Stmt, lapis: &mut Lapis) {
             if let Pat::Ident(i) = expr.pat {
                 let k = i.ident.to_string();
                 if let Some(expr) = expr.init {
-                    let v = half_binary_float(&expr.expr, lapis);
-                    if let Some(v) = v {
+                    if let Some(v) = half_binary_float(&expr.expr, lapis) {
                         lapis.fmap.insert(k, v);
                     }
                 }
