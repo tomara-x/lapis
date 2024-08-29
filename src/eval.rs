@@ -26,8 +26,8 @@ fn eval_stmt(s: Stmt, lapis: &mut Lapis) {
                     let expr = *expr.expr;
                     let v = match expr {
                         Expr::Lit(expr) => lit_float(&expr.lit),
-                        Expr::Binary(expr) => bin_expr_float(&expr),
-                        Expr::Paren(expr) => paren_expr_float(&expr.expr),
+                        Expr::Binary(expr) => bin_expr_float(&expr, lapis),
+                        Expr::Paren(expr) => paren_expr_float(&expr.expr, lapis),
                         _ => None,
                     };
                     if let Some(v) = v {
@@ -38,14 +38,12 @@ fn eval_stmt(s: Stmt, lapis: &mut Lapis) {
         }
         Stmt::Expr(expr, _) => match expr {
             Expr::Path(expr) => {
-                let segments = &expr.path.segments;
-                if let Some(s) = segments.first() {
-                    let k = s.ident.to_string();
-                    lapis.buffer.push_str(&format!("\n>{:?}", lapis.fmap.get(&k)));
-                }
+                let n = path_float(&expr.path, lapis);
+                lapis.buffer.push_str(&format!("\n>{:?}", n));
             }
             Expr::Binary(expr) => {
-                println!("{:?}", bin_expr_float(&expr));
+                let n = bin_expr_float(&expr, lapis);
+                lapis.buffer.push_str(&format!("\n>{:?}", n));
             }
             _ => {}
         },
@@ -53,17 +51,24 @@ fn eval_stmt(s: Stmt, lapis: &mut Lapis) {
     }
 }
 
-fn bin_expr_float(expr: &ExprBinary) -> Option<f32> {
+fn path_float(expr: &Path, lapis: &Lapis) -> Option<f32> {
+    let k = expr.segments.first()?.ident.to_string();
+    lapis.fmap.get(&k).copied()
+}
+
+fn bin_expr_float(expr: &ExprBinary, lapis: &Lapis) -> Option<f32> {
     let left = match *expr.left.clone() {
         Expr::Lit(expr) => lit_float(&expr.lit)?,
-        Expr::Binary(expr) => bin_expr_float(&expr)?,
-        Expr::Paren(expr) => paren_expr_float(&expr.expr)?,
+        Expr::Binary(expr) => bin_expr_float(&expr, lapis)?,
+        Expr::Paren(expr) => paren_expr_float(&expr.expr, lapis)?,
+        Expr::Path(expr) => path_float(&expr.path, lapis)?,
         _ => return None,
     };
     let right = match *expr.right.clone() {
         Expr::Lit(expr) => lit_float(&expr.lit)?,
-        Expr::Binary(expr) => bin_expr_float(&expr)?,
-        Expr::Paren(expr) => paren_expr_float(&expr.expr)?,
+        Expr::Binary(expr) => bin_expr_float(&expr, lapis)?,
+        Expr::Paren(expr) => paren_expr_float(&expr.expr, lapis)?,
+        Expr::Path(expr) => path_float(&expr.path, lapis)?,
         _ => return None,
     };
     match expr.op {
@@ -83,10 +88,11 @@ fn lit_float(expr: &Lit) -> Option<f32> {
     }
 }
 
-fn paren_expr_float(expr: &Expr) -> Option<f32> {
+fn paren_expr_float(expr: &Expr, lapis: &Lapis) -> Option<f32> {
     match expr {
         Expr::Lit(expr) => lit_float(&expr.lit),
-        Expr::Binary(expr) => bin_expr_float(expr),
+        Expr::Binary(expr) => bin_expr_float(expr, lapis),
+        Expr::Path(expr) => path_float(&expr.path, lapis),
         _ => None,
     }
 }
