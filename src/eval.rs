@@ -29,6 +29,7 @@ fn eval_stmt(s: Stmt, lapis: &mut Lapis) {
                         Expr::Binary(expr) => bin_expr_float(&expr, lapis),
                         Expr::Paren(expr) => paren_expr_float(&expr.expr, lapis),
                         Expr::Path(expr) => path_float(&expr.path, lapis),
+                        Expr::Unary(expr) => unary_float(&expr, lapis),
                         _ => None,
                     };
                     if let Some(v) = v {
@@ -37,17 +38,17 @@ fn eval_stmt(s: Stmt, lapis: &mut Lapis) {
                 }
             }
         }
-        Stmt::Expr(expr, _) => match expr {
-            Expr::Path(expr) => {
-                let n = path_float(&expr.path, lapis);
-                lapis.buffer.push_str(&format!("\n>{:?}", n));
-            }
-            Expr::Binary(expr) => {
-                let n = bin_expr_float(&expr, lapis);
-                lapis.buffer.push_str(&format!("\n>{:?}", n));
-            }
-            _ => {}
-        },
+        Stmt::Expr(expr, _) => {
+            let n = match expr {
+                Expr::Path(expr) => path_float(&expr.path, lapis),
+                Expr::Binary(expr) => bin_expr_float(&expr, lapis),
+                Expr::Lit(expr) => lit_float(&expr.lit),
+                Expr::Paren(expr) => paren_expr_float(&expr.expr, lapis),
+                Expr::Unary(expr) => unary_float(&expr, lapis),
+                _ => None,
+            };
+            lapis.buffer.push_str(&format!("\n>{:?}", n));
+        }
         _ => {}
     }
 }
@@ -63,6 +64,14 @@ fn half_binary_float(expr: &Expr, lapis: &Lapis) -> Option<f32> {
         Expr::Binary(expr) => bin_expr_float(expr, lapis),
         Expr::Paren(expr) => paren_expr_float(&expr.expr, lapis),
         Expr::Path(expr) => path_float(&expr.path, lapis),
+        Expr::Unary(expr) => unary_float(expr, lapis),
+        _ => None,
+    }
+}
+
+fn unary_float(expr: &ExprUnary, lapis: &Lapis) -> Option<f32> {
+    match expr.op {
+        UnOp::Neg(_) => Some(-half_binary_float(&expr.expr, lapis)?),
         _ => None,
     }
 }
@@ -93,6 +102,7 @@ fn paren_expr_float(expr: &Expr, lapis: &Lapis) -> Option<f32> {
         Expr::Binary(expr) => bin_expr_float(expr, lapis),
         Expr::Paren(expr) => paren_expr_float(&expr.expr, lapis),
         Expr::Path(expr) => path_float(&expr.path, lapis),
+        Expr::Unary(expr) => unary_float(expr, lapis),
         _ => None,
     }
 }
