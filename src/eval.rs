@@ -56,21 +56,19 @@ fn path_float(expr: &Path, lapis: &Lapis) -> Option<f32> {
     lapis.fmap.get(&k).copied()
 }
 
+fn half_binary_float(expr: &Expr, lapis: &Lapis) -> Option<f32> {
+    match expr {
+        Expr::Lit(expr) => lit_float(&expr.lit),
+        Expr::Binary(expr) => bin_expr_float(&expr, lapis),
+        Expr::Paren(expr) => paren_expr_float(&expr.expr, lapis),
+        Expr::Path(expr) => path_float(&expr.path, lapis),
+        _ => None,
+    }
+}
+
 fn bin_expr_float(expr: &ExprBinary, lapis: &Lapis) -> Option<f32> {
-    let left = match *expr.left.clone() {
-        Expr::Lit(expr) => lit_float(&expr.lit)?,
-        Expr::Binary(expr) => bin_expr_float(&expr, lapis)?,
-        Expr::Paren(expr) => paren_expr_float(&expr.expr, lapis)?,
-        Expr::Path(expr) => path_float(&expr.path, lapis)?,
-        _ => return None,
-    };
-    let right = match *expr.right.clone() {
-        Expr::Lit(expr) => lit_float(&expr.lit)?,
-        Expr::Binary(expr) => bin_expr_float(&expr, lapis)?,
-        Expr::Paren(expr) => paren_expr_float(&expr.expr, lapis)?,
-        Expr::Path(expr) => path_float(&expr.path, lapis)?,
-        _ => return None,
-    };
+    let left = half_binary_float(&expr.left, lapis)?;
+    let right = half_binary_float(&expr.right, lapis)?;
     match expr.op {
         BinOp::Sub(_) => Some(left - right),
         BinOp::Div(_) => Some(left / right),
