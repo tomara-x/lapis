@@ -91,6 +91,7 @@ fn paren_expr_float(expr: &Expr, lapis: &Lapis) -> Option<f32> {
     match expr {
         Expr::Lit(expr) => lit_float(&expr.lit),
         Expr::Binary(expr) => bin_expr_float(expr, lapis),
+        Expr::Paren(expr) => paren_expr_float(&expr.expr, lapis),
         Expr::Path(expr) => path_float(&expr.path, lapis),
         _ => None,
     }
