@@ -23,20 +23,45 @@ fn eval_stmt(s: Stmt, lapis: &mut Lapis) {
             if let Pat::Ident(i) = expr.pat {
                 let k = i.ident.to_string();
                 if let Some(expr) = expr.init {
-                    if let Some(v) = half_binary_float(&expr.expr, lapis) {
+                    if let Expr::Array(expr) = *expr.expr {
+                        let mut arr = Vec::new();
+                        for elem in expr.elems {
+                            if let Some(n) = half_binary_float(&elem, lapis) {
+                                arr.push(n);
+                            }
+                        }
+                        lapis.fmap.remove(&k);
+                        lapis.vmap.insert(k, arr);
+                    } else if let Some(v) = half_binary_float(&expr.expr, lapis) {
+                        lapis.vmap.remove(&k);
                         lapis.fmap.insert(k, v);
                     }
                 }
             }
         }
         Stmt::Expr(expr, _) => {
-            let n = half_binary_float(&expr, lapis);
-            lapis.buffer.push_str(&format!("\n>{:?}", n));
+            if let Some(n) = half_binary_float(&expr, lapis) {
+                lapis.buffer.push_str(&format!("\n>{:?}", n));
+            } else if let Some(arr) = path_arr(&expr, lapis) {
+                lapis.buffer.push_str(&format!("\n>{:?}", arr));
+            }
         }
         _ => {}
     }
 }
 
+// -------------------- arrays --------------------
+fn path_arr<'a>(expr: &'a Expr, lapis: &'a Lapis) -> Option<&'a Vec<f32>> {
+    match expr {
+        Expr::Path(expr) => {
+            let k = expr.path.segments.first()?.ident.to_string();
+            lapis.vmap.get(&k)
+        }
+        _ => None,
+    }
+}
+
+// -------------------- floats --------------------
 fn half_binary_float(expr: &Expr, lapis: &Lapis) -> Option<f32> {
     match expr {
         Expr::Lit(expr) => lit_float(&expr.lit),

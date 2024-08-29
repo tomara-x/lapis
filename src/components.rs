@@ -6,5 +6,5 @@ pub struct Lapis {
     pub input: String,
     pub settings: bool,
     pub fmap: HashMap<String, f32>,
-    //vmap: HashMap<String, Vec<f32>>,
+    pub vmap: HashMap<String, Vec<f32>>,
 }

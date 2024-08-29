@@ -48,9 +48,13 @@ impl eframe::App for Lapis {
                 if ui.button("settings").clicked() {
                     self.settings = !self.settings;
                 }
-                if ui.button("clear map").clicked() {
+                if ui.button("clear fmap").clicked() {
                     self.fmap.clear();
                     self.fmap.shrink_to_fit();
+                }
+                if ui.button("clear vmap").clicked() {
+                    self.vmap.clear();
+                    self.vmap.shrink_to_fit();
                 }
             });
             egui::Window::new("settings").open(&mut self.settings).show(ctx, |ui| {
