@@ -64,6 +64,7 @@ fn bin_expr_float(expr: &ExprBinary, lapis: &Lapis) -> Option<f32> {
         BinOp::Div(_) => Some(left / right),
         BinOp::Mul(_) => Some(left * right),
         BinOp::Add(_) => Some(left + right),
+        BinOp::Rem(_) => Some(left % right),
         _ => None,
     }
 }
