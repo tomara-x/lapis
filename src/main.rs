@@ -14,34 +14,38 @@ fn main() -> eframe::Result {
 
 impl eframe::App for Lapis {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
-        egui::TopBottomPanel::bottom("input").show(ctx, |ui| {
-            let theme = egui_extras::syntax_highlighting::CodeTheme::from_memory(ui.ctx());
-
-            let mut layouter = |ui: &egui::Ui, string: &str, wrap_width: f32| {
-                let mut layout_job =
-                    egui_extras::syntax_highlighting::highlight(ui.ctx(), &theme, string, "rs");
-                layout_job.wrap.max_width = wrap_width;
-                ui.fonts(|f| f.layout_job(layout_job))
-            };
-            let input_focused = ui
-                .add(
-                    egui::TextEdit::multiline(&mut self.input)
-                        .font(egui::TextStyle::Monospace)
-                        .code_editor()
-                        .desired_rows(1)
-                        .lock_focus(true)
-                        .desired_width(f32::INFINITY)
-                        .layouter(&mut layouter),
-                )
-                .has_focus();
-            let shortcut = egui::KeyboardShortcut {
-                modifiers: egui::Modifiers::COMMAND,
-                logical_key: egui::Key::Enter,
-            };
-            if input_focused && ctx.input_mut(|i| i.consume_shortcut(&shortcut)) {
-                eval(self);
-            }
-        });
+        egui::TopBottomPanel::bottom("input").resizable(true).show_separator_line(false).show(
+            ctx,
+            |ui| {
+                let theme = egui_extras::syntax_highlighting::CodeTheme::from_memory(ui.ctx());
+                let mut layouter = |ui: &egui::Ui, string: &str, wrap_width: f32| {
+                    let mut layout_job =
+                        egui_extras::syntax_highlighting::highlight(ui.ctx(), &theme, string, "rs");
+                    layout_job.wrap.max_width = wrap_width;
+                    ui.fonts(|f| f.layout_job(layout_job))
+                };
+                egui::ScrollArea::vertical().stick_to_bottom(true).show(ui, |ui| {
+                    let input_focused = ui
+                        .add(
+                            egui::TextEdit::multiline(&mut self.input)
+                                .font(egui::TextStyle::Monospace)
+                                .code_editor()
+                                .desired_rows(1)
+                                .lock_focus(true)
+                                .desired_width(f32::INFINITY)
+                                .layouter(&mut layouter),
+                        )
+                        .has_focus();
+                    let shortcut = egui::KeyboardShortcut {
+                        modifiers: egui::Modifiers::COMMAND,
+                        logical_key: egui::Key::Enter,
+                    };
+                    if input_focused && ctx.input_mut(|i| i.consume_shortcut(&shortcut)) {
+                        eval(self);
+                    }
+                });
+            },
+        );
         egui::CentralPanel::default().show(ctx, |ui| {
             let mut theme = egui_extras::syntax_highlighting::CodeTheme::from_memory(ui.ctx());
             ui.horizontal(|ui| {
@@ -63,14 +67,12 @@ impl eframe::App for Lapis {
                     theme.clone().store_in_memory(ui.ctx());
                 });
             });
-
             let mut layouter = |ui: &egui::Ui, string: &str, wrap_width: f32| {
                 let mut layout_job =
                     egui_extras::syntax_highlighting::highlight(ui.ctx(), &theme, string, "rs");
                 layout_job.wrap.max_width = wrap_width;
                 ui.fonts(|f| f.layout_job(layout_job))
             };
-
             egui::ScrollArea::vertical().stick_to_bottom(true).show(ui, |ui| {
                 ui.add(
                     egui::TextEdit::multiline(&mut self.buffer)
