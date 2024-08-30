@@ -14,16 +14,17 @@ fn main() -> eframe::Result {
 
 impl eframe::App for Lapis {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
+        let mut theme = egui_extras::syntax_highlighting::CodeTheme::from_memory(ctx);
+        let theme_copy = theme.clone();
+        let mut layouter = |ui: &egui::Ui, string: &str, wrap_width: f32| {
+            let mut layout_job =
+                egui_extras::syntax_highlighting::highlight(ui.ctx(), &theme_copy, string, "rs");
+            layout_job.wrap.max_width = wrap_width;
+            ui.fonts(|f| f.layout_job(layout_job))
+        };
         egui::TopBottomPanel::bottom("input").resizable(true).show_separator_line(false).show(
             ctx,
             |ui| {
-                let theme = egui_extras::syntax_highlighting::CodeTheme::from_memory(ui.ctx());
-                let mut layouter = |ui: &egui::Ui, string: &str, wrap_width: f32| {
-                    let mut layout_job =
-                        egui_extras::syntax_highlighting::highlight(ui.ctx(), &theme, string, "rs");
-                    layout_job.wrap.max_width = wrap_width;
-                    ui.fonts(|f| f.layout_job(layout_job))
-                };
                 egui::ScrollArea::vertical().stick_to_bottom(true).show(ui, |ui| {
                     let input_focused = ui
                         .add(
@@ -47,7 +48,6 @@ impl eframe::App for Lapis {
             },
         );
         egui::CentralPanel::default().show(ctx, |ui| {
-            let mut theme = egui_extras::syntax_highlighting::CodeTheme::from_memory(ui.ctx());
             ui.horizontal(|ui| {
                 if ui.button("settings").clicked() {
                     self.settings = !self.settings;
@@ -67,12 +67,6 @@ impl eframe::App for Lapis {
                     theme.clone().store_in_memory(ui.ctx());
                 });
             });
-            let mut layouter = |ui: &egui::Ui, string: &str, wrap_width: f32| {
-                let mut layout_job =
-                    egui_extras::syntax_highlighting::highlight(ui.ctx(), &theme, string, "rs");
-                layout_job.wrap.max_width = wrap_width;
-                ui.fonts(|f| f.layout_job(layout_job))
-            };
             egui::ScrollArea::vertical().stick_to_bottom(true).show(ui, |ui| {
                 ui.add(
                     egui::TextEdit::multiline(&mut self.buffer)
