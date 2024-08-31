@@ -60,6 +60,10 @@ impl eframe::App for Lapis {
                     self.vmap.clear();
                     self.vmap.shrink_to_fit();
                 }
+                if ui.button("clear gmap").clicked() {
+                    self.gmap.clear();
+                    self.gmap.shrink_to_fit();
+                }
             });
             egui::Window::new("settings").open(&mut self.settings).show(ctx, |ui| {
                 ui.group(|ui| {

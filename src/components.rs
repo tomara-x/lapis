@@ -1,3 +1,4 @@
+use fundsp::net::Net;
 use std::collections::HashMap;
 
 #[derive(Default)]
@@ -7,4 +8,5 @@ pub struct Lapis {
     pub settings: bool,
     pub fmap: HashMap<String, f32>,
     pub vmap: HashMap<String, Vec<f32>>,
+    pub gmap: HashMap<String, Net>,
 }
