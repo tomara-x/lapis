@@ -1,7 +1,8 @@
-use fundsp::net::Net;
+use crate::audio::*;
+use fundsp::hacker32::*;
 use std::collections::HashMap;
 
-#[derive(Default)]
+#[allow(dead_code)]
 pub struct Lapis {
     pub buffer: String,
     pub input: String,
@@ -9,4 +10,23 @@ pub struct Lapis {
     pub fmap: HashMap<String, f32>,
     pub vmap: HashMap<String, Vec<f32>>,
     pub gmap: HashMap<String, Net>,
+    pub slot: Slot,
+    pub stream: Option<cpal::Stream>,
+}
+
+impl Lapis {
+    pub fn new() -> Self {
+        let (slot, slot_back) = Slot::new(Box::new(dc(0.) | dc(0.)));
+        let stream = default_out_device(slot_back);
+        Lapis {
+            buffer: String::new(),
+            input: String::new(),
+            settings: false,
+            fmap: HashMap::new(),
+            vmap: HashMap::new(),
+            gmap: HashMap::new(),
+            slot,
+            stream,
+        }
+    }
 }

@@ -47,30 +47,33 @@ fn eval_stmt(s: Stmt, lapis: &mut Lapis) {
                 }
             }
         }
-        Stmt::Expr(expr, _) => {
-            match expr {
-                Expr::MethodCall(expr) => {
-                    match expr.method.to_string().as_str() {
-                        "play" => {
-                            if let Some(g) = half_binary_net(&expr.receiver, lapis) {
-                                todo!();
-                            }
+        Stmt::Expr(expr, _) => match expr {
+            Expr::MethodCall(expr) => match expr.method.to_string().as_str() {
+                "play" => {
+                    if let Some(g) = half_binary_net(&expr.receiver, lapis) {
+                        if g.inputs() == 0 && g.outputs() == 1 {
+                            lapis.slot.set(Fade::Smooth, 0.01, Box::new(g | dc(0.)));
+                        } else if g.inputs() == 0 && g.outputs() == 2 {
+                            lapis.slot.set(Fade::Smooth, 0.01, Box::new(g));
+                        } else {
+                            lapis.slot.set(Fade::Smooth, 0.01, Box::new(dc(0.) | dc(0.)));
                         }
-                        _ => {}
                     }
                 }
-                _ => {
-                    if let Some(n) = half_binary_float(&expr, lapis) {
-                        lapis.buffer.push_str(&format!("\n>{:?}", n));
-                    } else if let Some(arr) = path_arr(&expr, lapis) {
-                        lapis.buffer.push_str(&format!("\n>{:?}", arr));
-                    } else if let Some(mut g) = half_binary_net(&expr, lapis) {
-                        lapis.buffer.push_str(&format!("\n{}", g.display()));
-                        lapis.buffer.push_str(&format!("Size           : {}", g.size()));
-                    }
+                "tick" => {}
+                _ => {}
+            },
+            _ => {
+                if let Some(n) = half_binary_float(&expr, lapis) {
+                    lapis.buffer.push_str(&format!("\n>{:?}", n));
+                } else if let Some(arr) = path_arr(&expr, lapis) {
+                    lapis.buffer.push_str(&format!("\n>{:?}", arr));
+                } else if let Some(mut g) = half_binary_net(&expr, lapis) {
+                    lapis.buffer.push_str(&format!("\n{}", g.display()));
+                    lapis.buffer.push_str(&format!("Size           : {}", g.size()));
                 }
             }
-        }
+        },
         _ => {}
     }
 }

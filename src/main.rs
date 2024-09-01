@@ -1,5 +1,6 @@
 use eframe::egui;
 
+mod audio;
 mod components;
 mod eval;
 use {components::*, eval::*};
@@ -9,7 +10,7 @@ fn main() -> eframe::Result {
         viewport: egui::ViewportBuilder::default().with_inner_size([500.0, 440.0]),
         ..Default::default()
     };
-    eframe::run_native("awawawa", options, Box::new(|_| Ok(Box::<Lapis>::default())))
+    eframe::run_native("awawawa", options, Box::new(|_| Ok(Box::new(Lapis::new()))))
 }
 
 impl eframe::App for Lapis {
