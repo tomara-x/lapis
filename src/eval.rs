@@ -72,19 +72,42 @@ fn half_binary_net(expr: &Expr, lapis: &Lapis) -> Option<Net> {
     }
 }
 fn bin_expr_net(expr: &ExprBinary, lapis: &Lapis) -> Option<Net> {
-    // TODO(amy): they can also be floats
-    let left = half_binary_net(&expr.left, lapis)?;
-    let right = half_binary_net(&expr.right, lapis)?;
-    match expr.op {
-        // TODO(amy): arity checking
-        BinOp::BitAnd(_) => Some(left & right),
-        BinOp::BitOr(_) => Some(left | right),
-        BinOp::BitXor(_) => Some(left ^ right),
-        BinOp::Shr(_) => Some(left >> right),
-        BinOp::Sub(_) => Some(left - right),
-        BinOp::Mul(_) => Some(left * right),
-        BinOp::Add(_) => Some(left + right),
-        _ => None,
+    let left_net = half_binary_net(&expr.left, lapis);
+    let right_net = half_binary_net(&expr.right, lapis);
+    let left_float = half_binary_float(&expr.left, lapis);
+    let right_float = half_binary_float(&expr.right, lapis);
+    // less verbose way to do this?
+    if left_net.is_some() && right_net.is_some() {
+        let (left, right) = (left_net.unwrap(), right_net.unwrap());
+        match expr.op {
+            // TODO(amy): arity checking
+            BinOp::BitAnd(_) => Some(left & right),
+            BinOp::BitOr(_) => Some(left | right),
+            BinOp::BitXor(_) => Some(left ^ right),
+            BinOp::Shr(_) => Some(left >> right),
+            BinOp::Sub(_) => Some(left - right),
+            BinOp::Mul(_) => Some(left * right),
+            BinOp::Add(_) => Some(left + right),
+            _ => None,
+        }
+    } else if let (Some(left), Some(right)) = (left_net, right_float) {
+        match expr.op {
+            // TODO(amy): arity checking
+            BinOp::Sub(_) => Some(left - right),
+            BinOp::Mul(_) => Some(left * right),
+            BinOp::Add(_) => Some(left + right),
+            _ => None,
+        }
+    } else if let (Some(left), Some(right)) = (left_float, right_net) {
+        match expr.op {
+            // TODO(amy): arity checking
+            BinOp::Sub(_) => Some(left - right),
+            BinOp::Mul(_) => Some(left * right),
+            BinOp::Add(_) => Some(left + right),
+            _ => None,
+        }
+    } else {
+        None
     }
 }
 fn unary_net(expr: &ExprUnary, lapis: &Lapis) -> Option<Net> {
@@ -131,6 +154,7 @@ fn call_net(expr: &ExprCall, lapis: &Lapis) -> Option<Net> {
             }
         }
         "sine" => Some(Net::wrap(Box::new(sine()))),
+        "lowpass" => Some(Net::wrap(Box::new(lowpass()))),
         _ => None,
     }
 }
