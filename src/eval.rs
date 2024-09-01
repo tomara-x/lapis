@@ -54,6 +54,7 @@ fn eval_stmt(s: Stmt, lapis: &mut Lapis) {
                 lapis.buffer.push_str(&format!("\n>{:?}", arr));
             } else if let Some(mut g) = half_binary_net(&expr, lapis) {
                 lapis.buffer.push_str(&format!("\n{}", g.display()));
+                lapis.buffer.push_str(&format!("Size           : {}", g.size()));
             }
         }
         _ => {}
