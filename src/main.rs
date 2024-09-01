@@ -6,7 +6,7 @@ use {components::*, eval::*};
 
 fn main() -> eframe::Result {
     let options = eframe::NativeOptions {
-        viewport: egui::ViewportBuilder::default().with_inner_size([420.0, 240.0]),
+        viewport: egui::ViewportBuilder::default().with_inner_size([500.0, 440.0]),
         ..Default::default()
     };
     eframe::run_native("awawawa", options, Box::new(|_| Ok(Box::<Lapis>::default())))
