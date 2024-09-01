@@ -9,13 +9,7 @@ pub fn eval(lapis: &mut Lapis) {
         lapis.buffer.push_str(&lapis.input);
         lapis.input.clear();
         println!("{:#?}", stmt);
-        if let Stmt::Expr(Expr::Block(expr), _) = stmt {
-            for stmt in expr.block.stmts {
-                eval_stmt(stmt, lapis);
-            }
-        } else {
-            eval_stmt(stmt, lapis);
-        }
+        eval_stmt(stmt, lapis);
     }
 }
 
@@ -63,6 +57,11 @@ fn eval_stmt(s: Stmt, lapis: &mut Lapis) {
                 "tick" => {}
                 _ => {}
             },
+            Expr::Block(expr) => {
+                for stmt in expr.block.stmts {
+                    eval_stmt(stmt, lapis);
+                }
+            }
             _ => {
                 if let Some(n) = half_binary_float(&expr, lapis) {
                     lapis.buffer.push_str(&format!("\n>{:?}", n));
