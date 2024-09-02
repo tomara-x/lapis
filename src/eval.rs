@@ -8,7 +8,7 @@ pub fn eval(lapis: &mut Lapis) {
         lapis.buffer.push('\n');
         lapis.buffer.push_str(&lapis.input);
         lapis.input.clear();
-        println!("{:#?}", stmt);
+        //println!("{:#?}", stmt);
         eval_stmt(stmt, lapis);
     }
 }
@@ -54,9 +54,27 @@ fn eval_stmt(s: Stmt, lapis: &mut Lapis) {
                         }
                     }
                 }
-                "tick" => {}
+                "tick" => {
+                    todo!();
+                }
                 _ => {}
             },
+            Expr::ForLoop(expr) => {
+                let Some(ident) = pat_ident(&expr.pat) else { return };
+                let Some((r0, r1)) = range_bounds(&expr.expr) else { return };
+                let tmp = lapis.fmap.remove(&ident);
+                for i in r0..r1 {
+                    lapis.fmap.insert(ident.clone(), i as f32);
+                    for stmt in &expr.body.stmts {
+                        eval_stmt(stmt.clone(), lapis);
+                    }
+                }
+                if let Some(old) = tmp {
+                    lapis.fmap.insert(ident, old);
+                } else {
+                    lapis.fmap.remove(&ident);
+                }
+            }
             Expr::Block(expr) => {
                 for stmt in expr.block.stmts {
                     eval_stmt(stmt, lapis);
@@ -64,9 +82,9 @@ fn eval_stmt(s: Stmt, lapis: &mut Lapis) {
             }
             _ => {
                 if let Some(n) = half_binary_float(&expr, lapis) {
-                    lapis.buffer.push_str(&format!("\n>{:?}", n));
+                    lapis.buffer.push_str(&format!("\n    {:?}", n));
                 } else if let Some(arr) = path_arr(&expr, lapis) {
-                    lapis.buffer.push_str(&format!("\n>{:?}", arr));
+                    lapis.buffer.push_str(&format!("\n    {:?}", arr));
                 } else if let Some(mut g) = half_binary_net(&expr, lapis) {
                     lapis.buffer.push_str(&format!("\n{}", g.display()));
                     lapis.buffer.push_str(&format!("Size           : {}", g.size()));
@@ -77,6 +95,59 @@ fn eval_stmt(s: Stmt, lapis: &mut Lapis) {
     }
 }
 
+// -------------------- chaos --------------------
+fn pat_ident(pat: &Pat) -> Option<String> {
+    match pat {
+        Pat::Ident(expr) => Some(expr.ident.to_string()),
+        _ => None,
+    }
+}
+fn range_bounds(expr: &Expr) -> Option<(i32, i32)> {
+    match expr {
+        Expr::Range(expr) => {
+            let start = expr.start.clone()?;
+            let end = expr.end.clone()?;
+            let s = half_binary_int(&start)?;
+            let mut e = half_binary_int(&end)?;
+            if let RangeLimits::Closed(_) = expr.limits {
+                e += 1;
+            }
+            Some((s, e))
+        }
+        _ => None,
+    }
+}
+fn path_ident(expr: &Expr) -> Option<String> {
+    if let Expr::Path(expr) = expr {
+        if let Some(expr) = expr.path.segments.first() {
+            return Some(expr.ident.to_string());
+        }
+    }
+    None
+}
+fn path_generic(expr: &Expr) -> Option<String> {
+    if let Expr::Path(expr) = expr {
+        if let Some(expr) = expr.path.segments.first() {
+            if let PathArguments::AngleBracketed(expr) = &expr.arguments {
+                let args = expr.args.first()?;
+                if let GenericArgument::Type(Type::Path(expr)) = args {
+                    let expr = expr.path.segments.first()?;
+                    return Some(expr.ident.to_string());
+                }
+            }
+        }
+    }
+    None
+}
+fn accumulate_args(args: &Punctuated<Expr, Token!(,)>, lapis: &Lapis) -> Vec<f32> {
+    let mut vec = Vec::new();
+    for arg in args {
+        if let Some(n) = half_binary_float(arg, lapis) {
+            vec.push(n);
+        }
+    }
+    vec
+}
 // -------------------- nodes --------------------
 fn half_binary_net(expr: &Expr, lapis: &Lapis) -> Option<Net> {
     match expr {
@@ -170,39 +241,9 @@ fn call_net(expr: &ExprCall, lapis: &Lapis) -> Option<Net> {
         }
         "sine" => Some(Net::wrap(Box::new(sine()))),
         "lowpass" => Some(Net::wrap(Box::new(lowpass()))),
+        // TODO
         _ => None,
     }
-}
-fn path_ident(expr: &Expr) -> Option<String> {
-    if let Expr::Path(expr) = expr {
-        if let Some(expr) = expr.path.segments.first() {
-            return Some(expr.ident.to_string());
-        }
-    }
-    None
-}
-fn path_generic(expr: &Expr) -> Option<String> {
-    if let Expr::Path(expr) = expr {
-        if let Some(expr) = expr.path.segments.first() {
-            if let PathArguments::AngleBracketed(expr) = &expr.arguments {
-                let args = expr.args.first()?;
-                if let GenericArgument::Type(Type::Path(expr)) = args {
-                    let expr = expr.path.segments.first()?;
-                    return Some(expr.ident.to_string());
-                }
-            }
-        }
-    }
-    None
-}
-fn accumulate_args(args: &Punctuated<Expr, Token!(,)>, lapis: &Lapis) -> Vec<f32> {
-    let mut vec = Vec::new();
-    for arg in args {
-        if let Some(n) = half_binary_float(arg, lapis) {
-            vec.push(n);
-        }
-    }
-    vec
 }
 // -------------------- arrays --------------------
 fn path_arr<'a>(expr: &'a Expr, lapis: &'a Lapis) -> Option<&'a Vec<f32>> {
@@ -252,6 +293,27 @@ fn path_float(expr: &Path, lapis: &Lapis) -> Option<f32> {
 fn unary_float(expr: &ExprUnary, lapis: &Lapis) -> Option<f32> {
     match expr.op {
         UnOp::Neg(_) => Some(-half_binary_float(&expr.expr, lapis)?),
+        _ => None,
+    }
+}
+// -------------------- integers --------------------
+fn half_binary_int(expr: &Expr) -> Option<i32> {
+    match expr {
+        Expr::Lit(expr) => lit_int(&expr.lit),
+        Expr::Paren(expr) => half_binary_int(&expr.expr),
+        Expr::Unary(expr) => unary_int(expr),
+        _ => None,
+    }
+}
+fn lit_int(expr: &Lit) -> Option<i32> {
+    match expr {
+        Lit::Int(expr) => expr.base10_parse::<i32>().ok(),
+        _ => None,
+    }
+}
+fn unary_int(expr: &ExprUnary) -> Option<i32> {
+    match expr.op {
+        UnOp::Neg(_) => Some(-half_binary_int(&expr.expr)?),
         _ => None,
     }
 }
