@@ -8,7 +8,7 @@ pub fn eval(lapis: &mut Lapis) {
         lapis.buffer.push('\n');
         lapis.buffer.push_str(&lapis.input);
         lapis.input.clear();
-        //println!("{:#?}", stmt);
+        println!("{:#?}", stmt);
         eval_stmt(stmt, lapis);
     }
 }
@@ -19,17 +19,7 @@ fn eval_stmt(s: Stmt, lapis: &mut Lapis) {
             if let Pat::Ident(i) = expr.pat {
                 let k = i.ident.to_string();
                 if let Some(expr) = expr.init {
-                    if let Expr::Array(expr) = *expr.expr {
-                        let mut arr = Vec::new();
-                        for elem in expr.elems {
-                            if let Some(n) = half_binary_float(&elem, lapis) {
-                                arr.push(n);
-                            }
-                        }
-                        lapis.fmap.remove(&k);
-                        lapis.gmap.remove(&k);
-                        lapis.vmap.insert(k, arr);
-                    } else if let Some(v) = half_binary_float(&expr.expr, lapis) {
+                    if let Some(v) = half_binary_float(&expr.expr, lapis) {
                         lapis.vmap.remove(&k);
                         lapis.gmap.remove(&k);
                         lapis.fmap.insert(k, v);
@@ -37,6 +27,10 @@ fn eval_stmt(s: Stmt, lapis: &mut Lapis) {
                         lapis.vmap.remove(&k);
                         lapis.fmap.remove(&k);
                         lapis.gmap.insert(k, v);
+                    } else if let Some(arr) = array_lit(&expr.expr, lapis) {
+                        lapis.fmap.remove(&k);
+                        lapis.gmap.remove(&k);
+                        lapis.vmap.insert(k, arr);
                     }
                 }
             }
@@ -59,6 +53,22 @@ fn eval_stmt(s: Stmt, lapis: &mut Lapis) {
                 }
                 _ => {}
             },
+            Expr::Assign(expr) => {
+                let Some(ident) = path_ident(&expr.left) else { return };
+                if let Some(f) = half_binary_float(&expr.right, lapis) {
+                    if let Some(var) = lapis.fmap.get_mut(&ident) {
+                        *var = f;
+                    }
+                } else if let Some(g) = half_binary_net(&expr.right, lapis) {
+                    if let Some(var) = lapis.gmap.get_mut(&ident) {
+                        *var = g;
+                    }
+                } else if let Some(a) = array_lit(&expr.right, lapis) {
+                    if let Some(var) = lapis.vmap.get_mut(&ident) {
+                        *var = a;
+                    }
+                }
+            }
             Expr::ForLoop(expr) => {
                 let Some(ident) = pat_ident(&expr.pat) else { return };
                 let Some((r0, r1)) = range_bounds(&expr.expr) else { return };
@@ -251,6 +261,20 @@ fn path_arr<'a>(expr: &'a Expr, lapis: &'a Lapis) -> Option<&'a Vec<f32>> {
         Expr::Path(expr) => {
             let k = expr.path.segments.first()?.ident.to_string();
             lapis.vmap.get(&k)
+        }
+        _ => None,
+    }
+}
+fn array_lit(expr: &Expr, lapis: &Lapis) -> Option<Vec<f32>> {
+    match expr {
+        Expr::Array(expr) => {
+            let mut arr = Vec::new();
+            for elem in &expr.elems {
+                if let Some(n) = half_binary_float(elem, lapis) {
+                    arr.push(n);
+                }
+            }
+            Some(arr)
         }
         _ => None,
     }
