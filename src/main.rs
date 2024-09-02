@@ -30,6 +30,7 @@ impl eframe::App for Lapis {
                     let input_focused = ui
                         .add(
                             egui::TextEdit::multiline(&mut self.input)
+                                .hint_text("type code then press ctrl+enter")
                                 .font(egui::TextStyle::Monospace)
                                 .code_editor()
                                 .desired_rows(1)
