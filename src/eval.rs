@@ -363,7 +363,21 @@ fn call_net(expr: &ExprCall, lapis: &Lapis) -> Option<Net> {
             let f = args.first()?;
             Some(Net::wrap(Box::new(butterpass_hz(*f))))
         }
-        "dc" => {
+        "chorus" => {
+            let arg = expr.args.first()?;
+            let seed = lit_u64(arg)?;
+            let seperation = args.get(1)?;
+            let variation = args.get(2)?;
+            let mod_freq = args.get(3)?;
+            Some(Net::wrap(Box::new(chorus(seed, *seperation, *variation, *mod_freq))))
+        }
+        "clip" => Some(Net::wrap(Box::new(clip()))),
+        "clip_to" => {
+            let min = args.get(0)?;
+            let max = args.get(1)?;
+            Some(Net::wrap(Box::new(clip_to(*min, *max))))
+        }
+        "dc" | "constant" => {
             let tuple = expr.args.first()?;
             if let Expr::Tuple(expr) = tuple {
                 let p = accumulate_args(&expr.elems, lapis);
@@ -482,6 +496,15 @@ fn lit_int(expr: &Lit) -> Option<i32> {
 fn unary_int(expr: &ExprUnary) -> Option<i32> {
     match expr.op {
         UnOp::Neg(_) => Some(-half_binary_int(&expr.expr)?),
+        _ => None,
+    }
+}
+fn lit_u64(expr: &Expr) -> Option<u64> {
+    match expr {
+        Expr::Lit(expr) => match &expr.lit {
+            Lit::Int(expr) => expr.base10_parse::<u64>().ok(),
+            _ => None,
+        },
         _ => None,
     }
 }
