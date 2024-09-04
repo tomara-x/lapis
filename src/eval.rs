@@ -52,7 +52,7 @@ fn eval_stmt(s: Stmt, lapis: &mut Lapis) {
                     // temporary testing implementation. will be refactored
                     if let Some(mut g) = half_binary_net(&expr.receiver, lapis) {
                         if let Some(arr) = expr.args.first() {
-                            if let Some(input) = array_lit(&arr, lapis) {
+                            if let Some(input) = array_lit(arr, lapis) {
                                 let mut output = Vec::new();
                                 output.resize(g.outputs(), 0.);
                                 g.tick(&input, &mut output);
@@ -252,6 +252,7 @@ macro_rules! tuple_call_match {
         }
     }};
 }
+#[allow(clippy::get_first)]
 fn call_net(expr: &ExprCall, lapis: &Lapis) -> Option<Net> {
     let func = path_ident(&expr.func)?;
     let args = accumulate_args(&expr.args, lapis);
@@ -313,6 +314,54 @@ fn call_net(expr: &ExprCall, lapis: &Lapis) -> Option<Net> {
         "allpole_delay" => {
             let delay = args.get(0)?;
             Some(Net::wrap(Box::new(allpole_delay(*delay))))
+        }
+        "bandpass" => Some(Net::wrap(Box::new(bandpass()))),
+        "bandpass_hz" => {
+            let f = args.get(0)?;
+            let q = args.get(1)?;
+            Some(Net::wrap(Box::new(bandpass_hz(*f, *q))))
+        }
+        "bandpass_q" => {
+            let q = args.first()?;
+            Some(Net::wrap(Box::new(bandpass_q(*q))))
+        }
+        "bandrez" => Some(Net::wrap(Box::new(bandrez()))),
+        "bandrez_hz" => {
+            let center = args.get(0)?;
+            let q = args.get(1)?;
+            Some(Net::wrap(Box::new(bandrez_hz(*center, *q))))
+        }
+        "bandrez_q" => {
+            let q = args.first()?;
+            Some(Net::wrap(Box::new(bandrez_q(*q))))
+        }
+        "bell" => Some(Net::wrap(Box::new(bell()))),
+        "bell_hz" => {
+            let f = args.get(0)?;
+            let q = args.get(1)?;
+            let gain = args.get(2)?;
+            Some(Net::wrap(Box::new(bell_hz(*f, *q, *gain))))
+        }
+        "bell_q" => {
+            let q = args.get(0)?;
+            let gain = args.get(1)?;
+            Some(Net::wrap(Box::new(bell_q(*q, *gain))))
+        }
+        "biquad" => {
+            let a1 = args.get(0)?;
+            let a2 = args.get(1)?;
+            let b0 = args.get(2)?;
+            let b1 = args.get(3)?;
+            let b2 = args.get(4)?;
+            Some(Net::wrap(Box::new(biquad(*a1, *a2, *b0, *b1, *b2))))
+        }
+        "branch" | "branchf" | "branchi" => None, //TODO
+        "brown" => Some(Net::wrap(Box::new(brown()))),
+        "bus" | "busf" | "busi" => None, //TODO
+        "butterpass" => Some(Net::wrap(Box::new(butterpass()))),
+        "butterpass_hz" => {
+            let f = args.first()?;
+            Some(Net::wrap(Box::new(butterpass_hz(*f))))
         }
         "dc" => {
             let tuple = expr.args.first()?;
