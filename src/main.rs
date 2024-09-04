@@ -3,6 +3,7 @@ use eframe::egui;
 mod audio;
 mod components;
 mod eval;
+mod units;
 use {components::*, eval::*};
 
 fn main() -> eframe::Result {

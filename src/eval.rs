@@ -1,4 +1,4 @@
-use crate::components::*;
+use crate::{components::*, units::*};
 use fundsp::hacker32::*;
 use syn::punctuated::Punctuated;
 use syn::*;
@@ -49,7 +49,17 @@ fn eval_stmt(s: Stmt, lapis: &mut Lapis) {
                     }
                 }
                 "tick" => {
-                    todo!();
+                    // temporary testing implementation. will be refactored
+                    if let Some(mut g) = half_binary_net(&expr.receiver, lapis) {
+                        if let Some(arr) = expr.args.first() {
+                            if let Some(input) = array_lit(&arr, lapis) {
+                                let mut output = Vec::new();
+                                output.resize(g.outputs(), 0.);
+                                g.tick(&input, &mut output);
+                                println!("{:?}", output);
+                            }
+                        }
+                    }
                 }
                 _ => {}
             },
@@ -135,11 +145,11 @@ fn path_ident(expr: &Expr) -> Option<String> {
     }
     None
 }
-fn path_generic(expr: &Expr) -> Option<String> {
+fn nth_path_generic(expr: &Expr, n: usize) -> Option<String> {
     if let Expr::Path(expr) = expr {
         if let Some(expr) = expr.path.segments.first() {
             if let PathArguments::AngleBracketed(expr) = &expr.arguments {
-                let args = expr.args.first()?;
+                let args = expr.args.get(n)?;
                 if let GenericArgument::Type(Type::Path(expr)) = args {
                     let expr = expr.path.segments.first()?;
                     return Some(expr.ident.to_string());
@@ -219,10 +229,8 @@ fn path_net(expr: &Path, lapis: &Lapis) -> Option<Net> {
 }
 fn call_net(expr: &ExprCall, lapis: &Lapis) -> Option<Net> {
     let func = path_ident(&expr.func)?;
-    let generic = path_generic(&expr.func);
     let args = accumulate_args(&expr.args, lapis);
     println!("{:?}", func);
-    println!("{:?}", generic);
     println!("{:?}", args);
     match func.as_str() {
         "dc" => {
@@ -251,6 +259,24 @@ fn call_net(expr: &ExprCall, lapis: &Lapis) -> Option<Net> {
         }
         "sine" => Some(Net::wrap(Box::new(sine()))),
         "lowpass" => Some(Net::wrap(Box::new(lowpass()))),
+        "split" => {
+            let n = nth_path_generic(&expr.func, 0)?.get(1..)?.parse::<usize>().ok()?;
+            Some(Net::wrap(Box::new(MultiSplitUnit::new(1, n))))
+        }
+        "join" => {
+            let n = nth_path_generic(&expr.func, 0)?.get(1..)?.parse::<usize>().ok()?;
+            Some(Net::wrap(Box::new(MultiJoinUnit::new(1, n))))
+        }
+        "multisplit" => {
+            let n = nth_path_generic(&expr.func, 0)?.get(1..)?.parse::<usize>().ok()?;
+            let m = nth_path_generic(&expr.func, 1)?.get(1..)?.parse::<usize>().ok()?;
+            Some(Net::wrap(Box::new(MultiSplitUnit::new(n, m))))
+        }
+        "multijoin" => {
+            let n = nth_path_generic(&expr.func, 0)?.get(1..)?.parse::<usize>().ok()?;
+            let m = nth_path_generic(&expr.func, 1)?.get(1..)?.parse::<usize>().ok()?;
+            Some(Net::wrap(Box::new(MultiJoinUnit::new(n, m))))
+        }
         // TODO
         _ => None,
     }
