@@ -377,6 +377,7 @@ fn call_net(expr: &ExprCall, lapis: &Lapis) -> Option<Net> {
             let max = args.get(1)?;
             Some(Net::wrap(Box::new(clip_to(*min, *max))))
         }
+        "dbell" | "dbell_hz" => None, //TODO
         "dc" | "constant" => {
             let tuple = expr.args.first()?;
             if let Expr::Tuple(expr) = tuple {
@@ -388,6 +389,32 @@ fn call_net(expr: &ExprCall, lapis: &Lapis) -> Option<Net> {
                     _ => None,
                 }
             }
+        }
+        "dcblock" => Some(Net::wrap(Box::new(dcblock()))),
+        "dcblock_hz" => {
+            let cutoff = args.first()?;
+            Some(Net::wrap(Box::new(dcblock_hz(*cutoff))))
+        }
+        "declick" => Some(Net::wrap(Box::new(declick()))),
+        "declick_s" => {
+            let t = args.first()?;
+            Some(Net::wrap(Box::new(declick_s(*t))))
+        }
+        "delay" => {
+            let t = args.first()?;
+            Some(Net::wrap(Box::new(delay(*t))))
+        }
+        "dhighpass" | "dhighpass_hz" | "dlowpass" | "dlowpass_hz" | "dresonator"
+        | "dresonator_hz" => None, //TODO
+        "dsf_saw" => Some(Net::wrap(Box::new(dsf_saw()))),
+        "dsf_saw_r" => {
+            let roughness = args.first()?;
+            Some(Net::wrap(Box::new(dsf_saw_r(*roughness))))
+        }
+        "dsf_square" => Some(Net::wrap(Box::new(dsf_square()))),
+        "dsf_square_r" => {
+            let roughness = args.first()?;
+            Some(Net::wrap(Box::new(dsf_square_r(*roughness))))
         }
         "sine" => Some(Net::wrap(Box::new(sine()))),
         "lowpass" => Some(Net::wrap(Box::new(lowpass()))),
