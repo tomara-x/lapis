@@ -227,29 +227,54 @@ fn path_net(expr: &Path, lapis: &Lapis) -> Option<Net> {
     let k = expr.segments.first()?.ident.to_string();
     lapis.gmap.get(&k).cloned()
 }
+macro_rules! tuple_call_match {
+    ( $func:ident, $p:expr ) => {
+        {
+            match $p.len() {
+                1 => Some(Net::wrap(Box::new($func($p[0])))),
+                2 => Some(Net::wrap(Box::new($func(($p[0], $p[1]))))),
+                3 => Some(Net::wrap(Box::new($func(($p[0], $p[1], $p[2]))))),
+                4 => Some(Net::wrap(Box::new($func(($p[0], $p[1], $p[2], $p[3]))))),
+                5 => Some(Net::wrap(Box::new($func(($p[0], $p[1], $p[2], $p[3], $p[4]))))),
+                6 => Some(Net::wrap(Box::new($func(($p[0], $p[1], $p[2], $p[3], $p[4], $p[5]))))),
+                7 => Some(Net::wrap(Box::new($func((
+                    $p[0], $p[1], $p[2], $p[3], $p[4], $p[5], $p[6]
+                ))))),
+                8 => Some(Net::wrap(Box::new($func((
+                    $p[0], $p[1], $p[2], $p[3], $p[4], $p[5], $p[6], $p[7],
+                ))))),
+                9 => Some(Net::wrap(Box::new($func((
+                    $p[0], $p[1], $p[2], $p[3], $p[4], $p[5], $p[6], $p[7], $p[8],
+                ))))),
+                10 => Some(Net::wrap(Box::new($func((
+                    $p[0], $p[1], $p[2], $p[3], $p[4], $p[5], $p[6], $p[7], $p[8], $p[9],
+                ))))),
+                _ => None,
+            }
+        }
+    };
+}
 fn call_net(expr: &ExprCall, lapis: &Lapis) -> Option<Net> {
     let func = path_ident(&expr.func)?;
     let args = accumulate_args(&expr.args, lapis);
-    println!("{:?}", func);
-    println!("{:?}", args);
     match func.as_str() {
+        "add" => {
+            let tuple = expr.args.first()?;
+            if let Expr::Tuple(expr) = tuple {
+                let p = accumulate_args(&expr.elems, lapis);
+                tuple_call_match!(add,p)
+            } else {
+                match args.len() {
+                    1 => Some(Net::wrap(Box::new(add(args[0])))),
+                    _ => None,
+                }
+            }
+        }
         "dc" => {
             let tuple = expr.args.first()?;
             if let Expr::Tuple(expr) = tuple {
                 let p = accumulate_args(&expr.elems, lapis);
-                match p.len() {
-                    1 => Some(Net::wrap(Box::new(dc(p[0])))),
-                    2 => Some(Net::wrap(Box::new(dc((p[0], p[1]))))),
-                    3 => Some(Net::wrap(Box::new(dc((p[0], p[1], p[2]))))),
-                    4 => Some(Net::wrap(Box::new(dc((p[0], p[1], p[2], p[3]))))),
-                    5 => Some(Net::wrap(Box::new(dc((p[0], p[1], p[2], p[3], p[4]))))),
-                    6 => Some(Net::wrap(Box::new(dc((p[0], p[1], p[2], p[3], p[4], p[5]))))),
-                    7 => Some(Net::wrap(Box::new(dc((p[0], p[1], p[2], p[3], p[4], p[5], p[7]))))),
-                    8 => Some(Net::wrap(Box::new(dc((
-                        p[0], p[1], p[2], p[3], p[4], p[5], p[7], p[8],
-                    ))))),
-                    _ => None,
-                }
+                tuple_call_match!(dc,p)
             } else {
                 match args.len() {
                     1 => Some(Net::wrap(Box::new(dc(args[0])))),
