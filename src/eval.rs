@@ -228,31 +228,29 @@ fn path_net(expr: &Path, lapis: &Lapis) -> Option<Net> {
     lapis.gmap.get(&k).cloned()
 }
 macro_rules! tuple_call_match {
-    ( $func:ident, $p:expr ) => {
-        {
-            match $p.len() {
-                1 => Some(Net::wrap(Box::new($func($p[0])))),
-                2 => Some(Net::wrap(Box::new($func(($p[0], $p[1]))))),
-                3 => Some(Net::wrap(Box::new($func(($p[0], $p[1], $p[2]))))),
-                4 => Some(Net::wrap(Box::new($func(($p[0], $p[1], $p[2], $p[3]))))),
-                5 => Some(Net::wrap(Box::new($func(($p[0], $p[1], $p[2], $p[3], $p[4]))))),
-                6 => Some(Net::wrap(Box::new($func(($p[0], $p[1], $p[2], $p[3], $p[4], $p[5]))))),
-                7 => Some(Net::wrap(Box::new($func((
-                    $p[0], $p[1], $p[2], $p[3], $p[4], $p[5], $p[6]
-                ))))),
-                8 => Some(Net::wrap(Box::new($func((
-                    $p[0], $p[1], $p[2], $p[3], $p[4], $p[5], $p[6], $p[7],
-                ))))),
-                9 => Some(Net::wrap(Box::new($func((
-                    $p[0], $p[1], $p[2], $p[3], $p[4], $p[5], $p[6], $p[7], $p[8],
-                ))))),
-                10 => Some(Net::wrap(Box::new($func((
-                    $p[0], $p[1], $p[2], $p[3], $p[4], $p[5], $p[6], $p[7], $p[8], $p[9],
-                ))))),
-                _ => None,
+    ( $func:ident, $p:expr ) => {{
+        match $p.len() {
+            1 => Some(Net::wrap(Box::new($func($p[0])))),
+            2 => Some(Net::wrap(Box::new($func(($p[0], $p[1]))))),
+            3 => Some(Net::wrap(Box::new($func(($p[0], $p[1], $p[2]))))),
+            4 => Some(Net::wrap(Box::new($func(($p[0], $p[1], $p[2], $p[3]))))),
+            5 => Some(Net::wrap(Box::new($func(($p[0], $p[1], $p[2], $p[3], $p[4]))))),
+            6 => Some(Net::wrap(Box::new($func(($p[0], $p[1], $p[2], $p[3], $p[4], $p[5]))))),
+            7 => {
+                Some(Net::wrap(Box::new($func(($p[0], $p[1], $p[2], $p[3], $p[4], $p[5], $p[6])))))
             }
+            8 => Some(Net::wrap(Box::new($func((
+                $p[0], $p[1], $p[2], $p[3], $p[4], $p[5], $p[6], $p[7],
+            ))))),
+            9 => Some(Net::wrap(Box::new($func((
+                $p[0], $p[1], $p[2], $p[3], $p[4], $p[5], $p[6], $p[7], $p[8],
+            ))))),
+            10 => Some(Net::wrap(Box::new($func((
+                $p[0], $p[1], $p[2], $p[3], $p[4], $p[5], $p[6], $p[7], $p[8], $p[9],
+            ))))),
+            _ => None,
         }
-    };
+    }};
 }
 fn call_net(expr: &ExprCall, lapis: &Lapis) -> Option<Net> {
     let func = path_ident(&expr.func)?;
@@ -262,7 +260,7 @@ fn call_net(expr: &ExprCall, lapis: &Lapis) -> Option<Net> {
             let tuple = expr.args.first()?;
             if let Expr::Tuple(expr) = tuple {
                 let p = accumulate_args(&expr.elems, lapis);
-                tuple_call_match!(add,p)
+                tuple_call_match!(add, p)
             } else {
                 match args.len() {
                     1 => Some(Net::wrap(Box::new(add(args[0])))),
@@ -270,11 +268,57 @@ fn call_net(expr: &ExprCall, lapis: &Lapis) -> Option<Net> {
                 }
             }
         }
+        "adsr_live" => {
+            let a = args.get(0)?;
+            let d = args.get(1)?;
+            let s = args.get(2)?;
+            let r = args.get(3)?;
+            Some(Net::wrap(Box::new(adsr_live(*a, *d, *s, *r))))
+        }
+        "afollow" => {
+            let attack = args.get(0)?;
+            let release = args.get(1)?;
+            Some(Net::wrap(Box::new(afollow(*attack, *release))))
+        }
+        "allnest" => {
+            let arg = expr.args.first()?;
+            let net = half_binary_net(arg, lapis)?;
+            if net.inputs() != 1 || net.outputs() != 1 {
+                return None;
+            }
+            let node = Unit::<U1, U1>::new(Box::new(net));
+            Some(Net::wrap(Box::new(allnest(An(node)))))
+        }
+        "allnest_c" => {
+            let coeff = args.get(0)?;
+            let arg = expr.args.get(1)?;
+            let net = half_binary_net(arg, lapis)?;
+            if net.inputs() != 1 || net.outputs() != 1 {
+                return None;
+            }
+            let node = Unit::<U1, U1>::new(Box::new(net));
+            Some(Net::wrap(Box::new(allnest_c(*coeff, An(node)))))
+        }
+        "allpass" => Some(Net::wrap(Box::new(allpass()))),
+        "allpass_hz" => {
+            let f = args.get(0)?;
+            let q = args.get(1)?;
+            Some(Net::wrap(Box::new(allpass_hz(*f, *q))))
+        }
+        "allpass_q" => {
+            let q = args.get(0)?;
+            Some(Net::wrap(Box::new(allpass_q(*q))))
+        }
+        "allpole" => Some(Net::wrap(Box::new(allpole()))),
+        "allpole_delay" => {
+            let delay = args.get(0)?;
+            Some(Net::wrap(Box::new(allpole_delay(*delay))))
+        }
         "dc" => {
             let tuple = expr.args.first()?;
             if let Expr::Tuple(expr) = tuple {
                 let p = accumulate_args(&expr.elems, lapis);
-                tuple_call_match!(dc,p)
+                tuple_call_match!(dc, p)
             } else {
                 match args.len() {
                     1 => Some(Net::wrap(Box::new(dc(args[0])))),
