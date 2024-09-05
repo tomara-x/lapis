@@ -1,6 +1,6 @@
 use crate::{
     components::*,
-    eval::{floats::*, functions::*, ints::*, units::*},
+    eval::{floats::*, functions::*, ints::*, units::*, arrays::*},
 };
 use fundsp::hacker32::*;
 use syn::*;
@@ -565,7 +565,15 @@ pub fn call_net(expr: &ExprCall, lapis: &Lapis) -> Option<Net> {
             let time = args.get(1)?;
             Some(Net::wrap(Box::new(reverb4_stereo(*room, *time))))
         }
-        "reverb4_stereo_delays" => None, //TODO after arrays are done
+        "reverb4_stereo_delays" => {
+            let arg = expr.args.first()?;
+            let delays = array_cloned(arg, lapis)?;
+            let time = args.first()?;
+            if delays.len() != 32 {
+                return None;
+            }
+            Some(Net::wrap(Box::new(reverb4_stereo_delays(&delays, *time))))
+        }
         "reverb_stereo" => {
             let room = args.get(0)?;
             let time = args.get(1)?;
