@@ -416,6 +416,42 @@ fn call_net(expr: &ExprCall, lapis: &Lapis) -> Option<Net> {
             let roughness = args.first()?;
             Some(Net::wrap(Box::new(dsf_square_r(*roughness))))
         }
+        "envelope" | "envelope2" | "envelope3" | "envelope_in" => None, //TODO
+        "fbell" | "fbell_hz" => None,                                   //TODO
+        "fdn" | "fdn2" => None,                                         //TODO
+        "feedback" => {
+            let arg = expr.args.get(0)?;
+            let net = half_binary_net(arg, lapis)?;
+            if net.inputs() != net.outputs() {
+                return None;
+            }
+            Some(Net::wrap(Box::new(FeedbackUnit::new(0., Box::new(net)))))
+        }
+        "feedback2" => None,                  //TODO
+        "fhighpass" | "fhighpass_hz" => None, //TODO
+        "fir" => {
+            let tuple = expr.args.first()?;
+            if let Expr::Tuple(expr) = tuple {
+                let p = accumulate_args(&expr.elems, lapis);
+                tuple_call_match!(fir, p)
+            } else {
+                match args.len() {
+                    1 => Some(Net::wrap(Box::new(fir(args[0])))),
+                    _ => None,
+                }
+            }
+        }
+        "fir3" => {
+            let gain = args.first()?;
+            Some(Net::wrap(Box::new(fir3(*gain))))
+        }
+        "flanger" => None,                  //TODO
+        "flowpass" | "flowpass_hz" => None, //TODO
+        "follow" => {
+            let response_time = args.first()?;
+            Some(Net::wrap(Box::new(follow(*response_time))))
+        }
+        "fresonator" | "fresonator_hz" => None, //TODO
         "sine" => Some(Net::wrap(Box::new(sine()))),
         "lowpass" => Some(Net::wrap(Box::new(lowpass()))),
         "split" => {
