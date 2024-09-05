@@ -678,13 +678,143 @@ fn call_net(expr: &ExprCall, lapis: &Lapis) -> Option<Net> {
         }
         "product" => None, //TODO
         "pulse" => Some(Net::wrap(Box::new(pulse()))),
-
+        "ramp" => Some(Net::wrap(Box::new(ramp()))),
+        "ramp_hz" => {
+            let f = args.first()?;
+            Some(Net::wrap(Box::new(ramp_hz(*f))))
+        }
+        "ramp_hz_phase" => {
+            let f = args.get(0)?;
+            let p = args.get(1)?;
+            Some(Net::wrap(Box::new(ramp_hz_phase(*f, *p))))
+        }
+        "ramp_phase" => {
+            let p = args.first()?;
+            Some(Net::wrap(Box::new(ramp_phase(*p))))
+        }
+        "resample" => None, //TODO
+        "resonator" => Some(Net::wrap(Box::new(resonator()))),
+        "resonator_hz" => {
+            let center = args.get(0)?;
+            let bandwidth = args.get(1)?;
+            Some(Net::wrap(Box::new(resonator_hz(*center, *bandwidth))))
+        }
+        "resynth" => None, //TODO
+        "reverb2_stereo" => {
+            let room = args.get(0)?;
+            let time = args.get(1)?;
+            let diffusion = args.get(2)?;
+            let modulation = args.get(3)?;
+            let arg = expr.args.get(4)?;
+            let net = half_binary_net(arg, lapis)?;
+            if net.inputs() != 1 || net.outputs() != 1 {
+                return None;
+            }
+            let node = An(Unit::<U1, U1>::new(Box::new(net)));
+            Some(Net::wrap(Box::new(reverb2_stereo(*room, *time, *diffusion, *modulation, node))))
+        }
+        "reverb3_stereo" => {
+            let time = args.get(0)?;
+            let diffusion = args.get(1)?;
+            let arg = expr.args.get(2)?;
+            let net = half_binary_net(arg, lapis)?;
+            if net.inputs() != 1 || net.outputs() != 1 {
+                return None;
+            }
+            let node = An(Unit::<U1, U1>::new(Box::new(net)));
+            Some(Net::wrap(Box::new(reverb3_stereo(*time, *diffusion, node))))
+        }
+        "reverb4_stereo" => {
+            let room = args.get(0)?;
+            let time = args.get(1)?;
+            Some(Net::wrap(Box::new(reverb4_stereo(*room, *time))))
+        }
+        "reverb4_stereo_delays" => None, //TODO after arrays are done
+        "reverb_stereo" => {
+            let room = args.get(0)?;
+            let time = args.get(1)?;
+            let damp = args.get(2)?;
+            Some(Net::wrap(Box::new(reverb_stereo(*room, *time, *damp))))
+        }
+        "reverse" => None, //TODO make it a unit
+        "rossler" => Some(Net::wrap(Box::new(rossler()))),
+        "rotate" => {
+            let angle = args.get(0)?;
+            let gain = args.get(1)?;
+            Some(Net::wrap(Box::new(rotate(*angle, *gain))))
+        }
+        "saw" => Some(Net::wrap(Box::new(saw()))),
+        "saw_hz" => {
+            let f = args.first()?;
+            Some(Net::wrap(Box::new(saw_hz(*f))))
+        }
+        "shape" => None,    //TODO shape
+        "shape_fn" => None, //TODO
+        "shared" => None,   // hey adora~
         "sine" => Some(Net::wrap(Box::new(sine()))),
+        "sine_hz" => {
+            let f = args.first()?;
+            Some(Net::wrap(Box::new(sine_hz(*f))))
+        }
+        "sine_phase" => {
+            let p = args.first()?;
+            Some(Net::wrap(Box::new(sine_phase(*p))))
+        }
+        "sink" => Some(Net::wrap(Box::new(sink()))),
+        "snoop" => None, // you shouldn't be here..
+        "soft_saw" => Some(Net::wrap(Box::new(soft_saw()))),
+        "soft_saw_hz" => {
+            let f = args.first()?;
+            Some(Net::wrap(Box::new(soft_saw_hz(*f))))
+        }
         "split" => {
             let n = nth_path_generic(&expr.func, 0)?.get(1..)?.parse::<usize>().ok()?;
             Some(Net::wrap(Box::new(MultiSplitUnit::new(1, n))))
         }
-        // TODO
+        "square" => Some(Net::wrap(Box::new(square()))),
+        "square_hz" => {
+            let f = args.first()?;
+            Some(Net::wrap(Box::new(square_hz(*f))))
+        }
+        "stack" | "stackf" | "stacki" => None, //TODO
+        "sub" => {
+            let tuple = expr.args.first()?;
+            if let Expr::Tuple(expr) = tuple {
+                let p = accumulate_args(&expr.elems, lapis);
+                tuple_call_match!(sub, p)
+            } else {
+                match args.len() {
+                    1 => Some(Net::wrap(Box::new(sub(args[0])))),
+                    _ => None,
+                }
+            }
+        }
+        "sum" | "sumf" | "sumi" => None, //TODO
+        "tap" => {
+            let min = args.get(0)?;
+            let max = args.get(1)?;
+            Some(Net::wrap(Box::new(tap(*min, *max))))
+        }
+        "tap_linear" => {
+            let min = args.get(0)?;
+            let max = args.get(1)?;
+            Some(Net::wrap(Box::new(tap_linear(*min, *max))))
+        }
+        "thru" => None,  //TODO
+        "timer" => None, //TODO
+        "triangle" => Some(Net::wrap(Box::new(triangle()))),
+        "triangle_hz" => {
+            let f = args.first()?;
+            Some(Net::wrap(Box::new(triangle_hz(*f))))
+        }
+        "unit" => None,      //lol
+        "update" => None,    //TODO
+        "var" => None,       // catra!
+        "var_fn" => None,    // catra, you have to stop this! the closures are evil!
+        "wavech" => None,    //TODO after arrays
+        "wavech_at" => None, //TODO
+        "white" => Some(Net::wrap(Box::new(white()))),
+        "zero" => Some(Net::wrap(Box::new(zero()))),
         _ => None,
     }
 }
