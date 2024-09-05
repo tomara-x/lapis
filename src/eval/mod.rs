@@ -57,7 +57,7 @@ fn eval_stmt(s: Stmt, lapis: &mut Lapis) {
                 }
                 "tick" => {
                     let Some(input) = expr.args.first() else { return };
-                    let Some(in_arr) = array_lit(input, lapis) else { return };
+                    let Some(in_arr) = array_cloned(input, lapis) else { return };
                     let mut output = Vec::new();
                     if let Some(k) = path_ident(&expr.receiver) {
                         if let Some(g) = &mut lapis.gmap.get_mut(&k) {

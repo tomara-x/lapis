@@ -24,3 +24,13 @@ pub fn array_lit(expr: &Expr, lapis: &Lapis) -> Option<Vec<f32>> {
         _ => None,
     }
 }
+pub fn array_cloned(expr: &Expr, lapis: &Lapis) -> Option<Vec<f32>> {
+    match expr {
+        Expr::Array(_) => array_lit(expr, lapis),
+        Expr::Path(expr) => {
+            let k = expr.path.segments.first()?.ident.to_string();
+            lapis.vmap.get(&k).cloned()
+        }
+        _ => None,
+    }
+}
