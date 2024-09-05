@@ -452,15 +452,63 @@ fn call_net(expr: &ExprCall, lapis: &Lapis) -> Option<Net> {
             Some(Net::wrap(Box::new(follow(*response_time))))
         }
         "fresonator" | "fresonator_hz" => None, //TODO
+        "hammond" => Some(Net::wrap(Box::new(hammond()))),
+        "hammond_hz" => {
+            let f = args.first()?;
+            Some(Net::wrap(Box::new(hammond_hz(*f))))
+        }
+        "highpass" => Some(Net::wrap(Box::new(highpass()))),
+        "highpass_hz" => {
+            let f = args.get(0)?;
+            let q = args.get(1)?;
+            Some(Net::wrap(Box::new(highpass_hz(*f, *q))))
+        }
+        "highpass_q" => {
+            let q = args.first()?;
+            Some(Net::wrap(Box::new(highpass_q(*q))))
+        }
+        "highpole" => Some(Net::wrap(Box::new(highpole()))),
+        "highpole_hz" => {
+            let cutoff = args.first()?;
+            Some(Net::wrap(Box::new(highpole_hz(*cutoff))))
+        }
+        "highshelf" => Some(Net::wrap(Box::new(highshelf()))),
+        "highshelf_hz" => {
+            let f = args.get(0)?;
+            let q = args.get(1)?;
+            let gain = args.get(2)?;
+            Some(Net::wrap(Box::new(highshelf_hz(*f, *q, *gain))))
+        }
+        "highshelf_q" => {
+            let q = args.get(0)?;
+            let gain = args.get(1)?;
+            Some(Net::wrap(Box::new(highshelf_q(*q, *gain))))
+        }
+        "hold" => {
+            let variability = args.get(0)?;
+            Some(Net::wrap(Box::new(hold(*variability))))
+        }
+        "hold_hz" => {
+            let f = args.get(0)?;
+            let variability = args.get(1)?;
+            Some(Net::wrap(Box::new(hold_hz(*f, *variability))))
+        }
+        "impulse" => {
+            let n = nth_path_generic(&expr.func, 0)?.get(1..)?.parse::<usize>().ok()?;
+            let impulse = Net::wrap(Box::new(impulse::<U1>()));
+            let split = Net::wrap(Box::new(MultiSplitUnit::new(1, n)));
+            Some(Net::wrap(Box::new(impulse >> split)))
+        }
+        "join" => {
+            let n = nth_path_generic(&expr.func, 0)?.get(1..)?.parse::<usize>().ok()?;
+            Some(Net::wrap(Box::new(MultiJoinUnit::new(1, n))))
+        }
+
         "sine" => Some(Net::wrap(Box::new(sine()))),
         "lowpass" => Some(Net::wrap(Box::new(lowpass()))),
         "split" => {
             let n = nth_path_generic(&expr.func, 0)?.get(1..)?.parse::<usize>().ok()?;
             Some(Net::wrap(Box::new(MultiSplitUnit::new(1, n))))
-        }
-        "join" => {
-            let n = nth_path_generic(&expr.func, 0)?.get(1..)?.parse::<usize>().ok()?;
-            Some(Net::wrap(Box::new(MultiJoinUnit::new(1, n))))
         }
         "multisplit" => {
             let n = nth_path_generic(&expr.func, 0)?.get(1..)?.parse::<usize>().ok()?;
