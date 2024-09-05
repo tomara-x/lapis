@@ -417,6 +417,7 @@ fn call_net(expr: &ExprCall, lapis: &Lapis) -> Option<Net> {
             Some(Net::wrap(Box::new(dsf_square_r(*roughness))))
         }
         "envelope" | "envelope2" | "envelope3" | "envelope_in" => None, //TODO
+        "lfo" | "lfo2" | "lfo3" | "lfo_in" => None,                     //TODO
         "fbell" | "fbell_hz" => None,                                   //TODO
         "fdn" | "fdn2" => None,                                         //TODO
         "feedback" => {
@@ -503,9 +504,56 @@ fn call_net(expr: &ExprCall, lapis: &Lapis) -> Option<Net> {
             let n = nth_path_generic(&expr.func, 0)?.get(1..)?.parse::<usize>().ok()?;
             Some(Net::wrap(Box::new(MultiJoinUnit::new(1, n))))
         }
+        "limiter" => {
+            let attack = args.get(0)?;
+            let release = args.get(1)?;
+            Some(Net::wrap(Box::new(limiter(*attack, *release))))
+        }
+        "limiter_stereo" => {
+            let attack = args.get(0)?;
+            let release = args.get(1)?;
+            Some(Net::wrap(Box::new(limiter_stereo(*attack, *release))))
+        }
+        "lorenz" => Some(Net::wrap(Box::new(lorenz()))),
+        "lowpass" => Some(Net::wrap(Box::new(lowpass()))),
+        "lowpass_hz" => {
+            let f = args.get(0)?;
+            let q = args.get(1)?;
+            Some(Net::wrap(Box::new(lowpass_hz(*f, *q))))
+        }
+        "lowpass_q" => {
+            let q = args.first()?;
+            Some(Net::wrap(Box::new(lowpass_q(*q))))
+        }
+        "lowpole" => Some(Net::wrap(Box::new(lowpole()))),
+        "lowpole_hz" => {
+            let cutoff = args.first()?;
+            Some(Net::wrap(Box::new(lowpole_hz(*cutoff))))
+        }
+        "lowrez" => Some(Net::wrap(Box::new(lowrez()))),
+        "lowrez_hz" => {
+            let cutoff = args.get(0)?;
+            let q = args.get(1)?;
+            Some(Net::wrap(Box::new(lowrez_hz(*cutoff, *q))))
+        }
+        "lowrez_q" => {
+            let q = args.first()?;
+            Some(Net::wrap(Box::new(lowrez_q(*q))))
+        }
+        "lowshelf" => Some(Net::wrap(Box::new(lowshelf()))),
+        "lowshelf_hz" => {
+            let f = args.get(0)?;
+            let q = args.get(1)?;
+            let gain = args.get(2)?;
+            Some(Net::wrap(Box::new(lowshelf_hz(*f, *q, *gain))))
+        }
+        "lowshelf_q" => {
+            let q = args.get(0)?;
+            let gain = args.get(1)?;
+            Some(Net::wrap(Box::new(lowshelf_q(*q, *gain))))
+        }
 
         "sine" => Some(Net::wrap(Box::new(sine()))),
-        "lowpass" => Some(Net::wrap(Box::new(lowpass()))),
         "split" => {
             let n = nth_path_generic(&expr.func, 0)?.get(1..)?.parse::<usize>().ok()?;
             Some(Net::wrap(Box::new(MultiSplitUnit::new(1, n))))
