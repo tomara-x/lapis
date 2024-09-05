@@ -568,7 +568,7 @@ fn call_net(expr: &ExprCall, lapis: &Lapis) -> Option<Net> {
             Some(Net::wrap(Box::new(moog_hz(*f, *q))))
         }
         "moog_q" => {
-            let q = args.get(0)?;
+            let q = args.first()?;
             Some(Net::wrap(Box::new(moog_q(*q))))
         }
         "morph" => Some(Net::wrap(Box::new(morph()))),
@@ -633,6 +633,51 @@ fn call_net(expr: &ExprCall, lapis: &Lapis) -> Option<Net> {
             }
             Some(Net::wrap(Box::new(g)))
         }
+        "noise" => Some(Net::wrap(Box::new(noise()))),
+        "notch" => Some(Net::wrap(Box::new(notch()))),
+        "notch_hz" => {
+            let f = args.get(0)?;
+            let q = args.get(1)?;
+            Some(Net::wrap(Box::new(notch_hz(*f, *q))))
+        }
+        "notch_q" => {
+            let q = args.first()?;
+            Some(Net::wrap(Box::new(notch_q(*q))))
+        }
+        "organ" => Some(Net::wrap(Box::new(organ()))),
+        "organ_hz" => {
+            let f = args.first()?;
+            Some(Net::wrap(Box::new(organ_hz(*f))))
+        }
+        "oversample" => None, //TODO
+        "pan" => {
+            let p = args.first()?;
+            Some(Net::wrap(Box::new(pan(*p))))
+        }
+        "panner" => Some(Net::wrap(Box::new(panner()))),
+        "pass" => Some(Net::wrap(Box::new(pass()))),
+        "peak" => Some(Net::wrap(Box::new(peak()))),
+        "peak_hz" => {
+            let f = args.get(0)?;
+            let q = args.get(1)?;
+            Some(Net::wrap(Box::new(peak_hz(*f, *q))))
+        }
+        "peak_q" => {
+            let q = args.first()?;
+            Some(Net::wrap(Box::new(peak_q(*q))))
+        }
+        "phaser" => None, //TODO
+        "pink" => Some(Net::wrap(Box::new(pink()))),
+        "pinkpass" => Some(Net::wrap(Box::new(pinkpass()))),
+        "pipe" | "pipef" | "pipei" => None, //TODO
+        "pluck" => {
+            let freq = args.get(0)?;
+            let gain_per_sec = args.get(1)?;
+            let hf_damp = args.get(2)?;
+            Some(Net::wrap(Box::new(pluck(*freq, *gain_per_sec, *hf_damp))))
+        }
+        "product" => None, //TODO
+        "pulse" => Some(Net::wrap(Box::new(pulse()))),
 
         "sine" => Some(Net::wrap(Box::new(sine()))),
         "split" => {
