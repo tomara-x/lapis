@@ -56,22 +56,28 @@ fn eval_stmt(s: Stmt, lapis: &mut Lapis) {
                     }
                 }
                 "tick" => {
-                    // temporary testing implementation. will be refactored
                     let Some(input) = expr.args.first() else { return };
                     let Some(in_arr) = array_lit(input, lapis) else { return };
-                    //let Some(output) = expr.args.get(1) else { return };
-                    //let Some(out_arr) = array_lit(output, lapis) else { return };
+                    let mut output = Vec::new();
                     if let Some(k) = path_ident(&expr.receiver) {
                         if let Some(g) = &mut lapis.gmap.get_mut(&k) {
-                            let mut output = Vec::new();
+                            if g.inputs() != in_arr.len() {
+                                return;
+                            }
                             output.resize(g.outputs(), 0.);
                             g.tick(&in_arr, &mut output);
-                            println!("{:?}", output);
-                        } else if let Some(mut g) = half_binary_net(&expr.receiver, lapis) {
-                            let mut output = Vec::new();
-                            output.resize(g.outputs(), 0.);
-                            g.tick(&in_arr, &mut output);
-                            println!("{:?}", output);
+                        }
+                    } else if let Some(mut g) = half_binary_net(&expr.receiver, lapis) {
+                        if g.inputs() != in_arr.len() {
+                            return;
+                        }
+                        output.resize(g.outputs(), 0.);
+                        g.tick(&in_arr, &mut output);
+                    }
+                    lapis.buffer.push_str(&format!("\n    {:?}", output));
+                    if let Some(out) = expr.args.get(1) {
+                        if let Some(k) = path_ident(out) {
+                            lapis.vmap.insert(k, output);
                         }
                     }
                 }
