@@ -552,21 +552,92 @@ fn call_net(expr: &ExprCall, lapis: &Lapis) -> Option<Net> {
             let gain = args.get(1)?;
             Some(Net::wrap(Box::new(lowshelf_q(*q, *gain))))
         }
-
-        "sine" => Some(Net::wrap(Box::new(sine()))),
-        "split" => {
+        "map" => None,   // i'll be seeing you...
+        "meter" => None, //TODO
+        "mls" => Some(Net::wrap(Box::new(mls()))),
+        "mls_bits" => {
+            let arg = expr.args.first()?;
+            let n = lit_u64(arg)?;
+            Some(Net::wrap(Box::new(mls_bits(n))))
+        }
+        "monitor" => None, //TODO
+        "moog" => Some(Net::wrap(Box::new(moog()))),
+        "moog_hz" => {
+            let f = args.get(0)?;
+            let q = args.get(1)?;
+            Some(Net::wrap(Box::new(moog_hz(*f, *q))))
+        }
+        "moog_q" => {
+            let q = args.get(0)?;
+            Some(Net::wrap(Box::new(moog_q(*q))))
+        }
+        "morph" => Some(Net::wrap(Box::new(morph()))),
+        "morph_hz" => {
+            let f = args.get(0)?;
+            let q = args.get(1)?;
+            let morph = args.get(2)?;
+            Some(Net::wrap(Box::new(lowshelf_hz(*f, *q, *morph))))
+        }
+        "mul" => {
+            let tuple = expr.args.first()?;
+            if let Expr::Tuple(expr) = tuple {
+                let p = accumulate_args(&expr.elems, lapis);
+                tuple_call_match!(mul, p)
+            } else {
+                match args.len() {
+                    1 => Some(Net::wrap(Box::new(mul(args[0])))),
+                    _ => None,
+                }
+            }
+        }
+        "multijoin" => {
             let n = nth_path_generic(&expr.func, 0)?.get(1..)?.parse::<usize>().ok()?;
-            Some(Net::wrap(Box::new(MultiSplitUnit::new(1, n))))
+            let m = nth_path_generic(&expr.func, 1)?.get(1..)?.parse::<usize>().ok()?;
+            Some(Net::wrap(Box::new(MultiJoinUnit::new(n, m))))
+        }
+        "multipass" => {
+            let n = nth_path_generic(&expr.func, 0)?.get(1..)?.parse::<usize>().ok()?;
+            let mut g = Net::new(0, 0);
+            for _ in 0..n {
+                g = g | pass();
+            }
+            Some(Net::wrap(Box::new(g)))
+        }
+        "multisink" => {
+            let n = nth_path_generic(&expr.func, 0)?.get(1..)?.parse::<usize>().ok()?;
+            let mut g = Net::new(0, 0);
+            for _ in 0..n {
+                g = g | sink();
+            }
+            Some(Net::wrap(Box::new(g)))
         }
         "multisplit" => {
             let n = nth_path_generic(&expr.func, 0)?.get(1..)?.parse::<usize>().ok()?;
             let m = nth_path_generic(&expr.func, 1)?.get(1..)?.parse::<usize>().ok()?;
             Some(Net::wrap(Box::new(MultiSplitUnit::new(n, m))))
         }
-        "multijoin" => {
+        "multitap" | "multitap_linear" => None, //TODO
+        "multitick" => {
             let n = nth_path_generic(&expr.func, 0)?.get(1..)?.parse::<usize>().ok()?;
-            let m = nth_path_generic(&expr.func, 1)?.get(1..)?.parse::<usize>().ok()?;
-            Some(Net::wrap(Box::new(MultiJoinUnit::new(n, m))))
+            let mut g = Net::new(0, 0);
+            for _ in 0..n {
+                g = g | tick();
+            }
+            Some(Net::wrap(Box::new(g)))
+        }
+        "multizero" => {
+            let n = nth_path_generic(&expr.func, 0)?.get(1..)?.parse::<usize>().ok()?;
+            let mut g = Net::new(0, 0);
+            for _ in 0..n {
+                g = g | zero();
+            }
+            Some(Net::wrap(Box::new(g)))
+        }
+
+        "sine" => Some(Net::wrap(Box::new(sine()))),
+        "split" => {
+            let n = nth_path_generic(&expr.func, 0)?.get(1..)?.parse::<usize>().ok()?;
+            Some(Net::wrap(Box::new(MultiSplitUnit::new(1, n))))
         }
         // TODO
         _ => None,
