@@ -90,9 +90,19 @@ macro_rules! tuple_call_match {
 }
 #[allow(clippy::get_first)]
 pub fn call_net(expr: &ExprCall, lapis: &Lapis) -> Option<Net> {
-    let func = path_ident(&expr.func)?;
+    let func = nth_path_ident(&expr.func, 0)?;
     let args = accumulate_args(&expr.args, lapis);
     match func.as_str() {
+        "Net" => {
+            let f = nth_path_ident(&expr.func, 1)?;
+            if f == "new" {
+                let ins = args.get(0)?;
+                let outs = args.get(1)?;
+                Some(Net::new(*ins as usize, *outs as usize))
+            } else {
+                None
+            }
+        }
         "add" => {
             let tuple = expr.args.first()?;
             if let Expr::Tuple(expr) = tuple {

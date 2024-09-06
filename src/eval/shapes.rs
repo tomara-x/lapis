@@ -32,7 +32,7 @@ impl Shape for ShapeEnum {
 pub fn call_shape(expr: &Expr, lapis: &Lapis) -> Option<ShapeEnum> {
     match expr {
         Expr::Call(expr) => {
-            let ident = path_ident(&expr.func)?;
+            let ident = nth_path_ident(&expr.func, 0)?;
             let args = accumulate_args(&expr.args, lapis);
             match ident.as_str() {
                 "Atan" => Some(ShapeEnum::Atan(Atan(*args.first()?))),

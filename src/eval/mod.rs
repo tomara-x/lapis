@@ -60,7 +60,7 @@ fn eval_stmt(s: Stmt, lapis: &mut Lapis) {
                     let Some(input) = expr.args.first() else { return };
                     let Some(in_arr) = array_cloned(input, lapis) else { return };
                     let mut output = Vec::new();
-                    if let Some(k) = path_ident(&expr.receiver) {
+                    if let Some(k) = nth_path_ident(&expr.receiver, 0) {
                         if let Some(g) = &mut lapis.gmap.get_mut(&k) {
                             if g.inputs() != in_arr.len() {
                                 return;
@@ -77,7 +77,7 @@ fn eval_stmt(s: Stmt, lapis: &mut Lapis) {
                     }
                     lapis.buffer.push_str(&format!("\n    {:?}", output));
                     if let Some(out) = expr.args.get(1) {
-                        if let Some(k) = path_ident(out) {
+                        if let Some(k) = nth_path_ident(out, 0) {
                             lapis.vmap.insert(k, output);
                         }
                     }
@@ -85,7 +85,7 @@ fn eval_stmt(s: Stmt, lapis: &mut Lapis) {
                 _ => {}
             },
             Expr::Assign(expr) => {
-                let Some(ident) = path_ident(&expr.left) else { return };
+                let Some(ident) = nth_path_ident(&expr.left, 0) else { return };
                 if let Some(f) = half_binary_float(&expr.right, lapis) {
                     if let Some(var) = lapis.fmap.get_mut(&ident) {
                         *var = f;

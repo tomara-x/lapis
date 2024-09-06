@@ -26,9 +26,9 @@ pub fn range_bounds(expr: &Expr) -> Option<(i32, i32)> {
         _ => None,
     }
 }
-pub fn path_ident(expr: &Expr) -> Option<String> {
+pub fn nth_path_ident(expr: &Expr, n: usize) -> Option<String> {
     if let Expr::Path(expr) = expr {
-        if let Some(expr) = expr.path.segments.first() {
+        if let Some(expr) = expr.path.segments.get(n) {
             return Some(expr.ident.to_string());
         }
     }
