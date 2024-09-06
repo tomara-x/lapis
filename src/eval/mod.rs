@@ -53,9 +53,9 @@ fn eval_stmt(s: Stmt, lapis: &mut Lapis) {
             }
         }
         Stmt::Expr(expr, _) => match expr {
-            Expr::MethodCall(ref mexpr) => match mexpr.method.to_string().as_str() {
+            Expr::MethodCall(expr) => match expr.method.to_string().as_str() {
                 "play" => {
-                    if let Some(g) = half_binary_net(&mexpr.receiver, lapis) {
+                    if let Some(g) = half_binary_net(&expr.receiver, lapis) {
                         if g.inputs() == 0 && g.outputs() == 1 {
                             lapis.slot.set(Fade::Smooth, 0.01, Box::new(g | dc(0.)));
                         } else if g.inputs() == 0 && g.outputs() == 2 {
@@ -66,10 +66,10 @@ fn eval_stmt(s: Stmt, lapis: &mut Lapis) {
                     }
                 }
                 "tick" => {
-                    let Some(input) = mexpr.args.first() else { return };
+                    let Some(input) = expr.args.first() else { return };
                     let Some(in_arr) = array_cloned(input, lapis) else { return };
                     let mut output = Vec::new();
-                    if let Some(k) = nth_path_ident(&mexpr.receiver, 0) {
+                    if let Some(k) = nth_path_ident(&expr.receiver, 0) {
                         if let Some(g) = &mut lapis.gmap.get_mut(&k) {
                             if g.inputs() != in_arr.len() {
                                 return;
@@ -77,7 +77,7 @@ fn eval_stmt(s: Stmt, lapis: &mut Lapis) {
                             output.resize(g.outputs(), 0.);
                             g.tick(&in_arr, &mut output);
                         }
-                    } else if let Some(mut g) = half_binary_net(&mexpr.receiver, lapis) {
+                    } else if let Some(mut g) = half_binary_net(&expr.receiver, lapis) {
                         if g.inputs() != in_arr.len() {
                             return;
                         }
@@ -85,14 +85,14 @@ fn eval_stmt(s: Stmt, lapis: &mut Lapis) {
                         g.tick(&in_arr, &mut output);
                     }
                     lapis.buffer.push_str(&format!("\n    {:?}", output));
-                    if let Some(out) = mexpr.args.get(1) {
+                    if let Some(out) = expr.args.get(1) {
                         if let Some(k) = nth_path_ident(out, 0) {
                             lapis.vmap.insert(k, output);
                         }
                     }
                 }
                 "play_backend" => {
-                    if let Some(k) = nth_path_ident(&mexpr.receiver, 0) {
+                    if let Some(k) = nth_path_ident(&expr.receiver, 0) {
                         if let Some(g) = &mut lapis.gmap.get_mut(&k) {
                             if !g.has_backend() {
                                 let g = g.backend();
@@ -104,7 +104,7 @@ fn eval_stmt(s: Stmt, lapis: &mut Lapis) {
                     }
                 }
                 _ => {
-                    let _ = method_nodeid(&expr, lapis);
+                    let _ = method_nodeid(&Expr::MethodCall(expr), lapis);
                 }
             },
             Expr::Assign(expr) => {
