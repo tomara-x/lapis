@@ -7,6 +7,7 @@ mod floats;
 mod functions;
 mod ints;
 mod nets;
+mod shapes;
 mod units;
 use {arrays::*, floats::*, functions::*, nets::*};
 
