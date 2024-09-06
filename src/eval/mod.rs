@@ -6,11 +6,12 @@ mod arrays;
 mod floats;
 mod functions;
 mod ints;
+mod net_methods;
 mod nets;
 mod node_ids;
 mod shapes;
 mod units;
-use {arrays::*, floats::*, functions::*, nets::*, node_ids::*};
+use {arrays::*, floats::*, functions::*, net_methods::*, nets::*, node_ids::*};
 
 pub fn eval(lapis: &mut Lapis) {
     if let Ok(stmt) = parse_str::<Stmt>(&lapis.input) {
@@ -104,6 +105,7 @@ fn eval_stmt(s: Stmt, lapis: &mut Lapis) {
                     }
                 }
                 _ => {
+                    let _ = net_methods(&expr, lapis);
                     let _ = method_nodeid(&Expr::MethodCall(expr), lapis);
                 }
             },

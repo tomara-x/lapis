@@ -2,9 +2,22 @@ use crate::{
     components::*,
     eval::{floats::*, ints::*},
 };
+use fundsp::hacker32::*;
 use syn::punctuated::Punctuated;
 use syn::*;
 
+pub fn path_fade(expr: &Expr) -> Option<Fade> {
+    let f = nth_path_ident(expr, 0)?;
+    let c = nth_path_ident(expr, 1)?;
+    if f == "Fade" {
+        if c == "Smooth" {
+            return Some(Fade::Smooth);
+        } else if c == "Power" {
+            return Some(Fade::Power);
+        }
+    }
+    None
+}
 pub fn pat_ident(pat: &Pat) -> Option<String> {
     match pat {
         Pat::Ident(expr) => Some(expr.ident.to_string()),

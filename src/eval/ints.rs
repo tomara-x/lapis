@@ -29,3 +29,12 @@ pub fn lit_u64(expr: &Expr) -> Option<u64> {
         _ => None,
     }
 }
+pub fn lit_usize(expr: &Expr) -> Option<usize> {
+    match expr {
+        Expr::Lit(expr) => match &expr.lit {
+            Lit::Int(expr) => expr.base10_parse::<usize>().ok(),
+            _ => None,
+        },
+        _ => None,
+    }
+}
