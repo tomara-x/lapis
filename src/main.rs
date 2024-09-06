@@ -54,21 +54,24 @@ impl eframe::App for Lapis {
             egui::Window::new("about").open(&mut self.about).pivot(center).show(ctx, |ui| {
                 ui.horizontal(|ui| {
                     ui.label("lapis is a");
-                    ui.hyperlink_to("FunDSP",
-                        "https://github.com/SamiPerttu/fundsp/");
+                    ui.hyperlink_to("FunDSP", "https://github.com/SamiPerttu/fundsp/");
                     ui.label("interpreter");
                 });
                 ui.label("an amy universe piece");
                 ui.label("courtesy of the alphabet mafia");
                 ui.horizontal(|ui| {
                     ui.label("repo:");
-                    ui.hyperlink_to("github.com/tomara-x/lapis",
-                        "https://github.com/tomara-x/lapis/");
+                    ui.hyperlink_to(
+                        "github.com/tomara-x/lapis",
+                        "https://github.com/tomara-x/lapis/",
+                    );
                 });
                 ui.horizontal(|ui| {
                     ui.label("mirror:");
-                    ui.hyperlink_to("codeberg.org/tomara-x/lapis",
-                        "https://codeberg.org/tomara-x/lapis/");
+                    ui.hyperlink_to(
+                        "codeberg.org/tomara-x/lapis",
+                        "https://codeberg.org/tomara-x/lapis/",
+                    );
                 });
                 let version = format!("{} {}", env!("CARGO_PKG_VERSION"), env!("COMMIT_HASH"));
                 ui.label(format!("version: {}", version));
