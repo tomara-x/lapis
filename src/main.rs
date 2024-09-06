@@ -54,7 +54,7 @@ impl eframe::App for Lapis {
             egui::Window::new("about").open(&mut self.about).pivot(center).show(ctx, |ui| {
                 ui.horizontal(|ui| {
                     ui.label("lapis is a");
-                    ui.hyperlink_to("fundsp",
+                    ui.hyperlink_to("FunDSP",
                         "https://github.com/SamiPerttu/fundsp/");
                     ui.label("interpreter");
                 });
