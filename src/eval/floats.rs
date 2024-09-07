@@ -34,6 +34,9 @@ pub fn bin_expr_float(expr: &ExprBinary, lapis: &Lapis) -> Option<f32> {
 }
 pub fn path_float(expr: &Path, lapis: &Lapis) -> Option<f32> {
     let k = expr.segments.first()?.ident.to_string();
+    if let Some(c) = constant_float(&k) {
+        return Some(c);
+    }
     lapis.fmap.get(&k).copied()
 }
 pub fn unary_float(expr: &ExprUnary, lapis: &Lapis) -> Option<f32> {
@@ -50,6 +53,38 @@ pub fn call_float(expr: &ExprCall, lapis: &Lapis) -> Option<f32> {
             let n = args.first()?;
             Some(abs(*n))
         }
+        _ => None,
+    }
+}
+
+fn constant_float(s: &String) -> Option<f32> {
+    match s.as_str() {
+        "E" => Some(std::f32::consts::E),
+        "FRAC_1_PI" => Some(std::f32::consts::FRAC_1_PI),
+        "FRAC_1_SQRT_2" => Some(std::f32::consts::FRAC_1_SQRT_2),
+        "FRAC_2_PI" => Some(std::f32::consts::FRAC_2_PI),
+        "FRAC_2_SQRT_PI" => Some(std::f32::consts::FRAC_2_SQRT_PI),
+        "FRAC_PI_2" => Some(std::f32::consts::FRAC_PI_2),
+        "FRAC_PI_3" => Some(std::f32::consts::FRAC_PI_3),
+        "FRAC_PI_4" => Some(std::f32::consts::FRAC_PI_4),
+        "FRAC_PI_6" => Some(std::f32::consts::FRAC_PI_6),
+        "FRAC_PI_8" => Some(std::f32::consts::FRAC_PI_8),
+        "LN_2" => Some(std::f32::consts::LN_2),
+        "LN_10" => Some(std::f32::consts::LN_10),
+        "LOG2_10" => Some(std::f32::consts::LOG2_10),
+        "LOG2_E" => Some(std::f32::consts::LOG2_E),
+        "LOG10_2" => Some(std::f32::consts::LOG10_2),
+        "LOG10_E" => Some(std::f32::consts::LOG10_E),
+        "PI" => Some(std::f32::consts::PI),
+        "SQRT_2" => Some(std::f32::consts::SQRT_2),
+        "TAU" => Some(std::f32::consts::TAU),
+        "EGAMMA" => Some(0.5772157),
+        "FRAC_1_SQRT_3" => Some(0.57735026),
+        "FRAC_1_SQRT_PI" => Some(0.5641896),
+        "PHI" => Some(1.618034),
+        "SQRT_3" => Some(1.7320508),
+        "inf" | "Inf" | "INF" => Some(std::f32::INFINITY),
+        "nan" | "Nan" | "NaN" | "NAN" => Some(std::f32::NAN),
         _ => None,
     }
 }
