@@ -123,12 +123,22 @@ fn eval_stmt(s: Stmt, lapis: &mut Lapis) {
             }
             Expr::ForLoop(expr) => {
                 let Some(ident) = pat_ident(&expr.pat) else { return };
-                let Some((r0, r1)) = range_bounds(&expr.expr) else { return };
+                let bounds = range_bounds(&expr.expr);
+                let arr = array_cloned(&expr.expr, lapis);
                 let tmp = lapis.fmap.remove(&ident);
-                for i in r0..r1 {
-                    lapis.fmap.insert(ident.clone(), i as f32);
-                    for stmt in &expr.body.stmts {
-                        eval_stmt(stmt.clone(), lapis);
+                if let Some((r0, r1)) = bounds {
+                    for i in r0..r1 {
+                        lapis.fmap.insert(ident.clone(), i as f32);
+                        for stmt in &expr.body.stmts {
+                            eval_stmt(stmt.clone(), lapis);
+                        }
+                    }
+                } else if let Some(arr) = arr {
+                    for i in arr {
+                        lapis.fmap.insert(ident.clone(), i as f32);
+                        for stmt in &expr.body.stmts {
+                            eval_stmt(stmt.clone(), lapis);
+                        }
                     }
                 }
                 if let Some(old) = tmp {
