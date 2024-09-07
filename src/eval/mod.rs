@@ -27,8 +27,7 @@ pub fn eval(lapis: &mut Lapis) {
 fn eval_stmt(s: Stmt, lapis: &mut Lapis) {
     match s {
         Stmt::Local(expr) => {
-            if let Pat::Ident(i) = expr.pat {
-                let k = i.ident.to_string();
+            if let Some(k) = pat_ident(&expr.pat) {
                 if let Some(expr) = expr.init {
                     if let Some(v) = half_binary_float(&expr.expr, lapis) {
                         remove_from_all_maps(&k, lapis);

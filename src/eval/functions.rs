@@ -28,6 +28,7 @@ pub fn path_fade(expr: &Expr) -> Option<Fade> {
 pub fn pat_ident(pat: &Pat) -> Option<String> {
     match pat {
         Pat::Ident(expr) => Some(expr.ident.to_string()),
+        Pat::Type(expr) => pat_ident(&expr.pat),
         _ => None,
     }
 }
