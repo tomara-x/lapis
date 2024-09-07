@@ -6,6 +6,13 @@ use fundsp::hacker32::*;
 use syn::punctuated::Punctuated;
 use syn::*;
 
+pub fn remove_from_all_maps(k: &String, lapis: &mut Lapis) {
+    lapis.fmap.remove(k);
+    lapis.vmap.remove(k);
+    lapis.gmap.remove(k);
+    lapis.idmap.remove(k);
+    lapis.bmap.remove(k);
+}
 pub fn path_fade(expr: &Expr) -> Option<Fade> {
     let f = nth_path_ident(expr, 0)?;
     let c = nth_path_ident(expr, 1)?;

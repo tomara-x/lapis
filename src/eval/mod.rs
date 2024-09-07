@@ -3,6 +3,7 @@ use fundsp::hacker32::*;
 use syn::*;
 
 mod arrays;
+mod bools;
 mod floats;
 mod functions;
 mod ints;
@@ -11,7 +12,7 @@ mod nets;
 mod node_ids;
 mod shapes;
 mod units;
-use {arrays::*, floats::*, functions::*, net_methods::*, nets::*, node_ids::*};
+use {arrays::*, bools::*, floats::*, functions::*, net_methods::*, nets::*, node_ids::*};
 
 pub fn eval(lapis: &mut Lapis) {
     if let Ok(stmt) = parse_str::<Stmt>(&lapis.input) {
@@ -30,25 +31,20 @@ fn eval_stmt(s: Stmt, lapis: &mut Lapis) {
                 let k = i.ident.to_string();
                 if let Some(expr) = expr.init {
                     if let Some(v) = half_binary_float(&expr.expr, lapis) {
-                        lapis.vmap.remove(&k);
-                        lapis.gmap.remove(&k);
-                        lapis.idmap.remove(&k);
+                        remove_from_all_maps(&k, lapis);
                         lapis.fmap.insert(k, v);
                     } else if let Some(v) = half_binary_net(&expr.expr, lapis) {
-                        lapis.vmap.remove(&k);
-                        lapis.fmap.remove(&k);
-                        lapis.idmap.remove(&k);
+                        remove_from_all_maps(&k, lapis);
                         lapis.gmap.insert(k, v);
                     } else if let Some(arr) = array_lit(&expr.expr, lapis) {
-                        lapis.fmap.remove(&k);
-                        lapis.gmap.remove(&k);
-                        lapis.idmap.remove(&k);
+                        remove_from_all_maps(&k, lapis);
                         lapis.vmap.insert(k, arr);
                     } else if let Some(id) = method_nodeid(&expr.expr, lapis) {
-                        lapis.fmap.remove(&k);
-                        lapis.vmap.remove(&k);
-                        lapis.gmap.remove(&k);
+                        remove_from_all_maps(&k, lapis);
                         lapis.idmap.insert(k, id);
+                    } else if let Some(b) = half_binary_bool(&expr.expr, lapis) {
+                        remove_from_all_maps(&k, lapis);
+                        lapis.bmap.insert(k, b);
                     }
                 }
             }
@@ -156,6 +152,8 @@ fn eval_stmt(s: Stmt, lapis: &mut Lapis) {
                     lapis.buffer.push_str(&format!("Size           : {}", g.size()));
                 } else if let Some(id) = path_nodeid(&expr, lapis) {
                     lapis.buffer.push_str(&format!("\n    {:?}", id));
+                } else if let Some(b) = half_binary_bool(&expr, lapis) {
+                    lapis.buffer.push_str(&format!("\n    {:?}", b));
                 }
             }
         },

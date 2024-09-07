@@ -13,6 +13,7 @@ pub struct Lapis {
     pub vmap: HashMap<String, Vec<f32>>,
     pub gmap: HashMap<String, Net>,
     pub idmap: HashMap<String, NodeId>,
+    pub bmap: HashMap<String, bool>,
     pub slot: Slot,
     pub stream: Option<cpal::Stream>,
 }
@@ -31,6 +32,7 @@ impl Lapis {
             vmap: HashMap::new(),
             gmap: HashMap::new(),
             idmap: HashMap::new(),
+            bmap: HashMap::new(),
             slot,
             stream,
         }
