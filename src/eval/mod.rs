@@ -137,6 +137,22 @@ fn eval_stmt(s: Stmt, lapis: &mut Lapis) {
                     lapis.fmap.remove(&ident);
                 }
             }
+            Expr::If(expr) => {
+                if let Some(cond) = half_binary_bool(&expr.cond, lapis) {
+                    if cond {
+                        let expr = Expr::Block(ExprBlock {
+                            attrs: Vec::new(),
+                            label: None,
+                            block: expr.then_branch
+                        });
+                        eval_stmt(Stmt::Expr(expr, None), lapis);
+                    } else {
+                        if let Some((_, else_branch)) = expr.else_branch {
+                            eval_stmt(Stmt::Expr(*else_branch, None), lapis);
+                        }
+                    }
+                }
+            }
             Expr::Block(expr) => {
                 for stmt in expr.block.stmts {
                     eval_stmt(stmt, lapis);
