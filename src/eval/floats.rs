@@ -1,8 +1,10 @@
-use crate::components::*;
+use crate::{components::*, eval::functions::*};
+use fundsp::math::*;
 use syn::*;
 
 pub fn half_binary_float(expr: &Expr, lapis: &Lapis) -> Option<f32> {
     match expr {
+        Expr::Call(expr) => call_float(expr, lapis),
         Expr::Lit(expr) => lit_float(&expr.lit),
         Expr::Binary(expr) => bin_expr_float(expr, lapis),
         Expr::Paren(expr) => half_binary_float(&expr.expr, lapis),
@@ -37,6 +39,17 @@ pub fn path_float(expr: &Path, lapis: &Lapis) -> Option<f32> {
 pub fn unary_float(expr: &ExprUnary, lapis: &Lapis) -> Option<f32> {
     match expr.op {
         UnOp::Neg(_) => Some(-half_binary_float(&expr.expr, lapis)?),
+        _ => None,
+    }
+}
+pub fn call_float(expr: &ExprCall, lapis: &Lapis) -> Option<f32> {
+    let func = nth_path_ident(&expr.func, 0)?;
+    let args = accumulate_args(&expr.args, lapis);
+    match func.as_str() {
+        "abs" => {
+            let n = args.first()?;
+            Some(abs(*n))
+        }
         _ => None,
     }
 }
