@@ -201,9 +201,31 @@ pub fn call_net(expr: &ExprCall, lapis: &Lapis) -> Option<Net> {
             let b2 = args.get(4)?;
             Some(Net::wrap(Box::new(biquad(*a1, *a2, *b0, *b1, *b2))))
         }
-        "branch" | "branchf" | "branchi" => None, //TODO
+        "branch" => {
+            let arg0 = expr.args.first()?;
+            let x = half_binary_net(arg0, lapis)?;
+            let arg1 = expr.args.get(1)?;
+            let y = half_binary_net(arg1, lapis)?;
+            if x.inputs() == y.inputs() {
+                Some(x ^ y)
+            } else {
+                None
+            }
+        }
+        "branchf" | "branchi" => None, //TODO
         "brown" => Some(Net::wrap(Box::new(brown()))),
-        "bus" | "busf" | "busi" => None, //TODO
+        "bus" => {
+            let arg0 = expr.args.first()?;
+            let x = half_binary_net(arg0, lapis)?;
+            let arg1 = expr.args.get(1)?;
+            let y = half_binary_net(arg1, lapis)?;
+            if x.outputs() == y.outputs() && x.inputs() == y.inputs() {
+                Some(x & y)
+            } else {
+                None
+            }
+        }
+        "busf" | "busi" => None, //TODO
         "butterpass" => Some(Net::wrap(Box::new(butterpass()))),
         "butterpass_hz" => {
             let f = args.first()?;
@@ -606,14 +628,35 @@ pub fn call_net(expr: &ExprCall, lapis: &Lapis) -> Option<Net> {
         "phaser" => None, //TODO
         "pink" => Some(Net::wrap(Box::new(pink()))),
         "pinkpass" => Some(Net::wrap(Box::new(pinkpass()))),
-        "pipe" | "pipef" | "pipei" => None, //TODO
+        "pipe" => {
+            let arg0 = expr.args.first()?;
+            let x = half_binary_net(arg0, lapis)?;
+            let arg1 = expr.args.get(1)?;
+            let y = half_binary_net(arg1, lapis)?;
+            if x.outputs() == y.inputs() {
+                Some(x >> y)
+            } else {
+                None
+            }
+        }
+        "pipef" | "pipei" => None, //TODO
         "pluck" => {
             let freq = args.get(0)?;
             let gain_per_sec = args.get(1)?;
             let hf_damp = args.get(2)?;
             Some(Net::wrap(Box::new(pluck(*freq, *gain_per_sec, *hf_damp))))
         }
-        "product" => None, //TODO
+        "product" => {
+            let arg0 = expr.args.first()?;
+            let x = half_binary_net(arg0, lapis)?;
+            let arg1 = expr.args.get(1)?;
+            let y = half_binary_net(arg1, lapis)?;
+            if x.outputs() == y.outputs() {
+                Some(x * y)
+            } else {
+                None
+            }
+        }
         "pulse" => Some(Net::wrap(Box::new(pulse()))),
         "ramp" => Some(Net::wrap(Box::new(ramp()))),
         "ramp_hz" => {
@@ -728,7 +771,14 @@ pub fn call_net(expr: &ExprCall, lapis: &Lapis) -> Option<Net> {
             let f = args.first()?;
             Some(Net::wrap(Box::new(square_hz(*f))))
         }
-        "stack" | "stackf" | "stacki" => None, //TODO
+        "stack" => {
+            let arg0 = expr.args.first()?;
+            let x = half_binary_net(arg0, lapis)?;
+            let arg1 = expr.args.get(1)?;
+            let y = half_binary_net(arg1, lapis)?;
+            Some(x | y)
+        }
+        "stackf" | "stacki" => None, //TODO
         "sub" => {
             let tuple = expr.args.first()?;
             if let Expr::Tuple(expr) = tuple {
@@ -741,7 +791,18 @@ pub fn call_net(expr: &ExprCall, lapis: &Lapis) -> Option<Net> {
                 }
             }
         }
-        "sum" | "sumf" | "sumi" => None, //TODO
+        "sum" => {
+            let arg0 = expr.args.first()?;
+            let x = half_binary_net(arg0, lapis)?;
+            let arg1 = expr.args.get(1)?;
+            let y = half_binary_net(arg1, lapis)?;
+            if x.outputs() == y.outputs() {
+                Some(x + y)
+            } else {
+                None
+            }
+        }
+        "sumf" | "sumi" => None, //TODO
         "tap" => {
             let min = args.get(0)?;
             let max = args.get(1)?;
@@ -752,7 +813,11 @@ pub fn call_net(expr: &ExprCall, lapis: &Lapis) -> Option<Net> {
             let max = args.get(1)?;
             Some(Net::wrap(Box::new(tap_linear(*min, *max))))
         }
-        "thru" => None,  //TODO
+        "thru" => {
+            let arg0 = expr.args.first()?;
+            let x = half_binary_net(arg0, lapis)?;
+            Some(!x)
+        }
         "timer" => None, //TODO
         "triangle" => Some(Net::wrap(Box::new(triangle()))),
         "triangle_hz" => {
