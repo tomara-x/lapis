@@ -38,7 +38,9 @@ fn eval_stmt(s: Stmt, lapis: &mut Lapis) {
                     } else if let Some(arr) = array_cloned(&expr.expr, lapis) {
                         remove_from_all_maps(&k, lapis);
                         lapis.vmap.insert(k, arr);
-                    } else if let Some(id) = method_nodeid(&expr.expr, lapis) {
+                    } else if let Some(id) =
+                        method_nodeid(&expr.expr, lapis).or(path_nodeid(&expr.expr, lapis))
+                    {
                         remove_from_all_maps(&k, lapis);
                         lapis.idmap.insert(k, id);
                     } else if let Some(b) = half_binary_bool(&expr.expr, lapis) {
@@ -118,7 +120,9 @@ fn eval_stmt(s: Stmt, lapis: &mut Lapis) {
                     if let Some(var) = lapis.vmap.get_mut(&ident) {
                         *var = a;
                     }
-                } else if let Some(id) = method_nodeid(&expr.right, lapis) {
+                } else if let Some(id) =
+                    method_nodeid(&expr.right, lapis).or(path_nodeid(&expr.right, lapis))
+                {
                     if let Some(var) = lapis.idmap.get_mut(&ident) {
                         *var = id;
                     }
@@ -160,7 +164,7 @@ fn eval_stmt(s: Stmt, lapis: &mut Lapis) {
                         let expr = Expr::Block(ExprBlock {
                             attrs: Vec::new(),
                             label: None,
-                            block: expr.then_branch
+                            block: expr.then_branch,
                         });
                         eval_stmt(Stmt::Expr(expr, None), lapis);
                     } else {

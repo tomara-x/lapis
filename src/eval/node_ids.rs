@@ -29,5 +29,5 @@ pub fn method_nodeid(expr: &Expr, lapis: &mut Lapis) -> Option<NodeId> {
 }
 pub fn path_nodeid(expr: &Expr, lapis: &Lapis) -> Option<NodeId> {
     let k = nth_path_ident(expr, 0)?;
-    lapis.idmap.get(&k).cloned()
+    lapis.idmap.get(&k).copied()
 }
