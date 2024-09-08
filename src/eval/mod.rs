@@ -35,7 +35,7 @@ fn eval_stmt(s: Stmt, lapis: &mut Lapis) {
                     } else if let Some(v) = half_binary_net(&expr.expr, lapis) {
                         remove_from_all_maps(&k, lapis);
                         lapis.gmap.insert(k, v);
-                    } else if let Some(arr) = array_lit(&expr.expr, lapis) {
+                    } else if let Some(arr) = array_cloned(&expr.expr, lapis) {
                         remove_from_all_maps(&k, lapis);
                         lapis.vmap.insert(k, arr);
                     } else if let Some(id) = method_nodeid(&expr.expr, lapis) {
@@ -114,9 +114,17 @@ fn eval_stmt(s: Stmt, lapis: &mut Lapis) {
                     if let Some(var) = lapis.gmap.get_mut(&ident) {
                         *var = g;
                     }
-                } else if let Some(a) = array_lit(&expr.right, lapis) {
+                } else if let Some(a) = array_cloned(&expr.right, lapis) {
                     if let Some(var) = lapis.vmap.get_mut(&ident) {
                         *var = a;
+                    }
+                } else if let Some(id) = method_nodeid(&expr.right, lapis) {
+                    if let Some(var) = lapis.idmap.get_mut(&ident) {
+                        *var = id;
+                    }
+                } else if let Some(b) = half_binary_bool(&expr.right, lapis) {
+                    if let Some(var) = lapis.bmap.get_mut(&ident) {
+                        *var = b;
                     }
                 }
             }
