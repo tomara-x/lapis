@@ -1,6 +1,6 @@
 use fundsp::hacker32::*;
 
-/// multijoin and multisplit defined in:
+/// multijoin, multisplit, and reverse defined in:
 /// https://github.com/SamiPerttu/fundsp/blob/master/src/audionode.rs
 /// with small changes to make them work as `AudioUnit`s instead
 #[derive(Clone)]
@@ -108,6 +108,56 @@ impl AudioUnit for MultiJoinUnit {
 
     fn get_id(&self) -> u64 {
         const ID: u64 = 139;
+        ID
+    }
+
+    fn footprint(&self) -> usize {
+        core::mem::size_of::<Self>()
+    }
+}
+
+#[derive(Clone)]
+pub struct ReverseUnit {
+    n: usize,
+}
+impl ReverseUnit {
+    pub fn new(n: usize) -> Self {
+        ReverseUnit { n }
+    }
+}
+impl AudioUnit for ReverseUnit {
+    fn reset(&mut self) {}
+
+    fn set_sample_rate(&mut self, _sample_rate: f64) {}
+
+    fn tick(&mut self, input: &[f32], output: &mut [f32]) {
+        for i in 0..self.n {
+            output[i] = input[self.n - 1 - i];
+        }
+    }
+
+    fn process(&mut self, size: usize, input: &BufferRef, output: &mut BufferMut) {
+        for channel in 0..self.n {
+            for i in 0..simd_items(size) {
+                output.set(channel, i, input.at(self.n - 1 - channel, i));
+            }
+        }
+    }
+
+    fn inputs(&self) -> usize {
+        self.n
+    }
+
+    fn outputs(&self) -> usize {
+        self.n
+    }
+
+    fn route(&mut self, input: &SignalFrame, _frequency: f64) -> SignalFrame {
+        Routing::Reverse.route(input, self.n)
+    }
+
+    fn get_id(&self) -> u64 {
+        const ID: u64 = 145;
         ID
     }
 

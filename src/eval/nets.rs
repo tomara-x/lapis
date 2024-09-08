@@ -681,7 +681,10 @@ pub fn call_net(expr: &ExprCall, lapis: &Lapis) -> Option<Net> {
             let damp = args.get(2)?;
             Some(Net::wrap(Box::new(reverb_stereo(*room, *time, *damp))))
         }
-        "reverse" => None, //TODO make it a unit
+        "reverse" => {
+            let n = nth_path_generic(&expr.func, 0)?.get(1..)?.parse::<usize>().ok()?;
+            Some(Net::wrap(Box::new(ReverseUnit::new(n))))
+        }
         "rossler" => Some(Net::wrap(Box::new(rossler()))),
         "rotate" => {
             let angle = args.get(0)?;
