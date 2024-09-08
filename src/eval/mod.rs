@@ -146,7 +146,7 @@ fn eval_stmt(s: Stmt, lapis: &mut Lapis) {
                     }
                 } else if let Some(arr) = arr {
                     for i in arr {
-                        lapis.fmap.insert(ident.clone(), i as f32);
+                        lapis.fmap.insert(ident.clone(), i);
                         for stmt in &expr.body.stmts {
                             eval_stmt(stmt.clone(), lapis);
                         }
@@ -167,10 +167,8 @@ fn eval_stmt(s: Stmt, lapis: &mut Lapis) {
                             block: expr.then_branch,
                         });
                         eval_stmt(Stmt::Expr(expr, None), lapis);
-                    } else {
-                        if let Some((_, else_branch)) = expr.else_branch {
-                            eval_stmt(Stmt::Expr(*else_branch, None), lapis);
-                        }
+                    } else if let Some((_, else_branch)) = expr.else_branch {
+                        eval_stmt(Stmt::Expr(*else_branch, None), lapis);
                     }
                 }
             }

@@ -57,8 +57,8 @@ pub fn call_float(expr: &ExprCall, lapis: &Lapis) -> Option<f32> {
     }
 }
 
-fn constant_float(s: &String) -> Option<f32> {
-    match s.as_str() {
+fn constant_float(s: &str) -> Option<f32> {
+    match s {
         "E" => Some(std::f32::consts::E),
         "FRAC_1_PI" => Some(std::f32::consts::FRAC_1_PI),
         "FRAC_1_SQRT_2" => Some(std::f32::consts::FRAC_1_SQRT_2),
@@ -83,8 +83,8 @@ fn constant_float(s: &String) -> Option<f32> {
         "FRAC_1_SQRT_PI" => Some(0.5641896),
         "PHI" => Some(1.618034),
         "SQRT_3" => Some(1.7320508),
-        "inf" | "Inf" | "INF" => Some(std::f32::INFINITY),
-        "nan" | "Nan" | "NaN" | "NAN" => Some(std::f32::NAN),
+        "inf" | "Inf" | "INF" => Some(f32::INFINITY),
+        "nan" | "Nan" | "NaN" | "NAN" => Some(f32::NAN),
         _ => None,
     }
 }
