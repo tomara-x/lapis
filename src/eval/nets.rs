@@ -511,7 +511,7 @@ pub fn call_net(expr: &ExprCall, lapis: &Lapis) -> Option<Net> {
             let gain = args.get(1)?;
             Some(Net::wrap(Box::new(lowshelf_q(*q, *gain))))
         }
-        "map" => None,   // i'll be seeing you...
+        "map" => None,   //TODO i'll be seeing you...
         "meter" => None, //TODO
         "mls" => Some(Net::wrap(Box::new(mls()))),
         "mls_bits" => {
@@ -755,7 +755,7 @@ pub fn call_net(expr: &ExprCall, lapis: &Lapis) -> Option<Net> {
             Some(Net::wrap(Box::new(sine_phase(*p))))
         }
         "sink" => Some(Net::wrap(Box::new(sink()))),
-        "snoop" => None, // you shouldn't be here..
+        "snoop" => None, // TODO you shouldn't be here..
         "soft_saw" => Some(Net::wrap(Box::new(soft_saw()))),
         "soft_saw_hz" => {
             let f = args.first()?;
@@ -823,14 +823,14 @@ pub fn call_net(expr: &ExprCall, lapis: &Lapis) -> Option<Net> {
             let f = args.first()?;
             Some(Net::wrap(Box::new(triangle_hz(*f))))
         }
-        "unit" => None,   //lol
+        "unit" => None,   //TODO return the input net?
         "update" => None, //TODO
         "var" => {
             let arg = expr.args.first()?;
             let shared = eval_shared(arg, lapis)?;
             Some(Net::wrap(Box::new(var(&shared))))
         }
-        "var_fn" => None,    // catra, you have to stop this! the closures are evil!
+        "var_fn" => None,    // TODO
         "wavech" => None,    //TODO after arrays
         "wavech_at" => None, //TODO
         "white" => Some(Net::wrap(Box::new(white()))),
