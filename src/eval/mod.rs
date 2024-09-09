@@ -85,7 +85,9 @@ fn eval_stmt(s: Stmt, lapis: &mut Lapis) {
                     lapis.buffer.push_str(&format!("\n    {:?}", output));
                     if let Some(out) = expr.args.get(1) {
                         if let Some(k) = nth_path_ident(out, 0) {
-                            lapis.vmap.insert(k, output);
+                            if let Some(var) = lapis.vmap.get_mut(&k) {
+                                *var = output;
+                            }
                         }
                     }
                 }

@@ -104,6 +104,14 @@ net.connect_output(id,0,0);
 net.connect_output(id,0,1);
 net.play(); // not a method for Net (see deviations)
 ```
+tick
+```rust
+let net = mul(10);
+net.tick([4]); // prints [40.0]
+let in = [6];
+let out = [];
+net.tick(in, out); // out is now [60.0]
+```
 
 
 ## building
