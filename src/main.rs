@@ -7,10 +7,12 @@ use {components::*, eval::*};
 
 fn main() -> eframe::Result {
     let options = eframe::NativeOptions {
-        viewport: ViewportBuilder{
+        viewport: ViewportBuilder {
             inner_size: Some(Vec2::new(500., 440.)),
+            min_inner_size: Some(Vec2::new(100., 100.)),
             ..Default::default()
         },
+        centered: true,
         ..Default::default()
     };
     eframe::run_native("awawawa", options, Box::new(|_| Ok(Box::new(Lapis::new()))))
@@ -43,10 +45,8 @@ impl eframe::App for Lapis {
                                 .layouter(&mut layouter),
                         )
                         .has_focus();
-                    let shortcut = KeyboardShortcut {
-                        modifiers: Modifiers::COMMAND,
-                        logical_key: Key::Enter,
-                    };
+                    let shortcut =
+                        KeyboardShortcut { modifiers: Modifiers::COMMAND, logical_key: Key::Enter };
                     if input_focused && ctx.input_mut(|i| i.consume_shortcut(&shortcut)) {
                         eval(self);
                     }
