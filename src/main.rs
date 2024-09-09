@@ -1,4 +1,4 @@
-use eframe::egui;
+use eframe::egui::*;
 
 mod audio;
 mod components;
@@ -7,32 +7,35 @@ use {components::*, eval::*};
 
 fn main() -> eframe::Result {
     let options = eframe::NativeOptions {
-        viewport: egui::ViewportBuilder::default().with_inner_size([500.0, 440.0]),
+        viewport: ViewportBuilder{
+            inner_size: Some(Vec2::new(500., 440.)),
+            ..Default::default()
+        },
         ..Default::default()
     };
     eframe::run_native("awawawa", options, Box::new(|_| Ok(Box::new(Lapis::new()))))
 }
 
 impl eframe::App for Lapis {
-    fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
-        let center = egui::Align2::CENTER_CENTER;
+    fn update(&mut self, ctx: &Context, _frame: &mut eframe::Frame) {
+        let center = Align2::CENTER_CENTER;
         let mut theme = egui_extras::syntax_highlighting::CodeTheme::from_memory(ctx);
         let theme_copy = theme.clone();
-        let mut layouter = |ui: &egui::Ui, string: &str, wrap_width: f32| {
+        let mut layouter = |ui: &Ui, string: &str, wrap_width: f32| {
             let mut layout_job =
                 egui_extras::syntax_highlighting::highlight(ui.ctx(), &theme_copy, string, "rs");
             layout_job.wrap.max_width = wrap_width;
             ui.fonts(|f| f.layout_job(layout_job))
         };
-        egui::TopBottomPanel::bottom("input").resizable(true).show_separator_line(false).show(
+        TopBottomPanel::bottom("input").resizable(true).show_separator_line(false).show(
             ctx,
             |ui| {
-                egui::ScrollArea::vertical().stick_to_bottom(true).show(ui, |ui| {
+                ScrollArea::vertical().stick_to_bottom(true).show(ui, |ui| {
                     let input_focused = ui
                         .add(
-                            egui::TextEdit::multiline(&mut self.input)
+                            TextEdit::multiline(&mut self.input)
                                 .hint_text("type code then press ctrl+enter")
-                                .font(egui::TextStyle::Monospace)
+                                .font(TextStyle::Monospace)
                                 .code_editor()
                                 .desired_rows(1)
                                 .lock_focus(true)
@@ -40,9 +43,9 @@ impl eframe::App for Lapis {
                                 .layouter(&mut layouter),
                         )
                         .has_focus();
-                    let shortcut = egui::KeyboardShortcut {
-                        modifiers: egui::Modifiers::COMMAND,
-                        logical_key: egui::Key::Enter,
+                    let shortcut = KeyboardShortcut {
+                        modifiers: Modifiers::COMMAND,
+                        logical_key: Key::Enter,
                     };
                     if input_focused && ctx.input_mut(|i| i.consume_shortcut(&shortcut)) {
                         eval(self);
@@ -50,8 +53,8 @@ impl eframe::App for Lapis {
                 });
             },
         );
-        egui::TopBottomPanel::top("top_panel").show_separator_line(false).show(ctx, |ui| {
-            egui::Window::new("about").open(&mut self.about).pivot(center).show(ctx, |ui| {
+        TopBottomPanel::top("top_panel").show_separator_line(false).show(ctx, |ui| {
+            Window::new("about").open(&mut self.about).pivot(center).show(ctx, |ui| {
                 ui.horizontal(|ui| {
                     ui.label("lapis is a");
                     ui.hyperlink_to("FunDSP", "https://github.com/SamiPerttu/fundsp/");
@@ -77,7 +80,7 @@ impl eframe::App for Lapis {
                 ui.label(format!("version: {}", version));
             });
 
-            egui::Window::new("maps").open(&mut self.maps).pivot(center).show(ctx, |ui| {
+            Window::new("maps").open(&mut self.maps).pivot(center).show(ctx, |ui| {
                 ui.group(|ui| {
                     if ui.button("clear fmap").clicked() {
                         self.fmap.clear();
@@ -105,17 +108,17 @@ impl eframe::App for Lapis {
                 }
             });
         });
-        egui::CentralPanel::default().show(ctx, |ui| {
-            egui::Window::new("settings").open(&mut self.settings).pivot(center).show(ctx, |ui| {
+        CentralPanel::default().show(ctx, |ui| {
+            Window::new("settings").open(&mut self.settings).pivot(center).show(ctx, |ui| {
                 ui.group(|ui| {
                     theme.ui(ui);
                     theme.clone().store_in_memory(ui.ctx());
                 });
             });
-            egui::ScrollArea::vertical().stick_to_bottom(true).show(ui, |ui| {
+            ScrollArea::vertical().stick_to_bottom(true).show(ui, |ui| {
                 ui.add(
-                    egui::TextEdit::multiline(&mut self.buffer)
-                        .font(egui::TextStyle::Monospace)
+                    TextEdit::multiline(&mut self.buffer)
+                        .font(TextStyle::Monospace)
                         .code_editor()
                         .desired_rows(2)
                         .lock_focus(true)
