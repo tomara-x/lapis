@@ -10,6 +10,17 @@ pub fn half_binary_float(expr: &Expr, lapis: &Lapis) -> Option<f32> {
         Expr::Paren(expr) => half_binary_float(&expr.expr, lapis),
         Expr::Path(expr) => path_float(&expr.path, lapis),
         Expr::Unary(expr) => unary_float(expr, lapis),
+        Expr::MethodCall(expr) => method_call_float(expr, lapis),
+        _ => None,
+    }
+}
+pub fn method_call_float(expr: &ExprMethodCall, lapis: &Lapis) -> Option<f32> {
+    match expr.method.to_string().as_str() {
+        "value" => {
+            let k = nth_path_ident(&expr.receiver, 0)?;
+            let shared = &mut lapis.smap.get(&k)?;
+            Some(shared.value())
+        }
         _ => None,
     }
 }
