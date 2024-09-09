@@ -3,6 +3,7 @@ use fundsp::hacker32::*;
 use syn::*;
 
 mod arrays;
+mod atomics;
 mod bools;
 mod floats;
 mod functions;
@@ -12,7 +13,9 @@ mod nets;
 mod node_ids;
 mod shapes;
 mod units;
-use {arrays::*, bools::*, floats::*, functions::*, net_methods::*, nets::*, node_ids::*};
+use {
+    arrays::*, atomics::*, bools::*, floats::*, functions::*, net_methods::*, nets::*, node_ids::*,
+};
 
 pub fn eval(lapis: &mut Lapis) {
     if let Ok(stmt) = parse_str::<Stmt>(&lapis.input) {
@@ -46,6 +49,9 @@ fn eval_stmt(s: Stmt, lapis: &mut Lapis) {
                     } else if let Some(b) = half_binary_bool(&expr.expr, lapis) {
                         remove_from_all_maps(&k, lapis);
                         lapis.bmap.insert(k, b);
+                    } else if let Some(s) = eval_shared(&expr.expr, lapis) {
+                        remove_from_all_maps(&k, lapis);
+                        lapis.smap.insert(k, s);
                     }
                 }
             }
@@ -104,8 +110,9 @@ fn eval_stmt(s: Stmt, lapis: &mut Lapis) {
                     }
                 }
                 _ => {
-                    let _ = net_methods(&expr, lapis);
-                    let _ = method_nodeid(&Expr::MethodCall(expr), lapis);
+                    net_methods(&expr, lapis);
+                    shared_methods(&expr, lapis);
+                    method_nodeid(&Expr::MethodCall(expr), lapis);
                 }
             },
             Expr::Assign(expr) => {
@@ -131,6 +138,10 @@ fn eval_stmt(s: Stmt, lapis: &mut Lapis) {
                 } else if let Some(b) = half_binary_bool(&expr.right, lapis) {
                     if let Some(var) = lapis.bmap.get_mut(&ident) {
                         *var = b;
+                    }
+                } else if let Some(s) = eval_shared(&expr.right, lapis) {
+                    if let Some(var) = lapis.smap.get_mut(&ident) {
+                        *var = s;
                     }
                 }
             }
@@ -191,6 +202,8 @@ fn eval_stmt(s: Stmt, lapis: &mut Lapis) {
                     lapis.buffer.push_str(&format!("\n    {:?}", id));
                 } else if let Some(b) = half_binary_bool(&expr, lapis) {
                     lapis.buffer.push_str(&format!("\n    {:?}", b));
+                } else if let Some(s) = eval_shared(&expr, lapis) {
+                    lapis.buffer.push_str(&format!("\n    Shared({})", s.value()));
                 }
             }
         },

@@ -14,6 +14,7 @@ pub struct Lapis {
     pub gmap: HashMap<String, Net>,
     pub idmap: HashMap<String, NodeId>,
     pub bmap: HashMap<String, bool>,
+    pub smap: HashMap<String, Shared>,
     pub slot: Slot,
     pub stream: Option<cpal::Stream>,
 }
@@ -33,6 +34,7 @@ impl Lapis {
             gmap: HashMap::new(),
             idmap: HashMap::new(),
             bmap: HashMap::new(),
+            smap: HashMap::new(),
             slot,
             stream,
         }

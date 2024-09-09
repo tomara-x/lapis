@@ -1,6 +1,6 @@
 use crate::{
     components::*,
-    eval::{arrays::*, floats::*, functions::*, ints::*, shapes::*, units::*},
+    eval::{arrays::*, atomics::*, floats::*, functions::*, ints::*, shapes::*, units::*},
 };
 use fundsp::hacker32::*;
 use syn::*;
@@ -745,7 +745,6 @@ pub fn call_net(expr: &ExprCall, lapis: &Lapis) -> Option<Net> {
             Some(Net::wrap(Box::new(shape(shp))))
         }
         "shape_fn" => None, //TODO
-        "shared" => None,   // hey adora~
         "sine" => Some(Net::wrap(Box::new(sine()))),
         "sine_hz" => {
             let f = args.first()?;
@@ -824,9 +823,13 @@ pub fn call_net(expr: &ExprCall, lapis: &Lapis) -> Option<Net> {
             let f = args.first()?;
             Some(Net::wrap(Box::new(triangle_hz(*f))))
         }
-        "unit" => None,      //lol
-        "update" => None,    //TODO
-        "var" => None,       // catra!
+        "unit" => None,   //lol
+        "update" => None, //TODO
+        "var" => {
+            let arg = expr.args.first()?;
+            let shared = eval_shared(arg, lapis)?;
+            Some(Net::wrap(Box::new(var(&shared))))
+        }
         "var_fn" => None,    // catra, you have to stop this! the closures are evil!
         "wavech" => None,    //TODO after arrays
         "wavech_at" => None, //TODO
