@@ -112,6 +112,13 @@ let in = [6];
 let out = [];
 net.tick(in, out); // out is now [60.0]
 ```
+shared/var
+```rust
+let s = shared(440);
+let g = var(s) >> sine();
+g.play();
+s.set(220);
+```
 
 
 ## building
