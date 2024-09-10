@@ -19,7 +19,7 @@ lists marked non_exhaustive may be incomplete. if you notice something incorrect
 - Sequencer
 - i/o device selection (in the settings window)
 - input node abstraction
-- atomics
+- atomic synth
 - TODO marks in eval/nets.rs
 - optimize egui stuff (high cpu use if large amount of text is in buffer)
 
@@ -35,6 +35,7 @@ lists marked non_exhaustive may be incomplete. if you notice something incorrect
 - when a function takes an integer or usize, those are parsed to the corresponding type, so you can't use a variable there (since those are all floats), it has to be an integer literal
 - a statement with just a variable name `variable;` will print that variable's value (or call .display() for graphs) same for expressions `2 + 2;` will print 4
 - everything is global. nothing is limited to scope except for the loop variable in for loops
+- [`Meter`](https://docs.rs/fundsp/0.19.0/fundsp/dynamics/enum.Meter.html) modes peak and rms are actually passed cast f32 not f64
 
 ## what's supported
 #[non_exhaustive]

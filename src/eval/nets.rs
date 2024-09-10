@@ -1,6 +1,8 @@
 use crate::{
     components::*,
-    eval::{arrays::*, atomics::*, floats::*, functions::*, ints::*, shapes::*, units::*},
+    eval::{
+        arrays::*, atomics::*, floats::*, functions::*, ints::*, meters::*, shapes::*, units::*,
+    },
 };
 use fundsp::hacker32::*;
 use syn::*;
@@ -510,15 +512,25 @@ pub fn call_net(expr: &ExprCall, lapis: &Lapis) -> Option<Net> {
             let gain = args.get(1)?;
             Some(Net::wrap(Box::new(lowshelf_q(*q, *gain))))
         }
-        "map" => None,   //TODO i'll be seeing you...
-        "meter" => None, //TODO
+        "map" => None, //TODO i'll be seeing you...
+        "meter" => {
+            let arg = expr.args.first()?;
+            let m = eval_meter(arg, lapis)?;
+            Some(Net::wrap(Box::new(meter(m))))
+        }
         "mls" => Some(Net::wrap(Box::new(mls()))),
         "mls_bits" => {
             let arg = expr.args.first()?;
             let n = lit_u64(arg)?;
             Some(Net::wrap(Box::new(mls_bits(n))))
         }
-        "monitor" => None, //TODO
+        "monitor" => {
+            let arg0 = expr.args.first()?;
+            let shared = eval_shared(arg0, lapis)?;
+            let arg1 = expr.args.get(1)?;
+            let meter = eval_meter(arg1, lapis)?;
+            Some(Net::wrap(Box::new(monitor(&shared, meter))))
+        }
         "moog" => Some(Net::wrap(Box::new(moog()))),
         "moog_hz" => {
             let f = args.first()?;
@@ -816,7 +828,11 @@ pub fn call_net(expr: &ExprCall, lapis: &Lapis) -> Option<Net> {
             let x = eval_net(arg0, lapis)?;
             Some(!x)
         }
-        "timer" => None, //TODO
+        "timer" => {
+            let arg = expr.args.first()?;
+            let shared = eval_shared(arg, lapis)?;
+            Some(Net::wrap(Box::new(timer(&shared))))
+        }
         "triangle" => Some(Net::wrap(Box::new(triangle()))),
         "triangle_hz" => {
             let f = args.first()?;

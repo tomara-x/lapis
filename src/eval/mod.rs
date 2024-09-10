@@ -8,6 +8,7 @@ mod bools;
 mod floats;
 mod functions;
 mod ints;
+mod meters;
 mod net_methods;
 mod nets;
 mod node_ids;

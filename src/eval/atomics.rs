@@ -9,6 +9,7 @@ pub fn eval_shared(expr: &Expr, lapis: &Lapis) -> Option<Shared> {
     match expr {
         Expr::Call(expr) => call_shared(expr, lapis),
         Expr::Path(expr) => path_shared(&expr.path, lapis),
+        Expr::Reference(expr) => eval_shared(&expr.expr, lapis),
         _ => None,
     }
 }
