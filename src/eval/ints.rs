@@ -1,9 +1,9 @@
 use syn::*;
 
-pub fn half_binary_int(expr: &Expr) -> Option<i32> {
+pub fn eval_i32(expr: &Expr) -> Option<i32> {
     match expr {
         Expr::Lit(expr) => lit_int(&expr.lit),
-        Expr::Paren(expr) => half_binary_int(&expr.expr),
+        Expr::Paren(expr) => eval_i32(&expr.expr),
         Expr::Unary(expr) => unary_int(expr),
         _ => None,
     }
@@ -16,7 +16,7 @@ pub fn lit_int(expr: &Lit) -> Option<i32> {
 }
 pub fn unary_int(expr: &ExprUnary) -> Option<i32> {
     match expr.op {
-        UnOp::Neg(_) => Some(-half_binary_int(&expr.expr)?),
+        UnOp::Neg(_) => Some(-eval_i32(&expr.expr)?),
         _ => None,
     }
 }

@@ -38,8 +38,8 @@ pub fn range_bounds(expr: &Expr) -> Option<(i32, i32)> {
         Expr::Range(expr) => {
             let start = expr.start.clone()?;
             let end = expr.end.clone()?;
-            let s = half_binary_int(&start)?;
-            let mut e = half_binary_int(&end)?;
+            let s = eval_i32(&start)?;
+            let mut e = eval_i32(&end)?;
             if let RangeLimits::Closed(_) = expr.limits {
                 e += 1;
             }
@@ -73,7 +73,7 @@ pub fn nth_path_generic(expr: &Expr, n: usize) -> Option<String> {
 pub fn accumulate_args(args: &Punctuated<Expr, Token!(,)>, lapis: &Lapis) -> Vec<f32> {
     let mut vec = Vec::new();
     for arg in args {
-        if let Some(n) = half_binary_float(arg, lapis) {
+        if let Some(n) = eval_float(arg, lapis) {
             vec.push(n);
         }
     }

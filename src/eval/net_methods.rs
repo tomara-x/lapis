@@ -24,7 +24,7 @@ pub fn net_methods(expr: &ExprMethodCall, lapis: &mut Lapis) -> Option<()> {
             let arg0 = expr.args.first()?;
             let id = path_nodeid(arg0, lapis)?;
             let arg1 = expr.args.get(1)?;
-            let unit = half_binary_net(arg1, lapis)?;
+            let unit = eval_net(arg1, lapis)?;
             let k = nth_path_ident(&expr.receiver, 0)?;
             let net = &mut lapis.gmap.get_mut(&k)?;
             net.replace(id, Box::new(unit));
@@ -35,9 +35,9 @@ pub fn net_methods(expr: &ExprMethodCall, lapis: &mut Lapis) -> Option<()> {
             let arg1 = expr.args.get(1)?;
             let fade = path_fade(arg1)?;
             let arg2 = expr.args.get(2)?;
-            let time = half_binary_float(arg2, lapis)?;
+            let time = eval_float(arg2, lapis)?;
             let arg3 = expr.args.get(3)?;
-            let unit = half_binary_net(arg3, lapis)?;
+            let unit = eval_net(arg3, lapis)?;
             let k = nth_path_ident(&expr.receiver, 0)?;
             let net = &mut lapis.gmap.get_mut(&k)?;
             net.crossfade(id, fade, time, Box::new(unit));

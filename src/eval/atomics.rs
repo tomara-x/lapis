@@ -22,7 +22,7 @@ pub fn call_shared(expr: &ExprCall, lapis: &Lapis) -> Option<Shared> {
     let func = nth_path_ident(&expr.func, 0)?;
     if func == "shared" {
         let arg = expr.args.first()?;
-        let val = half_binary_float(arg, lapis)?;
+        let val = eval_float(arg, lapis)?;
         Some(shared(val))
     } else {
         None
@@ -32,7 +32,7 @@ pub fn call_shared(expr: &ExprCall, lapis: &Lapis) -> Option<Shared> {
 pub fn shared_methods(expr: &ExprMethodCall, lapis: &mut Lapis) {
     if expr.method == "set" || expr.method == "set_value" {
         if let Some(arg) = expr.args.first() {
-            if let Some(value) = half_binary_float(arg, lapis) {
+            if let Some(value) = eval_float(arg, lapis) {
                 if let Some(k) = nth_path_ident(&expr.receiver, 0) {
                     if let Some(shared) = &mut lapis.smap.get_mut(&k) {
                         shared.set(value);

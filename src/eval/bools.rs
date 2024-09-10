@@ -1,11 +1,11 @@
 use crate::{components::*, eval::floats::*};
 use syn::*;
 
-pub fn half_binary_bool(expr: &Expr, lapis: &Lapis) -> Option<bool> {
+pub fn eval_bool(expr: &Expr, lapis: &Lapis) -> Option<bool> {
     match expr {
         Expr::Lit(expr) => lit_bool(&expr.lit),
         Expr::Binary(expr) => bin_expr_bool(expr, lapis),
-        Expr::Paren(expr) => half_binary_bool(&expr.expr, lapis),
+        Expr::Paren(expr) => eval_bool(&expr.expr, lapis),
         Expr::Path(expr) => path_bool(&expr.path, lapis),
         Expr::Unary(expr) => unary_bool(expr, lapis),
         _ => None,
@@ -18,10 +18,10 @@ pub fn lit_bool(expr: &Lit) -> Option<bool> {
     }
 }
 pub fn bin_expr_bool(expr: &ExprBinary, lapis: &Lapis) -> Option<bool> {
-    let left_bool = half_binary_bool(&expr.left, lapis);
-    let right_bool = half_binary_bool(&expr.right, lapis);
-    let left_float = half_binary_float(&expr.left, lapis);
-    let right_float = half_binary_float(&expr.right, lapis);
+    let left_bool = eval_bool(&expr.left, lapis);
+    let right_bool = eval_bool(&expr.right, lapis);
+    let left_float = eval_float(&expr.left, lapis);
+    let right_float = eval_float(&expr.right, lapis);
     if let (Some(left), Some(right)) = (left_bool, right_bool) {
         match expr.op {
             BinOp::And(_) => Some(left && right),
@@ -48,7 +48,7 @@ pub fn path_bool(expr: &Path, lapis: &Lapis) -> Option<bool> {
 }
 pub fn unary_bool(expr: &ExprUnary, lapis: &Lapis) -> Option<bool> {
     match expr.op {
-        UnOp::Not(_) => Some(!half_binary_bool(&expr.expr, lapis)?),
+        UnOp::Not(_) => Some(!eval_bool(&expr.expr, lapis)?),
         _ => None,
     }
 }

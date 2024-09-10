@@ -5,21 +5,21 @@ use crate::{
 use fundsp::hacker32::*;
 use syn::*;
 
-pub fn half_binary_net(expr: &Expr, lapis: &Lapis) -> Option<Net> {
+pub fn eval_net(expr: &Expr, lapis: &Lapis) -> Option<Net> {
     match expr {
         Expr::Call(expr) => call_net(expr, lapis),
         Expr::Binary(expr) => bin_expr_net(expr, lapis),
-        Expr::Paren(expr) => half_binary_net(&expr.expr, lapis),
+        Expr::Paren(expr) => eval_net(&expr.expr, lapis),
         Expr::Path(expr) => path_net(&expr.path, lapis),
         Expr::Unary(expr) => unary_net(expr, lapis),
         _ => None,
     }
 }
 pub fn bin_expr_net(expr: &ExprBinary, lapis: &Lapis) -> Option<Net> {
-    let left_net = half_binary_net(&expr.left, lapis);
-    let right_net = half_binary_net(&expr.right, lapis);
-    let left_float = half_binary_float(&expr.left, lapis);
-    let right_float = half_binary_float(&expr.right, lapis);
+    let left_net = eval_net(&expr.left, lapis);
+    let right_net = eval_net(&expr.right, lapis);
+    let left_float = eval_float(&expr.left, lapis);
+    let right_float = eval_float(&expr.right, lapis);
     if left_net.is_some() && right_net.is_some() {
         let (left, right) = (left_net.unwrap(), right_net.unwrap());
         let (li, lo) = (left.inputs(), left.outputs());
@@ -54,8 +54,8 @@ pub fn bin_expr_net(expr: &ExprBinary, lapis: &Lapis) -> Option<Net> {
 }
 pub fn unary_net(expr: &ExprUnary, lapis: &Lapis) -> Option<Net> {
     match expr.op {
-        UnOp::Neg(_) => Some(-half_binary_net(&expr.expr, lapis)?),
-        UnOp::Not(_) => Some(!half_binary_net(&expr.expr, lapis)?),
+        UnOp::Neg(_) => Some(-eval_net(&expr.expr, lapis)?),
+        UnOp::Not(_) => Some(!eval_net(&expr.expr, lapis)?),
         _ => None,
     }
 }
@@ -129,7 +129,7 @@ pub fn call_net(expr: &ExprCall, lapis: &Lapis) -> Option<Net> {
         }
         "allnest" => {
             let arg = expr.args.first()?;
-            let net = half_binary_net(arg, lapis)?;
+            let net = eval_net(arg, lapis)?;
             if net.inputs() != 1 || net.outputs() != 1 {
                 return None;
             }
@@ -139,7 +139,7 @@ pub fn call_net(expr: &ExprCall, lapis: &Lapis) -> Option<Net> {
         "allnest_c" => {
             let coeff = args.get(0)?;
             let arg = expr.args.get(1)?;
-            let net = half_binary_net(arg, lapis)?;
+            let net = eval_net(arg, lapis)?;
             if net.inputs() != 1 || net.outputs() != 1 {
                 return None;
             }
@@ -203,9 +203,9 @@ pub fn call_net(expr: &ExprCall, lapis: &Lapis) -> Option<Net> {
         }
         "branch" => {
             let arg0 = expr.args.first()?;
-            let x = half_binary_net(arg0, lapis)?;
+            let x = eval_net(arg0, lapis)?;
             let arg1 = expr.args.get(1)?;
-            let y = half_binary_net(arg1, lapis)?;
+            let y = eval_net(arg1, lapis)?;
             if x.inputs() == y.inputs() {
                 Some(x ^ y)
             } else {
@@ -216,9 +216,9 @@ pub fn call_net(expr: &ExprCall, lapis: &Lapis) -> Option<Net> {
         "brown" => Some(Net::wrap(Box::new(brown()))),
         "bus" => {
             let arg0 = expr.args.first()?;
-            let x = half_binary_net(arg0, lapis)?;
+            let x = eval_net(arg0, lapis)?;
             let arg1 = expr.args.get(1)?;
-            let y = half_binary_net(arg1, lapis)?;
+            let y = eval_net(arg1, lapis)?;
             if x.outputs() == y.outputs() && x.inputs() == y.inputs() {
                 Some(x & y)
             } else {
@@ -348,7 +348,7 @@ pub fn call_net(expr: &ExprCall, lapis: &Lapis) -> Option<Net> {
         "fdn" | "fdn2" => None, //TODO
         "feedback" => {
             let arg = expr.args.get(0)?;
-            let net = half_binary_net(arg, lapis)?;
+            let net = eval_net(arg, lapis)?;
             if net.inputs() != net.outputs() {
                 return None;
             }
@@ -630,9 +630,9 @@ pub fn call_net(expr: &ExprCall, lapis: &Lapis) -> Option<Net> {
         "pinkpass" => Some(Net::wrap(Box::new(pinkpass()))),
         "pipe" => {
             let arg0 = expr.args.first()?;
-            let x = half_binary_net(arg0, lapis)?;
+            let x = eval_net(arg0, lapis)?;
             let arg1 = expr.args.get(1)?;
-            let y = half_binary_net(arg1, lapis)?;
+            let y = eval_net(arg1, lapis)?;
             if x.outputs() == y.inputs() {
                 Some(x >> y)
             } else {
@@ -648,9 +648,9 @@ pub fn call_net(expr: &ExprCall, lapis: &Lapis) -> Option<Net> {
         }
         "product" => {
             let arg0 = expr.args.first()?;
-            let x = half_binary_net(arg0, lapis)?;
+            let x = eval_net(arg0, lapis)?;
             let arg1 = expr.args.get(1)?;
-            let y = half_binary_net(arg1, lapis)?;
+            let y = eval_net(arg1, lapis)?;
             if x.outputs() == y.outputs() {
                 Some(x * y)
             } else {
@@ -686,7 +686,7 @@ pub fn call_net(expr: &ExprCall, lapis: &Lapis) -> Option<Net> {
             let diffusion = args.get(2)?;
             let modulation = args.get(3)?;
             let arg = expr.args.get(4)?;
-            let net = half_binary_net(arg, lapis)?;
+            let net = eval_net(arg, lapis)?;
             if net.inputs() != 1 || net.outputs() != 1 {
                 return None;
             }
@@ -697,7 +697,7 @@ pub fn call_net(expr: &ExprCall, lapis: &Lapis) -> Option<Net> {
             let time = args.get(0)?;
             let diffusion = args.get(1)?;
             let arg = expr.args.get(2)?;
-            let net = half_binary_net(arg, lapis)?;
+            let net = eval_net(arg, lapis)?;
             if net.inputs() != 1 || net.outputs() != 1 {
                 return None;
             }
@@ -772,9 +772,9 @@ pub fn call_net(expr: &ExprCall, lapis: &Lapis) -> Option<Net> {
         }
         "stack" => {
             let arg0 = expr.args.first()?;
-            let x = half_binary_net(arg0, lapis)?;
+            let x = eval_net(arg0, lapis)?;
             let arg1 = expr.args.get(1)?;
-            let y = half_binary_net(arg1, lapis)?;
+            let y = eval_net(arg1, lapis)?;
             Some(x | y)
         }
         "stackf" | "stacki" => None, //TODO
@@ -792,9 +792,9 @@ pub fn call_net(expr: &ExprCall, lapis: &Lapis) -> Option<Net> {
         }
         "sum" => {
             let arg0 = expr.args.first()?;
-            let x = half_binary_net(arg0, lapis)?;
+            let x = eval_net(arg0, lapis)?;
             let arg1 = expr.args.get(1)?;
-            let y = half_binary_net(arg1, lapis)?;
+            let y = eval_net(arg1, lapis)?;
             if x.outputs() == y.outputs() {
                 Some(x + y)
             } else {
@@ -814,7 +814,7 @@ pub fn call_net(expr: &ExprCall, lapis: &Lapis) -> Option<Net> {
         }
         "thru" => {
             let arg0 = expr.args.first()?;
-            let x = half_binary_net(arg0, lapis)?;
+            let x = eval_net(arg0, lapis)?;
             Some(!x)
         }
         "timer" => None, //TODO

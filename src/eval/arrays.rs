@@ -15,7 +15,7 @@ pub fn array_lit(expr: &Expr, lapis: &Lapis) -> Option<Vec<f32>> {
         Expr::Array(expr) => {
             let mut arr = Vec::new();
             for elem in &expr.elems {
-                if let Some(n) = half_binary_float(elem, lapis) {
+                if let Some(n) = eval_float(elem, lapis) {
                     arr.push(n);
                 }
             }

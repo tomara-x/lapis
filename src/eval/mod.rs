@@ -32,10 +32,10 @@ fn eval_stmt(s: Stmt, lapis: &mut Lapis) {
         Stmt::Local(expr) => {
             if let Some(k) = pat_ident(&expr.pat) {
                 if let Some(expr) = expr.init {
-                    if let Some(v) = half_binary_float(&expr.expr, lapis) {
+                    if let Some(v) = eval_float(&expr.expr, lapis) {
                         remove_from_all_maps(&k, lapis);
                         lapis.fmap.insert(k, v);
-                    } else if let Some(v) = half_binary_net(&expr.expr, lapis) {
+                    } else if let Some(v) = eval_net(&expr.expr, lapis) {
                         remove_from_all_maps(&k, lapis);
                         lapis.gmap.insert(k, v);
                     } else if let Some(arr) = array_cloned(&expr.expr, lapis) {
@@ -46,7 +46,7 @@ fn eval_stmt(s: Stmt, lapis: &mut Lapis) {
                     {
                         remove_from_all_maps(&k, lapis);
                         lapis.idmap.insert(k, id);
-                    } else if let Some(b) = half_binary_bool(&expr.expr, lapis) {
+                    } else if let Some(b) = eval_bool(&expr.expr, lapis) {
                         remove_from_all_maps(&k, lapis);
                         lapis.bmap.insert(k, b);
                     } else if let Some(s) = eval_shared(&expr.expr, lapis) {
@@ -59,7 +59,7 @@ fn eval_stmt(s: Stmt, lapis: &mut Lapis) {
         Stmt::Expr(expr, _) => match expr {
             Expr::MethodCall(expr) => match expr.method.to_string().as_str() {
                 "play" => {
-                    if let Some(g) = half_binary_net(&expr.receiver, lapis) {
+                    if let Some(g) = eval_net(&expr.receiver, lapis) {
                         if g.inputs() == 0 && g.outputs() == 1 {
                             lapis.slot.set(Fade::Smooth, 0.01, Box::new(g | dc(0.)));
                         } else if g.inputs() == 0 && g.outputs() == 2 {
@@ -81,7 +81,7 @@ fn eval_stmt(s: Stmt, lapis: &mut Lapis) {
                             output.resize(g.outputs(), 0.);
                             g.tick(&in_arr, &mut output);
                         }
-                    } else if let Some(mut g) = half_binary_net(&expr.receiver, lapis) {
+                    } else if let Some(mut g) = eval_net(&expr.receiver, lapis) {
                         if g.inputs() != in_arr.len() {
                             return;
                         }
@@ -117,11 +117,11 @@ fn eval_stmt(s: Stmt, lapis: &mut Lapis) {
             },
             Expr::Assign(expr) => {
                 let Some(ident) = nth_path_ident(&expr.left, 0) else { return };
-                if let Some(f) = half_binary_float(&expr.right, lapis) {
+                if let Some(f) = eval_float(&expr.right, lapis) {
                     if let Some(var) = lapis.fmap.get_mut(&ident) {
                         *var = f;
                     }
-                } else if let Some(g) = half_binary_net(&expr.right, lapis) {
+                } else if let Some(g) = eval_net(&expr.right, lapis) {
                     if let Some(var) = lapis.gmap.get_mut(&ident) {
                         *var = g;
                     }
@@ -135,7 +135,7 @@ fn eval_stmt(s: Stmt, lapis: &mut Lapis) {
                     if let Some(var) = lapis.idmap.get_mut(&ident) {
                         *var = id;
                     }
-                } else if let Some(b) = half_binary_bool(&expr.right, lapis) {
+                } else if let Some(b) = eval_bool(&expr.right, lapis) {
                     if let Some(var) = lapis.bmap.get_mut(&ident) {
                         *var = b;
                     }
@@ -172,7 +172,7 @@ fn eval_stmt(s: Stmt, lapis: &mut Lapis) {
                 }
             }
             Expr::If(expr) => {
-                if let Some(cond) = half_binary_bool(&expr.cond, lapis) {
+                if let Some(cond) = eval_bool(&expr.cond, lapis) {
                     if cond {
                         let expr = Expr::Block(ExprBlock {
                             attrs: Vec::new(),
@@ -191,16 +191,16 @@ fn eval_stmt(s: Stmt, lapis: &mut Lapis) {
                 }
             }
             _ => {
-                if let Some(n) = half_binary_float(&expr, lapis) {
+                if let Some(n) = eval_float(&expr, lapis) {
                     lapis.buffer.push_str(&format!("\n    {:?}", n));
                 } else if let Some(arr) = path_arr(&expr, lapis) {
                     lapis.buffer.push_str(&format!("\n    {:?}", arr));
-                } else if let Some(mut g) = half_binary_net(&expr, lapis) {
+                } else if let Some(mut g) = eval_net(&expr, lapis) {
                     lapis.buffer.push_str(&format!("\n{}", g.display()));
                     lapis.buffer.push_str(&format!("Size           : {}", g.size()));
                 } else if let Some(id) = path_nodeid(&expr, lapis) {
                     lapis.buffer.push_str(&format!("\n    {:?}", id));
-                } else if let Some(b) = half_binary_bool(&expr, lapis) {
+                } else if let Some(b) = eval_bool(&expr, lapis) {
                     lapis.buffer.push_str(&format!("\n    {:?}", b));
                 } else if let Some(s) = eval_shared(&expr, lapis) {
                     lapis.buffer.push_str(&format!("\n    Shared({})", s.value()));

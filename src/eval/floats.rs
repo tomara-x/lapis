@@ -2,12 +2,12 @@ use crate::{components::*, eval::functions::*};
 use fundsp::math::*;
 use syn::*;
 
-pub fn half_binary_float(expr: &Expr, lapis: &Lapis) -> Option<f32> {
+pub fn eval_float(expr: &Expr, lapis: &Lapis) -> Option<f32> {
     match expr {
         Expr::Call(expr) => call_float(expr, lapis),
         Expr::Lit(expr) => lit_float(&expr.lit),
         Expr::Binary(expr) => bin_expr_float(expr, lapis),
-        Expr::Paren(expr) => half_binary_float(&expr.expr, lapis),
+        Expr::Paren(expr) => eval_float(&expr.expr, lapis),
         Expr::Path(expr) => path_float(&expr.path, lapis),
         Expr::Unary(expr) => unary_float(expr, lapis),
         Expr::MethodCall(expr) => method_call_float(expr, lapis),
@@ -32,8 +32,8 @@ pub fn lit_float(expr: &Lit) -> Option<f32> {
     }
 }
 pub fn bin_expr_float(expr: &ExprBinary, lapis: &Lapis) -> Option<f32> {
-    let left = half_binary_float(&expr.left, lapis)?;
-    let right = half_binary_float(&expr.right, lapis)?;
+    let left = eval_float(&expr.left, lapis)?;
+    let right = eval_float(&expr.right, lapis)?;
     match expr.op {
         BinOp::Sub(_) => Some(left - right),
         BinOp::Div(_) => Some(left / right),
@@ -52,7 +52,7 @@ pub fn path_float(expr: &Path, lapis: &Lapis) -> Option<f32> {
 }
 pub fn unary_float(expr: &ExprUnary, lapis: &Lapis) -> Option<f32> {
     match expr.op {
-        UnOp::Neg(_) => Some(-half_binary_float(&expr.expr, lapis)?),
+        UnOp::Neg(_) => Some(-eval_float(&expr.expr, lapis)?),
         _ => None,
     }
 }
