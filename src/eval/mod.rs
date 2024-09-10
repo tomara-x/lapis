@@ -111,6 +111,10 @@ fn eval_stmt(s: Stmt, lapis: &mut Lapis) {
                     }
                 }
                 _ => {
+                    if let Some(n) = method_call_float(&expr, lapis) {
+                        lapis.buffer.push_str(&format!("\n    {:?}", n));
+                        return;
+                    }
                     net_methods(&expr, lapis);
                     shared_methods(&expr, lapis);
                     method_nodeid(&Expr::MethodCall(expr), lapis);
