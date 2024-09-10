@@ -88,7 +88,6 @@ macro_rules! tuple_call_match {
         }
     }};
 }
-#[allow(clippy::get_first)]
 pub fn call_net(expr: &ExprCall, lapis: &Lapis) -> Option<Net> {
     let func = nth_path_ident(&expr.func, 0)?;
     let args = accumulate_args(&expr.args, lapis);
@@ -96,7 +95,7 @@ pub fn call_net(expr: &ExprCall, lapis: &Lapis) -> Option<Net> {
         "Net" => {
             let f = nth_path_ident(&expr.func, 1)?;
             if f == "new" {
-                let ins = args.get(0)?;
+                let ins = args.first()?;
                 let outs = args.get(1)?;
                 Some(Net::new(*ins as usize, *outs as usize))
             } else {
@@ -116,14 +115,14 @@ pub fn call_net(expr: &ExprCall, lapis: &Lapis) -> Option<Net> {
             }
         }
         "adsr_live" => {
-            let a = args.get(0)?;
+            let a = args.first()?;
             let d = args.get(1)?;
             let s = args.get(2)?;
             let r = args.get(3)?;
             Some(Net::wrap(Box::new(adsr_live(*a, *d, *s, *r))))
         }
         "afollow" => {
-            let attack = args.get(0)?;
+            let attack = args.first()?;
             let release = args.get(1)?;
             Some(Net::wrap(Box::new(afollow(*attack, *release))))
         }
@@ -137,7 +136,7 @@ pub fn call_net(expr: &ExprCall, lapis: &Lapis) -> Option<Net> {
             Some(Net::wrap(Box::new(allnest(An(node)))))
         }
         "allnest_c" => {
-            let coeff = args.get(0)?;
+            let coeff = args.first()?;
             let arg = expr.args.get(1)?;
             let net = eval_net(arg, lapis)?;
             if net.inputs() != 1 || net.outputs() != 1 {
@@ -148,22 +147,22 @@ pub fn call_net(expr: &ExprCall, lapis: &Lapis) -> Option<Net> {
         }
         "allpass" => Some(Net::wrap(Box::new(allpass()))),
         "allpass_hz" => {
-            let f = args.get(0)?;
+            let f = args.first()?;
             let q = args.get(1)?;
             Some(Net::wrap(Box::new(allpass_hz(*f, *q))))
         }
         "allpass_q" => {
-            let q = args.get(0)?;
+            let q = args.first()?;
             Some(Net::wrap(Box::new(allpass_q(*q))))
         }
         "allpole" => Some(Net::wrap(Box::new(allpole()))),
         "allpole_delay" => {
-            let delay = args.get(0)?;
+            let delay = args.first()?;
             Some(Net::wrap(Box::new(allpole_delay(*delay))))
         }
         "bandpass" => Some(Net::wrap(Box::new(bandpass()))),
         "bandpass_hz" => {
-            let f = args.get(0)?;
+            let f = args.first()?;
             let q = args.get(1)?;
             Some(Net::wrap(Box::new(bandpass_hz(*f, *q))))
         }
@@ -173,7 +172,7 @@ pub fn call_net(expr: &ExprCall, lapis: &Lapis) -> Option<Net> {
         }
         "bandrez" => Some(Net::wrap(Box::new(bandrez()))),
         "bandrez_hz" => {
-            let center = args.get(0)?;
+            let center = args.first()?;
             let q = args.get(1)?;
             Some(Net::wrap(Box::new(bandrez_hz(*center, *q))))
         }
@@ -183,18 +182,18 @@ pub fn call_net(expr: &ExprCall, lapis: &Lapis) -> Option<Net> {
         }
         "bell" => Some(Net::wrap(Box::new(bell()))),
         "bell_hz" => {
-            let f = args.get(0)?;
+            let f = args.first()?;
             let q = args.get(1)?;
             let gain = args.get(2)?;
             Some(Net::wrap(Box::new(bell_hz(*f, *q, *gain))))
         }
         "bell_q" => {
-            let q = args.get(0)?;
+            let q = args.first()?;
             let gain = args.get(1)?;
             Some(Net::wrap(Box::new(bell_q(*q, *gain))))
         }
         "biquad" => {
-            let a1 = args.get(0)?;
+            let a1 = args.first()?;
             let a2 = args.get(1)?;
             let b0 = args.get(2)?;
             let b1 = args.get(3)?;
@@ -241,7 +240,7 @@ pub fn call_net(expr: &ExprCall, lapis: &Lapis) -> Option<Net> {
         }
         "clip" => Some(Net::wrap(Box::new(clip()))),
         "clip_to" => {
-            let min = args.get(0)?;
+            let min = args.first()?;
             let max = args.get(1)?;
             Some(Net::wrap(Box::new(clip_to(*min, *max))))
         }
@@ -253,7 +252,7 @@ pub fn call_net(expr: &ExprCall, lapis: &Lapis) -> Option<Net> {
         "dbell_hz" => {
             let arg = expr.args.first()?;
             let shape = call_shape(arg, lapis)?;
-            let center = args.get(0)?;
+            let center = args.first()?;
             let q = args.get(1)?;
             let gain = args.get(2)?;
             Some(Net::wrap(Box::new(dbell_hz(shape, *center, *q, *gain))))
@@ -292,7 +291,7 @@ pub fn call_net(expr: &ExprCall, lapis: &Lapis) -> Option<Net> {
         "dhighpass_hz" => {
             let arg = expr.args.first()?;
             let shape = call_shape(arg, lapis)?;
-            let cutoff = args.get(0)?;
+            let cutoff = args.first()?;
             let q = args.get(1)?;
             Some(Net::wrap(Box::new(dhighpass_hz(shape, *cutoff, *q))))
         }
@@ -304,7 +303,7 @@ pub fn call_net(expr: &ExprCall, lapis: &Lapis) -> Option<Net> {
         "dlowpass_hz" => {
             let arg = expr.args.first()?;
             let shape = call_shape(arg, lapis)?;
-            let cutoff = args.get(0)?;
+            let cutoff = args.first()?;
             let q = args.get(1)?;
             Some(Net::wrap(Box::new(dlowpass_hz(shape, *cutoff, *q))))
         }
@@ -316,7 +315,7 @@ pub fn call_net(expr: &ExprCall, lapis: &Lapis) -> Option<Net> {
         "dresonator_hz" => {
             let arg = expr.args.first()?;
             let shape = call_shape(arg, lapis)?;
-            let center = args.get(0)?;
+            let center = args.first()?;
             let q = args.get(1)?;
             Some(Net::wrap(Box::new(dresonator_hz(shape, *center, *q))))
         }
@@ -340,7 +339,7 @@ pub fn call_net(expr: &ExprCall, lapis: &Lapis) -> Option<Net> {
         "fbell_hz" => {
             let arg = expr.args.first()?;
             let shape = call_shape(arg, lapis)?;
-            let center = args.get(0)?;
+            let center = args.first()?;
             let q = args.get(1)?;
             let gain = args.get(2)?;
             Some(Net::wrap(Box::new(fbell_hz(shape, *center, *q, *gain))))
@@ -363,7 +362,7 @@ pub fn call_net(expr: &ExprCall, lapis: &Lapis) -> Option<Net> {
         "fhighpass_hz" => {
             let arg = expr.args.first()?;
             let shape = call_shape(arg, lapis)?;
-            let cutoff = args.get(0)?;
+            let cutoff = args.first()?;
             let q = args.get(1)?;
             Some(Net::wrap(Box::new(fhighpass_hz(shape, *cutoff, *q))))
         }
@@ -392,7 +391,7 @@ pub fn call_net(expr: &ExprCall, lapis: &Lapis) -> Option<Net> {
         "flowpass_hz" => {
             let arg = expr.args.first()?;
             let shape = call_shape(arg, lapis)?;
-            let cutoff = args.get(0)?;
+            let cutoff = args.first()?;
             let q = args.get(1)?;
             Some(Net::wrap(Box::new(flowpass_hz(shape, *cutoff, *q))))
         }
@@ -408,7 +407,7 @@ pub fn call_net(expr: &ExprCall, lapis: &Lapis) -> Option<Net> {
         "fresonator_hz" => {
             let arg = expr.args.first()?;
             let shape = call_shape(arg, lapis)?;
-            let center = args.get(0)?;
+            let center = args.first()?;
             let q = args.get(1)?;
             Some(Net::wrap(Box::new(fresonator_hz(shape, *center, *q))))
         }
@@ -419,7 +418,7 @@ pub fn call_net(expr: &ExprCall, lapis: &Lapis) -> Option<Net> {
         }
         "highpass" => Some(Net::wrap(Box::new(highpass()))),
         "highpass_hz" => {
-            let f = args.get(0)?;
+            let f = args.first()?;
             let q = args.get(1)?;
             Some(Net::wrap(Box::new(highpass_hz(*f, *q))))
         }
@@ -434,22 +433,22 @@ pub fn call_net(expr: &ExprCall, lapis: &Lapis) -> Option<Net> {
         }
         "highshelf" => Some(Net::wrap(Box::new(highshelf()))),
         "highshelf_hz" => {
-            let f = args.get(0)?;
+            let f = args.first()?;
             let q = args.get(1)?;
             let gain = args.get(2)?;
             Some(Net::wrap(Box::new(highshelf_hz(*f, *q, *gain))))
         }
         "highshelf_q" => {
-            let q = args.get(0)?;
+            let q = args.first()?;
             let gain = args.get(1)?;
             Some(Net::wrap(Box::new(highshelf_q(*q, *gain))))
         }
         "hold" => {
-            let variability = args.get(0)?;
+            let variability = args.first()?;
             Some(Net::wrap(Box::new(hold(*variability))))
         }
         "hold_hz" => {
-            let f = args.get(0)?;
+            let f = args.first()?;
             let variability = args.get(1)?;
             Some(Net::wrap(Box::new(hold_hz(*f, *variability))))
         }
@@ -464,19 +463,19 @@ pub fn call_net(expr: &ExprCall, lapis: &Lapis) -> Option<Net> {
             Some(Net::wrap(Box::new(MultiJoinUnit::new(1, n))))
         }
         "limiter" => {
-            let attack = args.get(0)?;
+            let attack = args.first()?;
             let release = args.get(1)?;
             Some(Net::wrap(Box::new(limiter(*attack, *release))))
         }
         "limiter_stereo" => {
-            let attack = args.get(0)?;
+            let attack = args.first()?;
             let release = args.get(1)?;
             Some(Net::wrap(Box::new(limiter_stereo(*attack, *release))))
         }
         "lorenz" => Some(Net::wrap(Box::new(lorenz()))),
         "lowpass" => Some(Net::wrap(Box::new(lowpass()))),
         "lowpass_hz" => {
-            let f = args.get(0)?;
+            let f = args.first()?;
             let q = args.get(1)?;
             Some(Net::wrap(Box::new(lowpass_hz(*f, *q))))
         }
@@ -491,7 +490,7 @@ pub fn call_net(expr: &ExprCall, lapis: &Lapis) -> Option<Net> {
         }
         "lowrez" => Some(Net::wrap(Box::new(lowrez()))),
         "lowrez_hz" => {
-            let cutoff = args.get(0)?;
+            let cutoff = args.first()?;
             let q = args.get(1)?;
             Some(Net::wrap(Box::new(lowrez_hz(*cutoff, *q))))
         }
@@ -501,13 +500,13 @@ pub fn call_net(expr: &ExprCall, lapis: &Lapis) -> Option<Net> {
         }
         "lowshelf" => Some(Net::wrap(Box::new(lowshelf()))),
         "lowshelf_hz" => {
-            let f = args.get(0)?;
+            let f = args.first()?;
             let q = args.get(1)?;
             let gain = args.get(2)?;
             Some(Net::wrap(Box::new(lowshelf_hz(*f, *q, *gain))))
         }
         "lowshelf_q" => {
-            let q = args.get(0)?;
+            let q = args.first()?;
             let gain = args.get(1)?;
             Some(Net::wrap(Box::new(lowshelf_q(*q, *gain))))
         }
@@ -522,7 +521,7 @@ pub fn call_net(expr: &ExprCall, lapis: &Lapis) -> Option<Net> {
         "monitor" => None, //TODO
         "moog" => Some(Net::wrap(Box::new(moog()))),
         "moog_hz" => {
-            let f = args.get(0)?;
+            let f = args.first()?;
             let q = args.get(1)?;
             Some(Net::wrap(Box::new(moog_hz(*f, *q))))
         }
@@ -532,7 +531,7 @@ pub fn call_net(expr: &ExprCall, lapis: &Lapis) -> Option<Net> {
         }
         "morph" => Some(Net::wrap(Box::new(morph()))),
         "morph_hz" => {
-            let f = args.get(0)?;
+            let f = args.first()?;
             let q = args.get(1)?;
             let morph = args.get(2)?;
             Some(Net::wrap(Box::new(lowshelf_hz(*f, *q, *morph))))
@@ -595,7 +594,7 @@ pub fn call_net(expr: &ExprCall, lapis: &Lapis) -> Option<Net> {
         "noise" => Some(Net::wrap(Box::new(noise()))),
         "notch" => Some(Net::wrap(Box::new(notch()))),
         "notch_hz" => {
-            let f = args.get(0)?;
+            let f = args.first()?;
             let q = args.get(1)?;
             Some(Net::wrap(Box::new(notch_hz(*f, *q))))
         }
@@ -617,7 +616,7 @@ pub fn call_net(expr: &ExprCall, lapis: &Lapis) -> Option<Net> {
         "pass" => Some(Net::wrap(Box::new(pass()))),
         "peak" => Some(Net::wrap(Box::new(peak()))),
         "peak_hz" => {
-            let f = args.get(0)?;
+            let f = args.first()?;
             let q = args.get(1)?;
             Some(Net::wrap(Box::new(peak_hz(*f, *q))))
         }
@@ -641,7 +640,7 @@ pub fn call_net(expr: &ExprCall, lapis: &Lapis) -> Option<Net> {
         }
         "pipef" | "pipei" => None, //TODO
         "pluck" => {
-            let freq = args.get(0)?;
+            let freq = args.first()?;
             let gain_per_sec = args.get(1)?;
             let hf_damp = args.get(2)?;
             Some(Net::wrap(Box::new(pluck(*freq, *gain_per_sec, *hf_damp))))
@@ -664,7 +663,7 @@ pub fn call_net(expr: &ExprCall, lapis: &Lapis) -> Option<Net> {
             Some(Net::wrap(Box::new(ramp_hz(*f))))
         }
         "ramp_hz_phase" => {
-            let f = args.get(0)?;
+            let f = args.first()?;
             let p = args.get(1)?;
             Some(Net::wrap(Box::new(ramp_hz_phase(*f, *p))))
         }
@@ -675,13 +674,13 @@ pub fn call_net(expr: &ExprCall, lapis: &Lapis) -> Option<Net> {
         "resample" => None, //TODO
         "resonator" => Some(Net::wrap(Box::new(resonator()))),
         "resonator_hz" => {
-            let center = args.get(0)?;
+            let center = args.first()?;
             let bandwidth = args.get(1)?;
             Some(Net::wrap(Box::new(resonator_hz(*center, *bandwidth))))
         }
         "resynth" => None, //TODO
         "reverb2_stereo" => {
-            let room = args.get(0)?;
+            let room = args.first()?;
             let time = args.get(1)?;
             let diffusion = args.get(2)?;
             let modulation = args.get(3)?;
@@ -694,7 +693,7 @@ pub fn call_net(expr: &ExprCall, lapis: &Lapis) -> Option<Net> {
             Some(Net::wrap(Box::new(reverb2_stereo(*room, *time, *diffusion, *modulation, node))))
         }
         "reverb3_stereo" => {
-            let time = args.get(0)?;
+            let time = args.first()?;
             let diffusion = args.get(1)?;
             let arg = expr.args.get(2)?;
             let net = eval_net(arg, lapis)?;
@@ -705,7 +704,7 @@ pub fn call_net(expr: &ExprCall, lapis: &Lapis) -> Option<Net> {
             Some(Net::wrap(Box::new(reverb3_stereo(*time, *diffusion, node))))
         }
         "reverb4_stereo" => {
-            let room = args.get(0)?;
+            let room = args.first()?;
             let time = args.get(1)?;
             Some(Net::wrap(Box::new(reverb4_stereo(*room, *time))))
         }
@@ -719,7 +718,7 @@ pub fn call_net(expr: &ExprCall, lapis: &Lapis) -> Option<Net> {
             Some(Net::wrap(Box::new(reverb4_stereo_delays(&delays, *time))))
         }
         "reverb_stereo" => {
-            let room = args.get(0)?;
+            let room = args.first()?;
             let time = args.get(1)?;
             let damp = args.get(2)?;
             Some(Net::wrap(Box::new(reverb_stereo(*room, *time, *damp))))
@@ -730,7 +729,7 @@ pub fn call_net(expr: &ExprCall, lapis: &Lapis) -> Option<Net> {
         }
         "rossler" => Some(Net::wrap(Box::new(rossler()))),
         "rotate" => {
-            let angle = args.get(0)?;
+            let angle = args.first()?;
             let gain = args.get(1)?;
             Some(Net::wrap(Box::new(rotate(*angle, *gain))))
         }
@@ -803,12 +802,12 @@ pub fn call_net(expr: &ExprCall, lapis: &Lapis) -> Option<Net> {
         }
         "sumf" | "sumi" => None, //TODO
         "tap" => {
-            let min = args.get(0)?;
+            let min = args.first()?;
             let max = args.get(1)?;
             Some(Net::wrap(Box::new(tap(*min, *max))))
         }
         "tap_linear" => {
-            let min = args.get(0)?;
+            let min = args.first()?;
             let max = args.get(1)?;
             Some(Net::wrap(Box::new(tap_linear(*min, *max))))
         }
