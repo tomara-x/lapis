@@ -1,4 +1,4 @@
-use crate::{components::*, eval::functions::*};
+use crate::{components::*, eval::functions::*, eval::ints::*};
 use fundsp::math::*;
 use syn::*;
 
@@ -20,6 +20,75 @@ pub fn method_call_float(expr: &ExprMethodCall, lapis: &Lapis) -> Option<f32> {
             let k = nth_path_ident(&expr.receiver, 0)?;
             let shared = &mut lapis.smap.get(&k)?;
             Some(shared.value())
+        }
+        "floor" => Some(eval_float(&expr.receiver, lapis)?.floor()),
+        "ceil" => Some(eval_float(&expr.receiver, lapis)?.ceil()),
+        "round" => Some(eval_float(&expr.receiver, lapis)?.round()),
+        "trunc" => Some(eval_float(&expr.receiver, lapis)?.trunc()),
+        "fract" => Some(eval_float(&expr.receiver, lapis)?.fract()),
+        "abs" => Some(eval_float(&expr.receiver, lapis)?.abs()),
+        "signum" => Some(eval_float(&expr.receiver, lapis)?.signum()),
+        "copysign" => {
+            let sign = eval_float(expr.args.first()?, lapis)?;
+            Some(eval_float(&expr.receiver, lapis)?.copysign(sign))
+        }
+        "div_euclid" => {
+            let rhs = eval_float(expr.args.first()?, lapis)?;
+            Some(eval_float(&expr.receiver, lapis)?.div_euclid(rhs))
+        }
+        "rem_euclid" => {
+            let rhs = eval_float(expr.args.first()?, lapis)?;
+            Some(eval_float(&expr.receiver, lapis)?.rem_euclid(rhs))
+        }
+        "powi" => {
+            let n = eval_i32(expr.args.first()?)?;
+            Some(eval_float(&expr.receiver, lapis)?.powi(n))
+        }
+        "powf" => {
+            let n = eval_float(expr.args.first()?, lapis)?;
+            Some(eval_float(&expr.receiver, lapis)?.powf(n))
+        }
+        "sqrt" => Some(eval_float(&expr.receiver, lapis)?.sqrt()),
+        "exp" => Some(eval_float(&expr.receiver, lapis)?.exp()),
+        "exp2" => Some(eval_float(&expr.receiver, lapis)?.exp2()),
+        "ln" => Some(eval_float(&expr.receiver, lapis)?.ln()),
+        "log" => {
+            let base = eval_float(expr.args.first()?, lapis)?;
+            Some(eval_float(&expr.receiver, lapis)?.log(base))
+        }
+        "log2" => Some(eval_float(&expr.receiver, lapis)?.log2()),
+        "log10" => Some(eval_float(&expr.receiver, lapis)?.log10()),
+        "cbrt" => Some(eval_float(&expr.receiver, lapis)?.cbrt()),
+        "hypot" => {
+            let other = eval_float(expr.args.first()?, lapis)?;
+            Some(eval_float(&expr.receiver, lapis)?.hypot(other))
+        }
+        "sin" => Some(eval_float(&expr.receiver, lapis)?.sin()),
+        "cos" => Some(eval_float(&expr.receiver, lapis)?.cos()),
+        "tan" => Some(eval_float(&expr.receiver, lapis)?.tan()),
+        "asin" => Some(eval_float(&expr.receiver, lapis)?.asin()),
+        "acos" => Some(eval_float(&expr.receiver, lapis)?.acos()),
+        "atan" => Some(eval_float(&expr.receiver, lapis)?.atan()),
+        "sinh" => Some(eval_float(&expr.receiver, lapis)?.sinh()),
+        "cosh" => Some(eval_float(&expr.receiver, lapis)?.cosh()),
+        "tanh" => Some(eval_float(&expr.receiver, lapis)?.tanh()),
+        "asinh" => Some(eval_float(&expr.receiver, lapis)?.asinh()),
+        "acosh" => Some(eval_float(&expr.receiver, lapis)?.acosh()),
+        "atanh" => Some(eval_float(&expr.receiver, lapis)?.atanh()),
+        "atan2" => {
+            let other = eval_float(expr.args.first()?, lapis)?;
+            Some(eval_float(&expr.receiver, lapis)?.atan2(other))
+        }
+        "recip" => Some(eval_float(&expr.receiver, lapis)?.recip()),
+        "to_degrees" => Some(eval_float(&expr.receiver, lapis)?.to_degrees()),
+        "to_radians" => Some(eval_float(&expr.receiver, lapis)?.to_radians()),
+        "max" => {
+            let other = eval_float(expr.args.first()?, lapis)?;
+            Some(eval_float(&expr.receiver, lapis)?.max(other))
+        }
+        "min" => {
+            let other = eval_float(expr.args.first()?, lapis)?;
+            Some(eval_float(&expr.receiver, lapis)?.min(other))
         }
         _ => None,
     }

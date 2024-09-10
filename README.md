@@ -14,8 +14,7 @@ lists marked non_exhaustive may be incomplete. if you notice something incorrect
 ## todo
 #[non_exhaustive, help_welcome]
 - Net methods aren't checked and will panic if misused
-- float methods (some of them)
-- vector methods (same)
+- vector methods (some)
 - Sequencer
 - i/o device selection (in the settings window)
 - input node abstraction
