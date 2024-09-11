@@ -27,6 +27,32 @@ fn unary_i32(expr: &ExprUnary, lapis: &Lapis) -> Option<i32> {
     }
 }
 
+pub fn eval_i64(expr: &Expr, lapis: &Lapis) -> Option<i64> {
+    let i = match expr {
+        Expr::Lit(expr) => lit_i64(&expr.lit),
+        Expr::Paren(expr) => eval_i64(&expr.expr, lapis),
+        Expr::Unary(expr) => unary_i64(expr, lapis),
+        _ => None,
+    };
+    if i.is_some() {
+        i
+    } else {
+        Some(eval_float(expr, lapis)? as i64)
+    }
+}
+fn lit_i64(expr: &Lit) -> Option<i64> {
+    match expr {
+        Lit::Int(expr) => expr.base10_parse::<i64>().ok(),
+        _ => None,
+    }
+}
+fn unary_i64(expr: &ExprUnary, lapis: &Lapis) -> Option<i64> {
+    match expr.op {
+        UnOp::Neg(_) => Some(-eval_i64(&expr.expr, lapis)?),
+        _ => None,
+    }
+}
+
 pub fn eval_u64(expr: &Expr, lapis: &Lapis) -> Option<u64> {
     let i = match expr {
         Expr::Lit(expr) => match &expr.lit {

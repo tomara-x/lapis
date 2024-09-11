@@ -129,10 +129,90 @@ pub fn call_float(expr: &ExprCall, lapis: &Lapis) -> Option<f32> {
     let func = nth_path_ident(&expr.func, 0)?;
     let args = accumulate_args(&expr.args, lapis);
     match func.as_str() {
-        "abs" => {
-            let n = args.first()?;
-            Some(abs(*n))
+        "a_weight" => Some(a_weight(*args.first()?)),
+        "abs" => Some(abs(*args.first()?)),
+        "amp_db" => Some(amp_db(*args.first()?)),
+        "atan" => Some(atan(*args.first()?)),
+        "bpm_hz" => Some(bpm_hz(*args.first()?)),
+        "ceil" => Some(ceil(*args.first()?)),
+        "clamp" => Some(clamp(*args.first()?, *args.get(1)?, *args.get(2)?)),
+        "clamp01" => Some(clamp01(*args.first()?)),
+        "clamp11" => Some(clamp11(*args.first()?)),
+        "cos" => Some(cos(*args.first()?)),
+        "cos_hz" => Some(cos_hz(*args.first()?, *args.get(1)?)),
+        "cubed" => Some(cubed(*args.first()?)),
+        "db_amp" => Some(db_amp(*args.first()?)),
+        "delerp" => Some(delerp(*args.first()?, *args.get(1)?, *args.get(2)?)),
+        "delerp11" => Some(delerp11(*args.first()?, *args.get(1)?, *args.get(2)?)),
+        "dexerp" => Some(dexerp(*args.first()?, *args.get(1)?, *args.get(2)?)),
+        "dexerp11" => Some(dexerp11(*args.first()?, *args.get(1)?, *args.get(2)?)),
+        "dissonance" => Some(dissonance(*args.first()?, *args.get(1)?)),
+        "dissonance_max" => Some(dissonance_max(*args.first()?)),
+        "downarc" => Some(downarc(*args.first()?)),
+        "ease_noise" => None, //TODO
+        "exp" => Some(exp(*args.first()?)),
+        "exp2" => Some(exp2(*args.first()?)),
+        "exp10" => Some(exp10(*args.first()?)),
+        "floor" => Some(floor(*args.first()?)),
+        "fractal_ease_noise" => None, //TODO
+        "fractal_noise" => {
+            let seed = eval_i64(expr.args.first()?, lapis)?;
+            let octaves = eval_i64(expr.args.get(1)?, lapis)?;
+            let roughness = eval_float(expr.args.get(2)?, lapis)?;
+            let x = eval_float(expr.args.get(3)?, lapis)?;
+            Some(fractal_noise(seed, octaves, roughness, x))
         }
+        "hash1" | "hash2" => None, //TODO
+        "identity" => None,        //TODO not useful here
+        "lerp" => Some(lerp(*args.first()?, *args.get(1)?, *args.get(2)?)),
+        "lerp11" => Some(lerp11(*args.first()?, *args.get(1)?, *args.get(2)?)),
+        "log" => Some(log(*args.first()?)),
+        "log2" => Some(log2(*args.first()?)),
+        "log10" => Some(log10(*args.first()?)),
+        "m_weight" => Some(m_weight(*args.first()?)),
+        "max" => Some(max(*args.first()?, *args.get(1)?)),
+        "midi_hz" => Some(midi_hz(*args.first()?)),
+        "min" => Some(min(*args.first()?, *args.get(1)?)),
+        "pow" => Some(pow(*args.first()?, *args.get(1)?)),
+        "rnd1" => Some(rnd1(eval_u64(expr.args.first()?, lapis)?) as f32),
+        "rnd2" => Some(rnd2(eval_u64(expr.args.first()?, lapis)?) as f32),
+        "round" => Some(round(*args.first()?)),
+        "semitone_ratio" => Some(semitone_ratio(*args.first()?)),
+        "signum" => Some(signum(*args.first()?)),
+        "sin" => Some(sin(*args.first()?)),
+        "sin_hz" => Some(sin_hz(*args.first()?, *args.get(1)?)),
+        "sine_ease" => Some(sine_ease(*args.first()?)),
+        "smooth3" => Some(smooth3(*args.first()?)),
+        "smooth5" => Some(smooth5(*args.first()?)),
+        "smooth7" => Some(smooth7(*args.first()?)),
+        "smooth9" => Some(smooth9(*args.first()?)),
+        "softexp" => Some(softexp(*args.first()?)),
+        "softmix" => Some(softmix(*args.first()?, *args.get(1)?, *args.get(2)?)),
+        "softsign" => Some(softsign(*args.first()?)),
+        "spline" => {
+            Some(spline(*args.first()?, *args.get(1)?, *args.get(2)?, *args.get(3)?, *args.get(4)?))
+        }
+        "spline_mono" => Some(spline_mono(
+            *args.first()?,
+            *args.get(1)?,
+            *args.get(2)?,
+            *args.get(3)?,
+            *args.get(4)?,
+        )),
+        "spline_noise" => {
+            let seed = eval_u64(expr.args.first()?, lapis)?;
+            let x = eval_float(expr.args.get(1)?, lapis)?;
+            Some(spline_noise(seed, x))
+        }
+        "sqr_hz" => Some(sqr_hz(*args.first()?, *args.get(1)?)),
+        "sqrt" => Some(sqrt(*args.first()?)),
+        "sqared" => Some(squared(*args.first()?)),
+        "tan" => Some(tan(*args.first()?)),
+        "tanh" => Some(tanh(*args.first()?)),
+        "tri_hz" => Some(tri_hz(*args.first()?, *args.get(1)?)),
+        "uparc" => Some(uparc(*args.first()?)),
+        "xerp" => Some(xerp(*args.first()?, *args.get(1)?, *args.get(2)?)),
+        "xerp11" => Some(xerp11(*args.first()?, *args.get(1)?, *args.get(2)?)),
         _ => None,
     }
 }
