@@ -234,7 +234,7 @@ pub fn call_net(expr: &ExprCall, lapis: &Lapis) -> Option<Net> {
         }
         "chorus" => {
             let arg = expr.args.first()?;
-            let seed = lit_u64(arg)?;
+            let seed = eval_u64(arg, lapis)?;
             let seperation = args.get(1)?;
             let variation = args.get(2)?;
             let mod_freq = args.get(3)?;
@@ -521,7 +521,7 @@ pub fn call_net(expr: &ExprCall, lapis: &Lapis) -> Option<Net> {
         "mls" => Some(Net::wrap(Box::new(mls()))),
         "mls_bits" => {
             let arg = expr.args.first()?;
-            let n = lit_u64(arg)?;
+            let n = eval_u64(arg, lapis)?;
             Some(Net::wrap(Box::new(mls_bits(n))))
         }
         "monitor" => {

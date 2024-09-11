@@ -31,7 +31,7 @@ lists marked non_exhaustive may be incomplete. if you notice something incorrect
 - `.play_backend()` allows you to play the backend of a net while still being able to edit that same net and commit changes to it. it should only be called once for any given net. (net has to be stored in a variable, have 0 inputs, and 2 outputs)
 - all number variables are f32, even if you type it as `4` it's still `4.0`
 - for functions that accept floats you can just type `3` and it's parsed as a float.
-- when a function takes an integer or usize, those are parsed to the corresponding type, so you can't use a variable there (since those are all floats), it has to be an integer literal
+- when a function takes an integer or usize, if you type it as a literal integer, then they are parsed to the corresponding type. otherwise (a variable or an expression containing a variable) they are evaluated as floats then cast to the needed type
 - a statement with just a variable name `variable;` will print that variable's value (or call .display() for graphs) same for expressions `2 + 2;` will print 4
 - everything is global. nothing is limited to scope except for the loop variable in for loops
 - [`Meter`](https://docs.rs/fundsp/0.19.0/fundsp/dynamics/enum.Meter.html) modes peak and rms are actually passed cast f32 not f64

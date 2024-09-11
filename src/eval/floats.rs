@@ -41,7 +41,7 @@ pub fn method_call_float(expr: &ExprMethodCall, lapis: &Lapis) -> Option<f32> {
             Some(eval_float(&expr.receiver, lapis)?.rem_euclid(rhs))
         }
         "powi" => {
-            let n = eval_i32(expr.args.first()?)?;
+            let n = eval_i32(expr.args.first()?, lapis)?;
             Some(eval_float(&expr.receiver, lapis)?.powi(n))
         }
         "powf" => {

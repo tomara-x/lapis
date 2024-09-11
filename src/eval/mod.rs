@@ -152,7 +152,7 @@ fn eval_stmt(s: Stmt, lapis: &mut Lapis) {
             }
             Expr::ForLoop(expr) => {
                 let Some(ident) = pat_ident(&expr.pat) else { return };
-                let bounds = range_bounds(&expr.expr);
+                let bounds = range_bounds(&expr.expr, lapis);
                 let arr = array_cloned(&expr.expr, lapis);
                 let tmp = lapis.fmap.remove(&ident);
                 if let Some((r0, r1)) = bounds {

@@ -1,40 +1,58 @@
+use crate::{components::*, eval::floats::*};
 use syn::*;
 
-pub fn eval_i32(expr: &Expr) -> Option<i32> {
-    match expr {
-        Expr::Lit(expr) => lit_int(&expr.lit),
-        Expr::Paren(expr) => eval_i32(&expr.expr),
-        Expr::Unary(expr) => unary_int(expr),
+pub fn eval_i32(expr: &Expr, lapis: &Lapis) -> Option<i32> {
+    let i = match expr {
+        Expr::Lit(expr) => lit_i32(&expr.lit),
+        Expr::Paren(expr) => eval_i32(&expr.expr, lapis),
+        Expr::Unary(expr) => unary_i32(expr, lapis),
         _ => None,
+    };
+    if i.is_some() {
+        i
+    } else {
+        Some(eval_float(expr, lapis)? as i32)
     }
 }
-pub fn lit_int(expr: &Lit) -> Option<i32> {
+fn lit_i32(expr: &Lit) -> Option<i32> {
     match expr {
         Lit::Int(expr) => expr.base10_parse::<i32>().ok(),
         _ => None,
     }
 }
-pub fn unary_int(expr: &ExprUnary) -> Option<i32> {
+fn unary_i32(expr: &ExprUnary, lapis: &Lapis) -> Option<i32> {
     match expr.op {
-        UnOp::Neg(_) => Some(-eval_i32(&expr.expr)?),
+        UnOp::Neg(_) => Some(-eval_i32(&expr.expr, lapis)?),
         _ => None,
     }
 }
-pub fn lit_u64(expr: &Expr) -> Option<u64> {
-    match expr {
+
+pub fn eval_u64(expr: &Expr, lapis: &Lapis) -> Option<u64> {
+    let i = match expr {
         Expr::Lit(expr) => match &expr.lit {
             Lit::Int(expr) => expr.base10_parse::<u64>().ok(),
             _ => None,
         },
         _ => None,
+    };
+    if i.is_some() {
+        i
+    } else {
+        Some(eval_float(expr, lapis)? as u64)
     }
 }
-pub fn lit_usize(expr: &Expr) -> Option<usize> {
-    match expr {
+
+pub fn eval_usize(expr: &Expr, lapis: &Lapis) -> Option<usize> {
+    let i = match expr {
         Expr::Lit(expr) => match &expr.lit {
             Lit::Int(expr) => expr.base10_parse::<usize>().ok(),
             _ => None,
         },
         _ => None,
+    };
+    if i.is_some() {
+        i
+    } else {
+        Some(eval_float(expr, lapis)? as usize)
     }
 }

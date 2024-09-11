@@ -46,11 +46,11 @@ pub fn net_methods(expr: &ExprMethodCall, lapis: &mut Lapis) -> Option<()> {
             let arg0 = expr.args.first()?;
             let src = path_nodeid(arg0, lapis)?;
             let arg1 = expr.args.get(1)?;
-            let src_port = lit_usize(arg1)?;
+            let src_port = eval_usize(arg1, lapis)?;
             let arg2 = expr.args.get(2)?;
             let snk = path_nodeid(arg2, lapis)?;
             let arg3 = expr.args.get(3)?;
-            let snk_port = lit_usize(arg3)?;
+            let snk_port = eval_usize(arg3, lapis)?;
             let k = nth_path_ident(&expr.receiver, 0)?;
             let net = &mut lapis.gmap.get_mut(&k)?;
             net.connect(src, src_port, snk, snk_port);
@@ -59,18 +59,18 @@ pub fn net_methods(expr: &ExprMethodCall, lapis: &mut Lapis) -> Option<()> {
             let arg0 = expr.args.first()?;
             let id = path_nodeid(arg0, lapis)?;
             let arg1 = expr.args.get(1)?;
-            let port = lit_usize(arg1)?;
+            let port = eval_usize(arg1, lapis)?;
             let k = nth_path_ident(&expr.receiver, 0)?;
             let net = &mut lapis.gmap.get_mut(&k)?;
             net.disconnect(id, port);
         }
         "connect_input" => {
             let arg0 = expr.args.first()?;
-            let global_in = lit_usize(arg0)?;
+            let global_in = eval_usize(arg0, lapis)?;
             let arg1 = expr.args.get(1)?;
             let snk = path_nodeid(arg1, lapis)?;
             let arg2 = expr.args.get(2)?;
-            let snk_port = lit_usize(arg2)?;
+            let snk_port = eval_usize(arg2, lapis)?;
             let k = nth_path_ident(&expr.receiver, 0)?;
             let net = &mut lapis.gmap.get_mut(&k)?;
             net.connect_input(global_in, snk, snk_port);
@@ -86,16 +86,16 @@ pub fn net_methods(expr: &ExprMethodCall, lapis: &mut Lapis) -> Option<()> {
             let arg0 = expr.args.first()?;
             let src = path_nodeid(arg0, lapis)?;
             let arg1 = expr.args.get(1)?;
-            let src_port = lit_usize(arg1)?;
+            let src_port = eval_usize(arg1, lapis)?;
             let arg2 = expr.args.get(2)?;
-            let global_out = lit_usize(arg2)?;
+            let global_out = eval_usize(arg2, lapis)?;
             let k = nth_path_ident(&expr.receiver, 0)?;
             let net = &mut lapis.gmap.get_mut(&k)?;
             net.connect_output(src, src_port, global_out);
         }
         "disconnect_output" => {
             let arg0 = expr.args.first()?;
-            let out = lit_usize(arg0)?;
+            let out = eval_usize(arg0, lapis)?;
             let k = nth_path_ident(&expr.receiver, 0)?;
             let net = &mut lapis.gmap.get_mut(&k)?;
             net.disconnect_output(out);
@@ -109,9 +109,9 @@ pub fn net_methods(expr: &ExprMethodCall, lapis: &mut Lapis) -> Option<()> {
         }
         "pass_through" => {
             let arg0 = expr.args.first()?;
-            let input = lit_usize(arg0)?;
+            let input = eval_usize(arg0, lapis)?;
             let arg1 = expr.args.get(1)?;
-            let output = lit_usize(arg1)?;
+            let output = eval_usize(arg1, lapis)?;
             let k = nth_path_ident(&expr.receiver, 0)?;
             let net = &mut lapis.gmap.get_mut(&k)?;
             net.pass_through(input, output);

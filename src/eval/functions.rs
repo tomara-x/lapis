@@ -33,13 +33,13 @@ pub fn pat_ident(pat: &Pat) -> Option<String> {
         _ => None,
     }
 }
-pub fn range_bounds(expr: &Expr) -> Option<(i32, i32)> {
+pub fn range_bounds(expr: &Expr, lapis: &Lapis) -> Option<(i32, i32)> {
     match expr {
         Expr::Range(expr) => {
             let start = expr.start.clone()?;
             let end = expr.end.clone()?;
-            let s = eval_i32(&start)?;
-            let mut e = eval_i32(&end)?;
+            let s = eval_i32(&start, lapis)?;
+            let mut e = eval_i32(&end, lapis)?;
             if let RangeLimits::Closed(_) = expr.limits {
                 e += 1;
             }
