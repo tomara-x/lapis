@@ -9,7 +9,6 @@ lists marked non_exhaustive may be incomplete. if you notice something incorrect
 - for functions that accept [`Shape`](https://docs.rs/fundsp/0.19.0/fundsp/shape/trait.Shape.html) as input, `Adaptive` and `ShapeFn` aren't supported
 - no closures and therefore none of the functions that take closures as input (yet)
 - no `break` or `continue` in loops
-- Net methods like `remove` don't return a node
 
 ## todo
 #[non_exhaustive, help_welcome]
@@ -27,11 +26,10 @@ lists marked non_exhaustive may be incomplete. if you notice something incorrect
 - mutability is ignored. everything is mutable
 - type annotations are ignored. types are inferred (`f32`, `Net`, `Vec<f32>`, `bool`, or `NodeId`)
 - when writing vectors you write them as you would an array literal. `let arr = [2, 50.4, 4.03];` instead of `vec![2, 50.4, 4.03]`
-- the `.play()` method for graphs allow you to listen to the graph directly. (graph has to have 0 inputs and 1 or 2 outputs)
-- `.play_backend()` allows you to play the backend of a net while still being able to edit that same net and commit changes to it. it should only be called once for any given net. (net has to be stored in a variable, have 0 inputs, and 2 outputs)
+- the `.play()` method for graphs allows you to listen to the graph directly. (graph has to have 0 inputs and 1 or 2 outputs)
 - all number variables are f32, even if you type it as `4` it's still `4.0`
 - for functions that accept floats you can just type `3` and it's parsed as a float.
-- when a function takes an integer or usize, if you type it as a literal integer, then they are parsed to the corresponding type. otherwise (a variable or an expression containing a variable) they are evaluated as floats then cast to the needed type
+- when a function takes an integer or usize, if you type it as a literal integer, then they are parsed to the corresponding type. otherwise (a variable or an expression) they are evaluated as floats then cast to the needed type
 - a statement with just a variable name `variable;` will print that variable's value (or call .display() for graphs) same for expressions `2 + 2;` will print 4
 - everything is global. nothing is limited to scope except for the loop variable in for loops
 - [`Meter`](https://docs.rs/fundsp/0.19.0/fundsp/dynamics/enum.Meter.html) modes peak and rms are actually passed cast f32 not f64
@@ -133,13 +131,25 @@ blocks
     x;
 }
 ```
-net methods
+Net
+
+<details><summary>deviations</summary>
+<p>
+
+- `remove`, `remove_link`, `replace` will work but wont return a node
+- `node`, `node_mut`, `wrap`, `wrap_id`, `scalar`, `check`, `backend`, `has_backend` aren't supported
+- `.play_backend()` method allows you to play the backend of a net while still being able to edit that same net and commit changes to it. it should only be called once for any given net. (net has to be stored in a variable, have 0 inputs, and 2 outputs)
+
+</p>
+</details>
+
 ```rust
 let net = Net::new(0,2);
+net.play_backend();
 let id = net.push(sine_hz(440));
 net.connect_output(id,0,0);
 net.connect_output(id,0,1);
-net.play(); // not a method for Net (see deviations)
+net.commit();
 ```
 tick
 ```rust
