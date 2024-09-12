@@ -82,17 +82,33 @@ impl eframe::App for Lapis {
 
             Window::new("maps").open(&mut self.maps).pivot(center).show(ctx, |ui| {
                 ui.group(|ui| {
-                    if ui.button("clear fmap").clicked() {
+                    if ui.button("clear floats").clicked() {
                         self.fmap.clear();
                         self.fmap.shrink_to_fit();
                     }
-                    if ui.button("clear vmap").clicked() {
+                    if ui.button("clear vevtors").clicked() {
                         self.vmap.clear();
                         self.vmap.shrink_to_fit();
                     }
-                    if ui.button("clear gmap").clicked() {
+                    if ui.button("clear graphs").clicked() {
                         self.gmap.clear();
                         self.gmap.shrink_to_fit();
+                    }
+                    if ui.button("clear waves").clicked() {
+                        self.wmap.clear();
+                        self.wmap.shrink_to_fit();
+                    }
+                    if ui.button("clear bools").clicked() {
+                        self.bmap.clear();
+                        self.bmap.shrink_to_fit();
+                    }
+                    if ui.button("clear shared").clicked() {
+                        self.smap.clear();
+                        self.smap.shrink_to_fit();
+                    }
+                    if ui.button("clear node ids").clicked() {
+                        self.idmap.clear();
+                        self.idmap.shrink_to_fit();
                     }
                 });
             });
