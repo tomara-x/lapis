@@ -109,7 +109,7 @@ pub fn call_net(expr: &ExprCall, lapis: &Lapis) -> Option<Net> {
                     let val = eval_float(arg1, lapis)?;
                     Some(Net::scalar(chans, val))
                 }
-                _ => None
+                _ => None,
             }
         }
         "add" => {
