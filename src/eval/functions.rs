@@ -13,6 +13,7 @@ pub fn remove_from_all_maps(k: &String, lapis: &mut Lapis) {
     lapis.idmap.remove(k);
     lapis.bmap.remove(k);
     lapis.smap.remove(k);
+    lapis.wmap.remove(k);
 }
 pub fn path_fade(expr: &Expr) -> Option<Fade> {
     let f = nth_path_ident(expr, 0)?;
