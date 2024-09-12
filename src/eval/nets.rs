@@ -845,9 +845,37 @@ pub fn call_net(expr: &ExprCall, lapis: &Lapis) -> Option<Net> {
             let shared = eval_shared(arg, lapis)?;
             Some(Net::wrap(Box::new(var(&shared))))
         }
-        "var_fn" => None,    // TODO
-        "wavech" => None,    //TODO after arrays
-        "wavech_at" => None, //TODO
+        "var_fn" => None, // TODO
+        "wavech" => {
+            let arg0 = expr.args.first()?;
+            let arg1 = expr.args.get(1)?;
+            let arg2 = expr.args.get(2);
+            let k = nth_path_ident(arg0, 0)?;
+            let wave = lapis.wmap.get(&k)?.clone();
+            let chan = eval_usize(arg1, lapis)?;
+            let loop_point = if let Some(arg) = arg2 { eval_usize(arg, lapis) } else { None };
+            Some(Net::wrap(Box::new(wavech(&std::sync::Arc::new(wave), chan, loop_point))))
+        }
+        "wavech_at" => {
+            let arg0 = expr.args.first()?;
+            let arg1 = expr.args.get(1)?;
+            let arg2 = expr.args.get(2)?;
+            let arg3 = expr.args.get(3)?;
+            let arg4 = expr.args.get(4);
+            let k = nth_path_ident(arg0, 0)?;
+            let wave = lapis.wmap.get(&k)?.clone();
+            let chan = eval_usize(arg1, lapis)?;
+            let start = eval_usize(arg2, lapis)?;
+            let end = eval_usize(arg3, lapis)?;
+            let loop_point = if let Some(arg) = arg4 { eval_usize(arg, lapis) } else { None };
+            Some(Net::wrap(Box::new(wavech_at(
+                &std::sync::Arc::new(wave),
+                chan,
+                start,
+                end,
+                loop_point,
+            ))))
+        }
         "white" => Some(Net::wrap(Box::new(white()))),
         "zero" => Some(Net::wrap(Box::new(zero()))),
         _ => None,

@@ -2,6 +2,7 @@ use crate::{
     components::*,
     eval::{floats::*, functions::*, ints::*, nets::*, node_ids::*},
 };
+use fundsp::hacker32::*;
 use syn::*;
 
 pub fn net_methods(expr: &ExprMethodCall, lapis: &mut Lapis) -> Option<()> {
@@ -131,6 +132,13 @@ pub fn net_methods(expr: &ExprMethodCall, lapis: &mut Lapis) -> Option<()> {
             if net.has_backend() {
                 net.commit();
             }
+        }
+        "set_sample_rate" => {
+            let arg = expr.args.first()?;
+            let sr = eval_float(arg, lapis)? as f64;
+            let k = nth_path_ident(&expr.receiver, 0)?;
+            let net = &mut lapis.gmap.get_mut(&k)?;
+            net.set_sample_rate(sr);
         }
         _ => {}
     }

@@ -59,8 +59,6 @@ lists marked non_exhaustive may be incomplete. if you notice something incorrect
 - unit
 - update
 - var_fn
-- wavech
-- wavech_at
 
 </p>
 </details>
