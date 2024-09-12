@@ -7,7 +7,7 @@ repository = "https://github.com/tomara-x/lapis"
 license = "MIT OR Apache-2.0"
 
 [dependencies]
-fundsp = {version = "0.19.0", default-features = false, features = ["std"]}
+fundsp = {version = "0.19.0", features = ["std"]}
 cpal = {version = "0.15.3", features = ["jack"]}
 eframe = "0.28.1"
 egui_extras = { version = "0.28.1", default-features = false, features = ["syntect"] }

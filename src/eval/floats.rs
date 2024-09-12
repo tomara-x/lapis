@@ -90,6 +90,39 @@ pub fn method_call_float(expr: &ExprMethodCall, lapis: &Lapis) -> Option<f32> {
             let other = eval_float(expr.args.first()?, lapis)?;
             Some(eval_float(&expr.receiver, lapis)?.min(other))
         }
+        "at" => {
+            let k = nth_path_ident(&expr.receiver, 0)?;
+            let wave = lapis.wmap.get(&k)?;
+            let arg0 = expr.args.first()?;
+            let arg1 = expr.args.get(1)?;
+            let chan = eval_usize(arg0, lapis)?;
+            let index = eval_usize(arg1, lapis)?;
+            if chan < wave.channels() && index < wave.len() {
+                Some(wave.at(chan, index))
+            } else {
+                None
+            }
+        }
+        "channels" => {
+            let k = nth_path_ident(&expr.receiver, 0)?;
+            let wave = lapis.wmap.get(&k)?;
+            Some(wave.channels() as f32)
+        }
+        "len" | "length" => {
+            let k = nth_path_ident(&expr.receiver, 0)?;
+            let wave = lapis.wmap.get(&k)?;
+            Some(wave.len() as f32)
+        }
+        "duration" => {
+            let k = nth_path_ident(&expr.receiver, 0)?;
+            let wave = lapis.wmap.get(&k)?;
+            Some(wave.duration() as f32)
+        }
+        "amplitude" => {
+            let k = nth_path_ident(&expr.receiver, 0)?;
+            let wave = lapis.wmap.get(&k)?;
+            Some(wave.amplitude())
+        }
         _ => None,
     }
 }

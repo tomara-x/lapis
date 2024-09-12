@@ -39,6 +39,45 @@ lists marked non_exhaustive may be incomplete. if you notice something incorrect
 ## what's supported
 #[non_exhaustive]
 
+<details><summary>all functions in hacker32 except for</summary>
+<p>
+
+- branchf, branchi, busf, busi, pipef, pipei, stackf, stacki, sumf, sumi
+- envelope, envelope2, envelope3, envelope_in,
+- lfo, lfo2, lfo3, lfo_in
+- fdn, fdn2
+- multitap, multitap_linear
+- feedback2
+- flanger
+- map
+- oversample
+- phaser
+- resample
+- resynth
+- shape_fn
+- snoop
+- unit
+- update
+- var_fn
+- wavech
+- wavech_at
+
+</p>
+</details>
+
+
+<details><summary>all functions in the math module except for</summary>
+<p>
+
+- ease_noise
+- fractal_ease_noise
+- hash1
+- hash2
+- identity
+
+</p>
+</details>
+
 assignment
 ```rust
 let x = 9;
@@ -118,6 +157,30 @@ let s = shared(440);
 let g = var(s) >> sine();
 g.play();
 s.set(220);
+```
+Wave
+
+<details><summary>deviations</summary>
+<p>
+
+- the `remove` method removes the channel but doesn't return a vec
+- the `channel` method returns a cloned vec
+- output from methods `channels`, `len`, and `duration` is cast as f32
+- `is_empty`, `channel_mut`, `write_wav16`, `write_wav32`, `load_slice`, `load_slice_track` aren't implemented
+
+</p>
+</details>
+
+```rust
+let w = Wave::load("./guidance.wav");   // load from file
+w;                                      // prints info about the loaded wave
+    Wave(ch:1, sr:11025, len:1101250, dur:99.88662131519274)
+
+let osc = sine_hz(134) | saw_hz(42);
+let s = Wave::render(44100, 1, osc);    // render 1 second of the given graph
+s;                                      // print info
+    Wave(ch:2, sr:44100, len:44100, dur:1)
+s.save_wav16("awawawa.wav");            // save the wave as a 16-bit wav file
 ```
 
 
