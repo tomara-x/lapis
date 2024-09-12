@@ -1,5 +1,5 @@
 use crate::{components::*, eval::functions::*, eval::ints::*};
-use fundsp::math::*;
+use fundsp::hacker32::*;
 use syn::*;
 
 pub fn eval_float(expr: &Expr, lapis: &Lapis) -> Option<f32> {
@@ -122,6 +122,21 @@ pub fn method_call_float(expr: &ExprMethodCall, lapis: &Lapis) -> Option<f32> {
             let k = nth_path_ident(&expr.receiver, 0)?;
             let wave = lapis.wmap.get(&k)?;
             Some(wave.amplitude())
+        }
+        "size" => {
+            let k = nth_path_ident(&expr.receiver, 0)?;
+            let net = lapis.gmap.get(&k)?;
+            Some(net.size() as f32)
+        }
+        "inputs" => {
+            let k = nth_path_ident(&expr.receiver, 0)?;
+            let net = lapis.gmap.get(&k)?;
+            Some(net.inputs() as f32)
+        }
+        "outputs" => {
+            let k = nth_path_ident(&expr.receiver, 0)?;
+            let net = lapis.gmap.get(&k)?;
+            Some(net.outputs() as f32)
         }
         _ => None,
     }

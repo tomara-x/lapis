@@ -96,12 +96,20 @@ pub fn call_net(expr: &ExprCall, lapis: &Lapis) -> Option<Net> {
     match func.as_str() {
         "Net" => {
             let f = nth_path_ident(&expr.func, 1)?;
-            if f == "new" {
-                let ins = args.first()?;
-                let outs = args.get(1)?;
-                Some(Net::new(*ins as usize, *outs as usize))
-            } else {
-                None
+            match f.as_str() {
+                "new" => {
+                    let ins = args.first()?;
+                    let outs = args.get(1)?;
+                    Some(Net::new(*ins as usize, *outs as usize))
+                }
+                "scalar" => {
+                    let arg0 = expr.args.first()?;
+                    let arg1 = expr.args.get(1)?;
+                    let chans = eval_usize(arg0, lapis)?;
+                    let val = eval_float(arg1, lapis)?;
+                    Some(Net::scalar(chans, val))
+                }
+                _ => None
             }
         }
         "add" => {

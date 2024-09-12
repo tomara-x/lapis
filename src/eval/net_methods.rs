@@ -140,6 +140,11 @@ pub fn net_methods(expr: &ExprMethodCall, lapis: &mut Lapis) -> Option<()> {
             let net = &mut lapis.gmap.get_mut(&k)?;
             net.set_sample_rate(sr);
         }
+        "reset" => {
+            let k = nth_path_ident(&expr.receiver, 0)?;
+            let net = &mut lapis.gmap.get_mut(&k)?;
+            net.reset();
+        }
         _ => {}
     }
     None
