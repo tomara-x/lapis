@@ -86,7 +86,7 @@ impl eframe::App for Lapis {
                         self.fmap.clear();
                         self.fmap.shrink_to_fit();
                     }
-                    if ui.button("clear vevtors").clicked() {
+                    if ui.button("clear vectors").clicked() {
                         self.vmap.clear();
                         self.vmap.shrink_to_fit();
                     }

@@ -137,7 +137,7 @@ Net
 <p>
 
 - `remove`, `remove_link`, `replace` will work but wont return a node
-- `node`, `node_mut`, `wrap`, `wrap_id`, `scalar`, `check`, `backend`, `has_backend` aren't supported
+- `node`, `node_mut`, `wrap`, `wrap_id`, `check`, `backend`, `has_backend` aren't supported
 - `.play_backend()` method allows you to play the backend of a net while still being able to edit that same net and commit changes to it. it should only be called once for any given net. (net has to be stored in a variable, have 0 inputs, and 2 outputs)
 
 </p>
