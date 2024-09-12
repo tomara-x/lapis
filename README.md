@@ -167,6 +167,7 @@ Wave
 - the `channel` method returns a cloned vec
 - output from methods `channels`, `len`, and `duration` is cast as f32
 - `is_empty`, `channel_mut`, `write_wav16`, `write_wav32`, `load_slice`, `load_slice_track` aren't implemented
+- methods on `Wave`s can only be called on a stored variable. so you can't say `Wave::zero(2,44100,1).channel(0)` for example. you have to assign the wave to a variable then call the method on that variable
 
 </p>
 </details>
