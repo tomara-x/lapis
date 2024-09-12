@@ -24,7 +24,7 @@ lists marked non_exhaustive may be incomplete. if you notice something incorrect
 ## deviations
 #[non_exhaustive]
 - mutability is ignored. everything is mutable
-- type annotations are ignored. types are inferred (`f32`, `Net`, `Vec<f32>`, `bool`, or `NodeId`)
+- type annotations are ignored. types are inferred (`f32`, `Net`, `Vec<f32>`, `bool`, `NodeId`, `Wave`, `Shared`,)
 - when writing vectors you write them as you would an array literal. `let arr = [2, 50.4, 4.03];` instead of `vec![2, 50.4, 4.03]`
 - the `.play()` method for graphs allows you to listen to the graph directly. (graph has to have 0 inputs and 1 or 2 outputs)
 - all number variables are f32, even if you type it as `4` it's still `4.0`
@@ -136,9 +136,9 @@ Net
 <details><summary>deviations</summary>
 <p>
 
-- `remove`, `remove_link`, `replace` will work but wont return a node
+- `remove`, `remove_link`, `replace` will work but won't return a node
 - `node`, `node_mut`, `wrap`, `wrap_id`, `check`, `backend`, `has_backend` aren't supported
-- `.play_backend()` method allows you to play the backend of a net while still being able to edit that same net and commit changes to it. it should only be called once for any given net. (net has to be stored in a variable, have 0 inputs, and 2 outputs)
+- `.play_backend()` method allows you to play the backend of a net while still being able to edit that same net and commit changes to it. it should only be called once for any given net. the net has to be stored in a variable, have 0 inputs, and 2 outputs
 
 </p>
 </details>
