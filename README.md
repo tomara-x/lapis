@@ -176,6 +176,7 @@ Wave
 - output from methods `channels`, `len`, and `duration` is cast as f32
 - `is_empty`, `channel_mut`, `write_wav16`, `write_wav32`, `load_slice`, `load_slice_track` aren't implemented
 - methods on `Wave`s can only be called on a stored variable. so you can't say `Wave::zero(2,44100,1).channel(0)` for example. you have to assign the wave to a variable then call the method on that variable
+- it's actually an Arc<Wave>, methods are called using Arc::make_mut.
 
 </p>
 </details>
@@ -183,14 +184,45 @@ Wave
 ```rust
 let w = Wave::load("./guidance.wav");   // load from file
 w;                                      // prints info about the loaded wave
-    Wave(ch:1, sr:11025, len:1101250, dur:99.88662131519274)
+    //Wave(ch:1, sr:11025, len:1101250, dur:99.88662131519274)
 
 let osc = sine_hz(134) | saw_hz(42);
 let s = Wave::render(44100, 1, osc);    // render 1 second of the given graph
 s;                                      // print info
-    Wave(ch:2, sr:44100, len:44100, dur:1)
+    //Wave(ch:2, sr:44100, len:44100, dur:1)
 s.save_wav16("awawawa.wav");            // save the wave as a 16-bit wav file
 ```
+
+<details><summary>Arc(Wave)</summary>
+<p>
+
+```rust
+// waves use Arc. they're cloned when mutated while other references exist
+// (Arc::make_mut)
+
+// load a song (keep a system monitor open to watch the memory use)
+let wave = Wave::load("song.mp3");
+
+// this doesn't clone the wave, since no other references exist
+wave.set_sample_rate(48000);
+
+// no memory use increase. the players use the same copy
+let w1 = wavech(wave, 0);
+let w2 = wavech(wave, 1);
+
+// this causes the wave to be cloned (one in graphs, and the new edited one here)
+wave.set_sample_rate(48000);
+
+// redefining the graphs, dropping the old wave
+let w1 = wavech(wave, 0);
+let w2 = wavech(wave, 1);
+
+// if you're using `play()`, it has to be called twice for an old graph to be dropped
+// since it uses a Slot, which keeps the previous graph for morphing
+```
+
+</p>
+</details>
 
 
 ## building
