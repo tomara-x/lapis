@@ -1,6 +1,7 @@
 use crate::audio::*;
 use fundsp::hacker32::*;
 use std::collections::HashMap;
+use std::sync::Arc;
 
 #[allow(dead_code)]
 pub struct Lapis {
@@ -15,7 +16,7 @@ pub struct Lapis {
     pub idmap: HashMap<String, NodeId>,
     pub bmap: HashMap<String, bool>,
     pub smap: HashMap<String, Shared>,
-    pub wmap: HashMap<String, Wave>,
+    pub wmap: HashMap<String, Arc<Wave>>,
     pub slot: Slot,
     pub stream: Option<cpal::Stream>,
 }

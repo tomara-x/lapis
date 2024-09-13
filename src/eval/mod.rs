@@ -1,5 +1,6 @@
 use crate::components::*;
 use fundsp::hacker32::*;
+use std::sync::Arc;
 use syn::*;
 
 mod arrays;
@@ -57,7 +58,8 @@ fn eval_stmt(s: Stmt, lapis: &mut Lapis) {
                         lapis.smap.insert(k, s);
                     } else if let Some(w) = eval_wave(&expr.expr, lapis) {
                         remove_from_all_maps(&k, lapis);
-                        lapis.wmap.insert(k, w);
+                        let wave = Arc::new(w);
+                        lapis.wmap.insert(k, wave);
                     }
                 }
             }

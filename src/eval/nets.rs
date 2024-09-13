@@ -862,7 +862,7 @@ pub fn call_net(expr: &ExprCall, lapis: &Lapis) -> Option<Net> {
             let wave = lapis.wmap.get(&k)?.clone();
             let chan = eval_usize(arg1, lapis)?;
             let loop_point = if let Some(arg) = arg2 { eval_usize(arg, lapis) } else { None };
-            Some(Net::wrap(Box::new(wavech(&std::sync::Arc::new(wave), chan, loop_point))))
+            Some(Net::wrap(Box::new(wavech(&wave, chan, loop_point))))
         }
         "wavech_at" => {
             let arg0 = expr.args.first()?;
@@ -876,13 +876,7 @@ pub fn call_net(expr: &ExprCall, lapis: &Lapis) -> Option<Net> {
             let start = eval_usize(arg2, lapis)?;
             let end = eval_usize(arg3, lapis)?;
             let loop_point = if let Some(arg) = arg4 { eval_usize(arg, lapis) } else { None };
-            Some(Net::wrap(Box::new(wavech_at(
-                &std::sync::Arc::new(wave),
-                chan,
-                start,
-                end,
-                loop_point,
-            ))))
+            Some(Net::wrap(Box::new(wavech_at(&wave, chan, start, end, loop_point))))
         }
         "white" => Some(Net::wrap(Box::new(white()))),
         "zero" => Some(Net::wrap(Box::new(zero()))),
