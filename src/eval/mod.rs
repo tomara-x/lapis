@@ -119,10 +119,10 @@ fn eval_stmt(s: Stmt, lapis: &mut Lapis) {
                 }
                 _ => {
                     if let Some(n) = method_call_float(&expr, lapis) {
-                        lapis.buffer.push_str(&format!("\n    {:?}", n));
+                        lapis.buffer.push_str(&format!("\n// {:?}", n));
                         return;
                     } else if let Some(arr) = method_call_arr_ref(&expr, lapis) {
-                        lapis.buffer.push_str(&format!("\n    {:?}", arr));
+                        lapis.buffer.push_str(&format!("\n// {:?}", arr));
                         return;
                     }
                     wave_methods(&expr, lapis);
@@ -208,21 +208,22 @@ fn eval_stmt(s: Stmt, lapis: &mut Lapis) {
             }
             _ => {
                 if let Some(n) = eval_float(&expr, lapis) {
-                    lapis.buffer.push_str(&format!("\n    {:?}", n));
+                    lapis.buffer.push_str(&format!("\n// {:?}", n));
                 } else if let Some(arr) = eval_arr_ref(&expr, lapis) {
-                    lapis.buffer.push_str(&format!("\n    {:?}", arr));
+                    lapis.buffer.push_str(&format!("\n// {:?}", arr));
                 } else if let Some(mut g) = eval_net(&expr, lapis) {
-                    lapis.buffer.push_str(&format!("\n{}", g.display()));
+                    let info = g.display().replace('\n', "\n// ");
+                    lapis.buffer.push_str(&format!("\n// {}", info));
                     lapis.buffer.push_str(&format!("Size           : {}", g.size()));
                 } else if let Some(id) = path_nodeid(&expr, lapis) {
-                    lapis.buffer.push_str(&format!("\n    {:?}", id));
+                    lapis.buffer.push_str(&format!("\n// {:?}", id));
                 } else if let Some(b) = eval_bool(&expr, lapis) {
-                    lapis.buffer.push_str(&format!("\n    {:?}", b));
+                    lapis.buffer.push_str(&format!("\n// {:?}", b));
                 } else if let Some(s) = eval_shared(&expr, lapis) {
-                    lapis.buffer.push_str(&format!("\n    Shared({})", s.value()));
+                    lapis.buffer.push_str(&format!("\n// Shared({})", s.value()));
                 } else if let Some(w) = path_wave(&expr, lapis) {
                     lapis.buffer.push_str(&format!(
-                        "\n    Wave(ch:{}, sr:{}, len:{}, dur:{})",
+                        "\n// Wave(ch:{}, sr:{}, len:{}, dur:{})",
                         w.channels(),
                         w.sample_rate(),
                         w.len(),

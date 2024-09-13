@@ -8,7 +8,7 @@ use {components::*, eval::*};
 fn main() -> eframe::Result {
     let options = eframe::NativeOptions {
         viewport: ViewportBuilder {
-            inner_size: Some(Vec2::new(500., 440.)),
+            inner_size: Some(Vec2::new(550., 440.)),
             min_inner_size: Some(Vec2::new(100., 100.)),
             ..Default::default()
         },
