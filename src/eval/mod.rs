@@ -12,10 +12,14 @@ mod ints;
 mod meters;
 mod net_methods;
 mod nets;
+mod sequencers;
 mod shapes;
 mod units;
 mod waves;
-use {arrays::*, atomics::*, bools::*, floats::*, functions::*, net_methods::*, nets::*, waves::*};
+use {
+    arrays::*, atomics::*, bools::*, floats::*, functions::*, net_methods::*, nets::*,
+    sequencers::*, waves::*,
+};
 
 pub fn eval(lapis: &mut Lapis) {
     if let Ok(stmt) = parse_str::<Stmt>(&lapis.input) {
@@ -56,14 +60,22 @@ fn eval_stmt(s: Stmt, lapis: &mut Lapis) {
                         remove_from_all_maps(&k, lapis);
                         let wave = Arc::new(w);
                         lapis.wmap.insert(k, wave);
+                    } else if let Some(seq) = call_seq(&expr.expr, lapis) {
+                        remove_from_all_maps(&k, lapis);
+                        lapis.seqmap.insert(k, seq);
+                    } else if let Some(event) =
+                        method_eventid(&expr.expr, lapis).or(path_eventid(&expr.expr, lapis))
+                    {
+                        remove_from_all_maps(&k, lapis);
+                        lapis.eventmap.insert(k, event);
                     }
                 }
             }
         }
         Stmt::Expr(expr, _) => match expr {
-            Expr::MethodCall(expr) => match expr.method.to_string().as_str() {
+            Expr::MethodCall(ref method) => match method.method.to_string().as_str() {
                 "play" => {
-                    if let Some(g) = eval_net(&expr.receiver, lapis) {
+                    if let Some(g) = eval_net(&method.receiver, lapis) {
                         if g.inputs() == 0 && g.outputs() == 1 {
                             lapis.slot.set(Fade::Smooth, 0.01, Box::new(g | dc(0.)));
                         } else if g.inputs() == 0 && g.outputs() == 2 {
@@ -74,10 +86,10 @@ fn eval_stmt(s: Stmt, lapis: &mut Lapis) {
                     }
                 }
                 "tick" => {
-                    let Some(input) = expr.args.first() else { return };
+                    let Some(input) = method.args.first() else { return };
                     let Some(in_arr) = array_cloned(input, lapis) else { return };
                     let mut output = Vec::new();
-                    if let Some(k) = nth_path_ident(&expr.receiver, 0) {
+                    if let Some(k) = nth_path_ident(&method.receiver, 0) {
                         if let Some(g) = &mut lapis.gmap.get_mut(&k) {
                             if g.inputs() != in_arr.len() {
                                 return;
@@ -85,15 +97,15 @@ fn eval_stmt(s: Stmt, lapis: &mut Lapis) {
                             output.resize(g.outputs(), 0.);
                             g.tick(&in_arr, &mut output);
                         }
-                    } else if let Some(mut g) = eval_net(&expr.receiver, lapis) {
+                    } else if let Some(mut g) = eval_net(&method.receiver, lapis) {
                         if g.inputs() != in_arr.len() {
                             return;
                         }
                         output.resize(g.outputs(), 0.);
                         g.tick(&in_arr, &mut output);
                     }
-                    lapis.buffer.push_str(&format!("\n    {:?}", output));
-                    if let Some(out) = expr.args.get(1) {
+                    lapis.buffer.push_str(&format!("\n// {:?}", output));
+                    if let Some(out) = method.args.get(1) {
                         if let Some(k) = nth_path_ident(out, 0) {
                             if let Some(var) = lapis.vmap.get_mut(&k) {
                                 *var = output;
@@ -102,7 +114,7 @@ fn eval_stmt(s: Stmt, lapis: &mut Lapis) {
                     }
                 }
                 "play_backend" => {
-                    if let Some(k) = nth_path_ident(&expr.receiver, 0) {
+                    if let Some(k) = nth_path_ident(&method.receiver, 0) {
                         if let Some(g) = &mut lapis.gmap.get_mut(&k) {
                             if !g.has_backend() {
                                 let g = g.backend();
@@ -110,21 +122,30 @@ fn eval_stmt(s: Stmt, lapis: &mut Lapis) {
                                     lapis.slot.set(Fade::Smooth, 0.01, Box::new(g));
                                 }
                             }
+                        } else if let Some(seq) = &mut lapis.seqmap.get_mut(&k) {
+                            if !seq.has_backend() {
+                                let backend = seq.backend();
+                                if backend.outputs() == 2 {
+                                    lapis.slot.set(Fade::Smooth, 0.01, Box::new(backend));
+                                }
+                            }
                         }
                     }
                 }
                 _ => {
-                    if let Some(n) = method_call_float(&expr, lapis) {
+                    if let Some(n) = method_call_float(method, lapis) {
                         lapis.buffer.push_str(&format!("\n// {:?}", n));
                         return;
-                    } else if let Some(arr) = method_call_arr_ref(&expr, lapis) {
+                    } else if let Some(arr) = method_call_arr_ref(method, lapis) {
                         lapis.buffer.push_str(&format!("\n// {:?}", arr));
                         return;
                     }
-                    wave_methods(&expr, lapis);
-                    net_methods(&expr, lapis);
-                    shared_methods(&expr, lapis);
-                    method_nodeid(&Expr::MethodCall(expr), lapis);
+                    wave_methods(method, lapis);
+                    net_methods(method, lapis);
+                    shared_methods(method, lapis);
+                    method_nodeid(&expr, lapis);
+                    seq_methods(method, lapis);
+                    method_eventid(&expr, lapis);
                 }
             },
             Expr::Assign(expr) => {
@@ -154,6 +175,12 @@ fn eval_stmt(s: Stmt, lapis: &mut Lapis) {
                 } else if let Some(s) = eval_shared(&expr.right, lapis) {
                     if let Some(var) = lapis.smap.get_mut(&ident) {
                         *var = s;
+                    }
+                } else if let Some(event) =
+                    method_eventid(&expr.right, lapis).or(path_eventid(&expr.right, lapis))
+                {
+                    if let Some(var) = lapis.eventmap.get_mut(&ident) {
+                        *var = event;
                     }
                 }
             }
@@ -207,7 +234,7 @@ fn eval_stmt(s: Stmt, lapis: &mut Lapis) {
                     lapis.buffer.push_str(&format!("\n// {:?}", n));
                 } else if let Some(arr) = eval_arr_ref(&expr, lapis) {
                     lapis.buffer.push_str(&format!("\n// {:?}", arr));
-                } else if let Some(mut g) = eval_net(&expr, lapis) {
+                } else if let Some(mut g) = eval_net_cloned(&expr, lapis) {
                     let info = g.display().replace('\n', "\n// ");
                     lapis.buffer.push_str(&format!("\n// {}", info));
                     lapis.buffer.push_str(&format!("Size           : {}", g.size()));
@@ -225,6 +252,15 @@ fn eval_stmt(s: Stmt, lapis: &mut Lapis) {
                         w.len(),
                         w.duration()
                     ));
+                } else if let Some(seq) = path_seq(&expr, lapis) {
+                    let info = format!(
+                        "\n// Sequencer(outs: {}, has_backend: {})",
+                        seq.outputs(),
+                        seq.has_backend()
+                    );
+                    lapis.buffer.push_str(&info);
+                } else if let Some(event) = path_eventid(&expr, lapis) {
+                    lapis.buffer.push_str(&format!("\n// {:?}", event));
                 }
             }
         },

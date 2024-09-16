@@ -14,7 +14,7 @@ pub fn eval_wave(expr: &Expr, lapis: &mut Lapis) -> Option<Wave> {
     }
 }
 
-fn call_wave(expr: &ExprCall, lapis: &Lapis) -> Option<Wave> {
+fn call_wave(expr: &ExprCall, lapis: &mut Lapis) -> Option<Wave> {
     let seg0 = nth_path_ident(&expr.func, 0)?;
     if seg0 != "Wave" {
         return None;

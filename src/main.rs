@@ -110,6 +110,14 @@ impl eframe::App for Lapis {
                         self.idmap.clear();
                         self.idmap.shrink_to_fit();
                     }
+                    if ui.button("clear sequencers").clicked() {
+                        self.seqmap.clear();
+                        self.seqmap.shrink_to_fit();
+                    }
+                    if ui.button("clear event ids").clicked() {
+                        self.eventmap.clear();
+                        self.eventmap.shrink_to_fit();
+                    }
                 });
             });
             ui.horizontal(|ui| {

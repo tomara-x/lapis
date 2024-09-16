@@ -17,6 +17,8 @@ pub struct Lapis {
     pub bmap: HashMap<String, bool>,
     pub smap: HashMap<String, Shared>,
     pub wmap: HashMap<String, Arc<Wave>>,
+    pub seqmap: HashMap<String, Sequencer>,
+    pub eventmap: HashMap<String, EventId>,
     pub slot: Slot,
     pub stream: Option<cpal::Stream>,
 }
@@ -38,6 +40,8 @@ impl Lapis {
             bmap: HashMap::new(),
             smap: HashMap::new(),
             wmap: HashMap::new(),
+            seqmap: HashMap::new(),
+            eventmap: HashMap::new(),
             slot,
             stream,
         }
