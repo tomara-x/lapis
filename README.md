@@ -14,7 +14,6 @@ lists marked non_exhaustive may be incomplete. if you notice something incorrect
 #[non_exhaustive, help_welcome]
 - Net methods aren't checked and will panic if misused
 - vector methods (some)
-- Sequencer
 - i/o device selection (in the settings window)
 - input node abstraction
 - atomic synth
@@ -74,7 +73,7 @@ lists marked non_exhaustive may be incomplete. if you notice something incorrect
 </p>
 </details>
 
-assignment
+**assignment**
 ```rust
 let x = 9;
 let y = 4 + 4 * x - (3 - x * 4);
@@ -82,14 +81,14 @@ let osc3 = sine() & mul(3) >> sine() & mul(0.5) >> sine();
 let f = lowpass_hz(1729, 0.5);
 let out = osc3 >> f;
 ```
-reassignment
+**reassignment**
 ```rust
 let x = 42;
 x = 56;         // x is still a number. this works
 x = sine();     // x is a number can't assign an audio node (x is still 56.0)
 let x = sine(); // x is now a sine()
 ```
-if conditions
+**if conditions**
 ```rust
 let x = true && 2 < 8;
 let y = 3 % 2 == 1;
@@ -101,7 +100,7 @@ if x {
     // get rambunctious
 }
 ```
-for loops
+**for loops**
 ```rust
 // with ranges
 for i in 0..5 {
@@ -120,7 +119,7 @@ for i in [4,6,8] {
     }
 }
 ```
-blocks
+**blocks**
 ```rust
 // to execute multiple statements at once, put them in a block
 {
@@ -131,7 +130,7 @@ blocks
     x;
 }
 ```
-Net
+**Net**
 
 <details><summary>deviations</summary>
 <p>
@@ -151,7 +150,7 @@ net.connect_output(id,0,0);
 net.connect_output(id,0,1);
 net.commit();
 ```
-tick
+**tick**
 ```rust
 let net = mul(10);
 net.tick([4]); // prints [40.0]
@@ -159,14 +158,14 @@ let in = [6];
 let out = [];
 net.tick(in, out); // out is now [60.0]
 ```
-shared/var
+**shared/var**
 ```rust
 let s = shared(440);
 let g = var(s) >> sine();
 g.play();
 s.set(220);
 ```
-Wave
+**Wave**
 
 <details><summary>deviations</summary>
 <p>
@@ -177,21 +176,10 @@ Wave
 - `is_empty`, `channel_mut`, `write_wav16`, `write_wav32`, `load_slice`, `load_slice_track` aren't implemented
 - methods on `Wave`s can only be called on a stored variable. so you can't say `Wave::zero(2,44100,1).channel(0)` for example. you have to assign the wave to a variable then call the method on that variable
 - it's actually an Arc<Wave>, methods are called using Arc::make_mut.
+- can't be cloned
 
 </p>
 </details>
-
-```rust
-let w = Wave::load("./guidance.wav");   // load from file
-w;                                      // prints info about the loaded wave
-    //Wave(ch:1, sr:11025, len:1101250, dur:99.88662131519274)
-
-let osc = sine_hz(134) | saw_hz(42);
-let s = Wave::render(44100, 1, osc);    // render 1 second of the given graph
-s;                                      // print info
-    //Wave(ch:2, sr:44100, len:44100, dur:1)
-s.save_wav16("awawawa.wav");            // save the wave as a 16-bit wav file
-```
 
 <details><summary>Arc(Wave)</summary>
 <p>
@@ -224,6 +212,56 @@ let w2 = wavech(wave, 1);
 </p>
 </details>
 
+```rust
+let w = Wave::load("./guidance.wav");   // load from file
+w;                                      // prints info about the loaded wave
+    //Wave(ch:1, sr:11025, len:1101250, dur:99.88662131519274)
+
+let osc = sine_hz(134) | saw_hz(42);
+let s = Wave::render(44100, 1, osc);    // render 1 second of the given graph
+s;                                      // print info
+    //Wave(ch:2, sr:44100, len:44100, dur:1)
+s.save_wav16("awawawa.wav");            // save the wave as a 16-bit wav file
+```
+
+**Sequencer**
+
+<details><summary>deviations</summary>
+<p>
+
+- backend returns a SequencerBackend wrapped in a net. this way it can be used anywhere were a net can be used
+- Sequencer itself can't be played (or `tick`ed). you can either call `play_backend` on it, or `play` on its backend (or a graph containing the backend)
+- methods `has_backend`, `replay_events`, and `time` aren't supported
+- you can't clone them (and why would you want to?)
+
+</p>
+</details>
+
+```rust
+let s = Sequencer::new(true, 2);
+s;
+// Sequencer(outs: 2, has_backend: false)
+let b = s.backend();
+b;
+// Inputs         : 0
+// Outputs        : 2
+// Latency        : 0.0 samples
+// Footprint      : 224 bytes
+// Size           : 1
+s;
+// Sequencer(outs: 2, has_backend: true)
+let g = b >> reverb_stereo(30,3,0.8);
+g;
+// Inputs         : 0
+// Outputs        : 2
+// Latency        : 0.0 samples
+// Footprint      : 224 bytes
+// Size           : 2
+g.play();
+s.push_relative(0, 2, Fade::Smooth, 0.2, 0.1,
+	sine_hz(124) | sine_hz(323)
+);
+```
 
 ## building
 
