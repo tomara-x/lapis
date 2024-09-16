@@ -23,7 +23,7 @@ lists marked non_exhaustive may be incomplete. if you notice something incorrect
 ## deviations
 #[non_exhaustive]
 - mutability is ignored. everything is mutable
-- type annotations are ignored. types are inferred (`f32`, `Net`, `Vec<f32>`, `bool`, `NodeId`, `Wave`, `Shared`,)
+- type annotations are ignored. types are inferred (`f32`, `Net`, `Vec<f32>`, `bool`, `NodeId`, `Arc<Wave>`, `Shared`, Sequencer, EventId,)
 - when writing vectors you write them as you would an array literal. `let arr = [2, 50.4, 4.03];` instead of `vec![2, 50.4, 4.03]`
 - the `.play()` method for graphs allows you to listen to the graph directly. (graph has to have 0 inputs and 1 or 2 outputs)
 - all number variables are f32, even if you type it as `4` it's still `4.0`
