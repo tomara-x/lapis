@@ -11,7 +11,6 @@ mod functions;
 mod ints;
 mod nets;
 mod sequencers;
-mod shapes;
 mod units;
 mod waves;
 use {arrays::*, atomics::*, bools::*, floats::*, functions::*, nets::*, sequencers::*, waves::*};
