@@ -1,6 +1,6 @@
 use crate::{
     components::*,
-    eval::{arrays::*, atomics::*, floats::*, functions::*, ints::*, units::*},
+    eval::{arrays::*, atomics::*, floats::*, helpers::*, ints::*, units::*},
 };
 use fundsp::hacker32::*;
 use syn::*;

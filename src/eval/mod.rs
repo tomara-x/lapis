@@ -7,13 +7,13 @@ mod arrays;
 mod atomics;
 mod bools;
 mod floats;
-mod functions;
+mod helpers;
 mod ints;
 mod nets;
 mod sequencers;
 mod units;
 mod waves;
-use {arrays::*, atomics::*, bools::*, floats::*, functions::*, nets::*, sequencers::*, waves::*};
+use {arrays::*, atomics::*, bools::*, floats::*, helpers::*, nets::*, sequencers::*, waves::*};
 
 pub fn eval(lapis: &mut Lapis) {
     if let Ok(stmt) = parse_str::<Stmt>(&lapis.input) {

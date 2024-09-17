@@ -1,6 +1,6 @@
 use crate::{
     components::*,
-    eval::{arrays::*, floats::*, functions::*, ints::*, nets::*},
+    eval::{arrays::*, floats::*, helpers::*, ints::*, nets::*},
 };
 use fundsp::hacker32::*;
 use std::sync::Arc;
