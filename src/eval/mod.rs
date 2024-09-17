@@ -9,7 +9,6 @@ mod bools;
 mod floats;
 mod functions;
 mod ints;
-mod meters;
 mod nets;
 mod sequencers;
 mod shapes;
