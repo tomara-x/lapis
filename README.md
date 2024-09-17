@@ -15,7 +15,6 @@ lists marked non_exhaustive may be incomplete. if you notice something incorrect
 - Net methods aren't checked and will panic if misused
 - vector methods (some)
 - i/o device selection (in the settings window)
-- input node abstraction
 - atomic synth
 - TODO marks in eval/nets.rs
 - optimize egui stuff (high cpu use if large amount of text is in buffer)
@@ -26,6 +25,7 @@ lists marked non_exhaustive may be incomplete. if you notice something incorrect
 - type annotations are ignored. types are inferred (`f32`, `Net`, `Vec<f32>`, `bool`, `NodeId`, `Arc<Wave>`, `Shared`, `Sequencer`, `EventId`,)
 - when writing vectors you write them as you would an array literal. `let arr = [2, 50.4, 4.03];` instead of `vec![2, 50.4, 4.03]`
 - the `.play()` method for graphs allows you to listen to the graph directly. (graph has to have 0 inputs and 1 or 2 outputs)
+- the `input()` node has 2 outputs (left and right) representing the input from mic
 - all number variables are f32, even if you type it as `4` it's still `4.0`
 - for functions that accept floats you can just type `3` and it's parsed as a float.
 - when a function takes an integer or usize, if you type it as a literal integer, then they are parsed to the corresponding type. otherwise (a variable or an expression) they are evaluated as floats then cast to the needed type
@@ -285,6 +285,7 @@ cargo run --release
 - egui https://github.com/emilk/egui
 - syn https://github.com/dtolnay/syn
 - cpal https://github.com/rustaudio/cpal
+- crossbeam_channel https://github.com/crossbeam-rs/crossbeam
 
 ## license
 

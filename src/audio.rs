@@ -2,6 +2,7 @@ use cpal::{
     traits::{DeviceTrait, HostTrait, StreamTrait},
     FromSample, SizedSample, Stream,
 };
+use crossbeam_channel::Sender;
 use fundsp::hacker32::*;
 
 pub fn default_out_device(slot: SlotBackend) -> Option<Stream> {
@@ -63,5 +64,66 @@ where
         let sample = next_sample();
         frame[0] = T::from_sample(sample.0);
         frame[1] = T::from_sample(sample.1);
+    }
+}
+
+pub fn default_in_device(ls: Sender<f32>, rs: Sender<f32>) -> Option<Stream> {
+    let host = cpal::default_host();
+    if let Some(device) = host.default_input_device() {
+        let config = device.default_input_config().unwrap();
+        return match config.sample_format() {
+            cpal::SampleFormat::F32 => run_in::<f32>(&device, &config.into(), ls, rs),
+            cpal::SampleFormat::I16 => run_in::<i16>(&device, &config.into(), ls, rs),
+            cpal::SampleFormat::U16 => run_in::<u16>(&device, &config.into(), ls, rs),
+            format => {
+                eprintln!("unsupported sample format: {}", format);
+                None
+            }
+        };
+    }
+    None
+}
+
+fn run_in<T>(
+    device: &cpal::Device,
+    config: &cpal::StreamConfig,
+    ls: Sender<f32>,
+    rs: Sender<f32>,
+) -> Option<cpal::Stream>
+where
+    T: SizedSample,
+    f32: FromSample<T>,
+{
+    let channels = config.channels as usize;
+    let err_fn = |err| eprintln!("an error occurred on stream: {}", err);
+    let stream = device.build_input_stream(
+        config,
+        move |data: &[T], _: &cpal::InputCallbackInfo| {
+            read_data(data, channels, ls.clone(), rs.clone())
+        },
+        err_fn,
+        None,
+    );
+    if let Ok(stream) = stream {
+        if let Ok(()) = stream.play() {
+            return Some(stream);
+        }
+    }
+    None
+}
+
+fn read_data<T>(input: &[T], channels: usize, ls: Sender<f32>, rs: Sender<f32>)
+where
+    T: SizedSample,
+    f32: FromSample<T>,
+{
+    for frame in input.chunks(channels) {
+        for (channel, sample) in frame.iter().enumerate() {
+            if channel & 1 == 0 {
+                let _ = ls.try_send(sample.to_sample::<f32>());
+            } else {
+                let _ = rs.try_send(sample.to_sample::<f32>());
+            }
+        }
     }
 }

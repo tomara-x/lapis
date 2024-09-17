@@ -669,6 +669,10 @@ pub fn call_net(expr: &ExprCall, lapis: &mut Lapis) -> Option<Net> {
             let split = Net::wrap(Box::new(MultiSplitUnit::new(1, n)));
             Some(Net::wrap(Box::new(impulse >> split)))
         }
+        "input" => {
+            let (lr, rr) = &lapis.receivers;
+            Some(Net::wrap(Box::new(An(InputNode::new(lr.clone(), rr.clone())))))
+        }
         "join" => {
             let n = nth_path_generic(&expr.func, 0)?.get(1..)?.parse::<usize>().ok()?;
             Some(Net::wrap(Box::new(MultiJoinUnit::new(1, n))))

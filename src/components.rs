@@ -1,4 +1,5 @@
 use crate::audio::*;
+use crossbeam_channel::{bounded, Receiver};
 use fundsp::hacker32::*;
 use std::collections::HashMap;
 use std::sync::Arc;
@@ -20,13 +21,18 @@ pub struct Lapis {
     pub seqmap: HashMap<String, Sequencer>,
     pub eventmap: HashMap<String, EventId>,
     pub slot: Slot,
-    pub stream: Option<cpal::Stream>,
+    pub out_stream: Option<cpal::Stream>,
+    pub in_stream: Option<cpal::Stream>,
+    pub receivers: (Receiver<f32>, Receiver<f32>),
 }
 
 impl Lapis {
     pub fn new() -> Self {
         let (slot, slot_back) = Slot::new(Box::new(dc(0.) | dc(0.)));
-        let stream = default_out_device(slot_back);
+        let out_stream = default_out_device(slot_back);
+        let (ls, lr) = bounded(4096);
+        let (rs, rr) = bounded(4096);
+        let in_stream = default_in_device(ls, rs);
         Lapis {
             buffer: String::new(),
             input: String::new(),
@@ -43,7 +49,9 @@ impl Lapis {
             seqmap: HashMap::new(),
             eventmap: HashMap::new(),
             slot,
-            stream,
+            out_stream,
+            in_stream,
+            receivers: (lr, rr),
         }
     }
 }

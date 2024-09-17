@@ -1,3 +1,4 @@
+use crossbeam_channel::Receiver;
 use fundsp::hacker32::*;
 
 /// multijoin, multisplit, and reverse defined in:
@@ -163,5 +164,31 @@ impl AudioUnit for ReverseUnit {
 
     fn footprint(&self) -> usize {
         core::mem::size_of::<Self>()
+    }
+}
+
+/// mic input node
+/// - output 0: left
+/// - output 1: right
+#[derive(Clone)]
+pub struct InputNode {
+    lr: Receiver<f32>,
+    rr: Receiver<f32>,
+}
+impl InputNode {
+    pub fn new(lr: Receiver<f32>, rr: Receiver<f32>) -> Self {
+        InputNode { lr, rr }
+    }
+}
+impl AudioNode for InputNode {
+    const ID: u64 = 1117;
+    type Inputs = U0;
+    type Outputs = U2;
+
+    #[inline]
+    fn tick(&mut self, _input: &Frame<f32, Self::Inputs>) -> Frame<f32, Self::Outputs> {
+        let l = self.lr.try_recv().unwrap_or(0.);
+        let r = self.rr.try_recv().unwrap_or(0.);
+        [l, r].into()
     }
 }
