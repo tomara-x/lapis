@@ -1,8 +1,8 @@
 use crate::{
     components::*,
-    eval::{arrays::*, atomics::*, floats::*, helpers::*, ints::*, units::*},
+    eval::{arrays::*, atomics::*, bools::*, floats::*, helpers::*, ints::*, units::*},
 };
-use fundsp::hacker32::*;
+use fundsp::{hacker32::*, sound::*};
 use syn::*;
 
 pub fn eval_net(expr: &Expr, lapis: &mut Lapis) -> Option<Net> {
@@ -391,6 +391,12 @@ pub fn call_net(expr: &ExprCall, lapis: &mut Lapis) -> Option<Net> {
             let q = args.first()?;
             Some(Net::wrap(Box::new(bandrez_q(*q))))
         }
+        "bassdrum" => {
+            let sharpness = args.first()?;
+            let pitch0 = args.get(1)?;
+            let pitch1 = args.get(2)?;
+            Some(Net::wrap(Box::new(bassdrum(*sharpness, *pitch0, *pitch1))))
+        }
         "bell" => Some(Net::wrap(Box::new(bell()))),
         "bell_hz" => {
             let f = args.first()?;
@@ -454,6 +460,10 @@ pub fn call_net(expr: &ExprCall, lapis: &mut Lapis) -> Option<Net> {
             let min = args.first()?;
             let max = args.get(1)?;
             Some(Net::wrap(Box::new(clip_to(*min, *max))))
+        }
+        "cymbal" => {
+            let seed = eval_i64(expr.args.first()?, lapis)?;
+            Some(Net::wrap(Box::new(cymbal(seed))))
         }
         "dbell" => {
             let arg = expr.args.first()?;
@@ -849,6 +859,11 @@ pub fn call_net(expr: &ExprCall, lapis: &mut Lapis) -> Option<Net> {
             let q = args.first()?;
             Some(Net::wrap(Box::new(peak_q(*q))))
         }
+        "pebbles" => {
+            let speed = eval_float(expr.args.first()?, lapis)?;
+            let seed = eval_u64(expr.args.get(1)?, lapis)?;
+            Some(Net::wrap(Box::new(pebbles(speed, seed))))
+        }
         "phaser" => None, //TODO
         "pink" => Some(Net::wrap(Box::new(pink()))),
         "pinkpass" => Some(Net::wrap(Box::new(pinkpass()))),
@@ -952,6 +967,10 @@ pub fn call_net(expr: &ExprCall, lapis: &mut Lapis) -> Option<Net> {
             let n = nth_path_generic(&expr.func, 0)?.get(1..)?.parse::<usize>().ok()?;
             Some(Net::wrap(Box::new(ReverseUnit::new(n))))
         }
+        "risset_glissando" => {
+            let up = eval_bool(expr.args.first()?, lapis)?;
+            Some(Net::wrap(Box::new(risset_glissando(up))))
+        }
         "rossler" => Some(Net::wrap(Box::new(rossler()))),
         "rotate" => {
             let angle = args.first()?;
@@ -979,6 +998,11 @@ pub fn call_net(expr: &ExprCall, lapis: &mut Lapis) -> Option<Net> {
             Some(Net::wrap(Box::new(sine_phase(*p))))
         }
         "sink" => Some(Net::wrap(Box::new(sink()))),
+        "snaredrum" => {
+            let seed = eval_i64(expr.args.first()?, lapis)?;
+            let sharpness = eval_float(expr.args.get(1)?, lapis)?;
+            Some(Net::wrap(Box::new(snaredrum(seed, sharpness))))
+        }
         "snoop" => None, // TODO you shouldn't be here..
         "soft_saw" => Some(Net::wrap(Box::new(soft_saw()))),
         "soft_saw_hz" => {
