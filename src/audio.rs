@@ -1,27 +1,55 @@
+use crate::components::*;
 use cpal::{
     traits::{DeviceTrait, HostTrait, StreamTrait},
     FromSample, SizedSample, Stream,
 };
-use crossbeam_channel::Sender;
+use crossbeam_channel::{bounded, Sender};
 use fundsp::hacker32::*;
 
 pub fn default_out_device(slot: SlotBackend) -> Option<Stream> {
     let host = cpal::default_host();
     if let Some(device) = host.default_output_device() {
-        let default_config = device.default_output_config().unwrap();
-        let mut config = default_config.config();
-        config.channels = 2;
-        return match default_config.sample_format() {
-            cpal::SampleFormat::F32 => run::<f32>(&device, &config, slot),
-            cpal::SampleFormat::I16 => run::<i16>(&device, &config, slot),
-            cpal::SampleFormat::U16 => run::<u16>(&device, &config, slot),
-            format => {
-                eprintln!("unsupported sample format: {}", format);
-                None
-            }
-        };
+        if let Ok(default_config) = device.default_output_config() {
+            let mut config = default_config.config();
+            config.channels = 2;
+            return match default_config.sample_format() {
+                cpal::SampleFormat::F32 => run::<f32>(&device, &config, slot),
+                cpal::SampleFormat::I16 => run::<i16>(&device, &config, slot),
+                cpal::SampleFormat::U16 => run::<u16>(&device, &config, slot),
+                format => {
+                    eprintln!("unsupported sample format: {}", format);
+                    None
+                }
+            };
+        }
     }
     None
+}
+
+pub fn set_out_device(lapis: &mut Lapis) {
+    if let Some(host_id) = cpal::ALL_HOSTS.get(lapis.out_host) {
+        if let Ok(host) = cpal::host_from_id(*host_id) {
+            if let Ok(mut devices) = host.output_devices() {
+                if let Some(device) = devices.nth(lapis.out_device) {
+                    if let Ok(default_config) = device.default_output_config() {
+                        let mut config = default_config.config();
+                        config.channels = 2;
+                        let (slot, slot_back) = Slot::new(Box::new(dc(0.) | dc(0.)));
+                        lapis.slot = slot;
+                        lapis.out_stream = match default_config.sample_format() {
+                            cpal::SampleFormat::F32 => run::<f32>(&device, &config, slot_back),
+                            cpal::SampleFormat::I16 => run::<i16>(&device, &config, slot_back),
+                            cpal::SampleFormat::U16 => run::<u16>(&device, &config, slot_back),
+                            format => {
+                                eprintln!("unsupported sample format: {}", format);
+                                None
+                            }
+                        };
+                    }
+                }
+            }
+        }
+    }
 }
 
 fn run<T>(
@@ -70,18 +98,50 @@ where
 pub fn default_in_device(ls: Sender<f32>, rs: Sender<f32>) -> Option<Stream> {
     let host = cpal::default_host();
     if let Some(device) = host.default_input_device() {
-        let config = device.default_input_config().unwrap();
-        return match config.sample_format() {
-            cpal::SampleFormat::F32 => run_in::<f32>(&device, &config.into(), ls, rs),
-            cpal::SampleFormat::I16 => run_in::<i16>(&device, &config.into(), ls, rs),
-            cpal::SampleFormat::U16 => run_in::<u16>(&device, &config.into(), ls, rs),
-            format => {
-                eprintln!("unsupported sample format: {}", format);
-                None
-            }
-        };
+        if let Ok(config) = device.default_input_config() {
+            return match config.sample_format() {
+                cpal::SampleFormat::F32 => run_in::<f32>(&device, &config.into(), ls, rs),
+                cpal::SampleFormat::I16 => run_in::<i16>(&device, &config.into(), ls, rs),
+                cpal::SampleFormat::U16 => run_in::<u16>(&device, &config.into(), ls, rs),
+                format => {
+                    eprintln!("unsupported sample format: {}", format);
+                    None
+                }
+            };
+        }
     }
     None
+}
+
+pub fn set_in_device(lapis: &mut Lapis) {
+    if let Some(host_id) = cpal::ALL_HOSTS.get(lapis.in_host) {
+        if let Ok(host) = cpal::host_from_id(*host_id) {
+            if let Ok(mut devices) = host.input_devices() {
+                if let Some(device) = devices.nth(lapis.in_device) {
+                    if let Ok(config) = device.default_input_config() {
+                        let (ls, lr) = bounded(4096);
+                        let (rs, rr) = bounded(4096);
+                        lapis.receivers = (lr, rr);
+                        lapis.in_stream = match config.sample_format() {
+                            cpal::SampleFormat::F32 => {
+                                run_in::<f32>(&device, &config.into(), ls, rs)
+                            }
+                            cpal::SampleFormat::I16 => {
+                                run_in::<i16>(&device, &config.into(), ls, rs)
+                            }
+                            cpal::SampleFormat::U16 => {
+                                run_in::<u16>(&device, &config.into(), ls, rs)
+                            }
+                            format => {
+                                eprintln!("unsupported sample format: {}", format);
+                                None
+                            }
+                        };
+                    }
+                }
+            }
+        }
+    }
 }
 
 fn run_in<T>(

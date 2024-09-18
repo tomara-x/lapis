@@ -24,6 +24,12 @@ pub struct Lapis {
     pub out_stream: Option<cpal::Stream>,
     pub in_stream: Option<cpal::Stream>,
     pub receivers: (Receiver<f32>, Receiver<f32>),
+    pub in_host: usize,
+    pub out_host: usize,
+    pub in_device: usize,
+    pub out_device: usize,
+    pub in_device_names: Vec<String>,
+    pub out_device_names: Vec<String>,
 }
 
 impl Lapis {
@@ -52,6 +58,12 @@ impl Lapis {
             out_stream,
             in_stream,
             receivers: (lr, rr),
+            in_host: usize::MAX,
+            out_host: usize::MAX,
+            in_device: usize::MAX,
+            out_device: usize::MAX,
+            in_device_names: Vec::new(),
+            out_device_names: Vec::new(),
         }
     }
 }

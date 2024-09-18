@@ -14,7 +14,6 @@ lists marked non_exhaustive may be incomplete. if you notice something incorrect
 #[non_exhaustive, help_welcome]
 - Net methods aren't checked and will panic if misused
 - vector methods (some)
-- i/o device selection (in the settings window)
 - atomic synth
 - TODO marks in eval/nets.rs
 - optimize egui stuff (high cpu use if large amount of text is in buffer)
