@@ -20,7 +20,7 @@ lists marked non_exhaustive may be incomplete. if you notice something incorrect
 
 ## deviations
 #[non_exhaustive]
-- all nodes are wrapped in `Net`s, it's all nets (﻿:earth_africa:﻿ :astronaut:﻿ :gun:﻿ :astronaut:﻿)
+- all nodes are wrapped in `Net`s, it's all nets (﻿🌍﻿ 🧑‍🚀﻿ 🔫﻿ 🧑‍🚀﻿)
 - mutability is ignored. everything is mutable
 - type annotations are ignored. types are inferred (`f32`, `Net`, `Vec<f32>`, `bool`, `NodeId`, `Arc<Wave>`, `Shared`, `Sequencer`, `EventId`,)
 - when writing vectors you write them as you would an array literal. `let arr = [2, 50.4, 4.03];` instead of `vec![2, 50.4, 4.03]`
