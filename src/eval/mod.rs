@@ -148,9 +148,9 @@ fn eval_stmt(s: Stmt, lapis: &mut Lapis) {
                     if let Some(var) = lapis.fmap.get_mut(&ident) {
                         *var = f;
                     }
-                } else if let Some(g) = eval_net(&expr.right, lapis) {
-                    if let Some(var) = lapis.gmap.get_mut(&ident) {
-                        *var = g;
+                } else if lapis.gmap.contains_key(&ident) {
+                    if let Some(g) = eval_net(&expr.right, lapis) {
+                        lapis.gmap.insert(ident, g);
                     }
                 } else if let Some(a) = array_cloned(&expr.right, lapis) {
                     if let Some(var) = lapis.vmap.get_mut(&ident) {
