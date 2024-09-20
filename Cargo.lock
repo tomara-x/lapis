@@ -1391,9 +1391,8 @@ dependencies = [
 
 [[package]]
 name = "fundsp"
-version = "0.19.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8d4bf60a2b5e356cc2b363e3f2d97681d36a75e16c3957fe57642f70ce47e6fe"
+version = "0.19.1"
+source = "git+https://github.com/SamiPerttu/fundsp#0df9e07237c7c05523b7a52c911e9d1b81c3999d"
 dependencies = [
  "dyn-clone",
  "funutd",

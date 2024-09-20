@@ -41,6 +41,29 @@ fn method_net(expr: &ExprMethodCall, lapis: &mut Lapis) -> Option<Net> {
             let k = nth_path_ident(&expr.receiver, 0)?;
             lapis.gmap.get(&k).cloned()
         }
+        "remove" => {
+            let arg = expr.args.first()?;
+            let id = path_nodeid(arg, lapis)?;
+            let k = nth_path_ident(&expr.receiver, 0)?;
+            let net = &mut lapis.gmap.get_mut(&k)?;
+            Some(Net::wrap(net.remove(id)))
+        }
+        "remove_link" => {
+            let arg = expr.args.first()?;
+            let id = path_nodeid(arg, lapis)?;
+            let k = nth_path_ident(&expr.receiver, 0)?;
+            let net = &mut lapis.gmap.get_mut(&k)?;
+            Some(Net::wrap(net.remove_link(id)))
+        }
+        "replace" => {
+            let arg0 = expr.args.first()?;
+            let id = path_nodeid(arg0, lapis)?;
+            let arg1 = expr.args.get(1)?;
+            let unit = eval_net(arg1, lapis)?;
+            let k = nth_path_ident(&expr.receiver, 0)?;
+            let net = &mut lapis.gmap.get_mut(&k)?;
+            Some(Net::wrap(net.replace(id, Box::new(unit))))
+        }
         _ => None,
     }
 }
@@ -208,14 +231,14 @@ pub fn net_methods(expr: &ExprMethodCall, lapis: &mut Lapis) -> Option<()> {
             let net = &mut lapis.gmap.get_mut(&k)?;
             net.pass_through(input, output);
         }
-        "pipe" => {
+        "pipe_all" => {
             let arg0 = expr.args.first()?;
             let src = path_nodeid(arg0, lapis)?;
             let arg1 = expr.args.get(1)?;
             let snk = path_nodeid(arg1, lapis)?;
             let k = nth_path_ident(&expr.receiver, 0)?;
             let net = &mut lapis.gmap.get_mut(&k)?;
-            net.pipe(src, snk);
+            net.pipe_all(src, snk);
         }
         "commit" => {
             let k = nth_path_ident(&expr.receiver, 0)?;
@@ -256,6 +279,14 @@ pub fn method_nodeid(expr: &Expr, lapis: &mut Lapis) -> Option<NodeId> {
                 let k = nth_path_ident(&expr.receiver, 0)?;
                 let g = &mut lapis.gmap.get_mut(&k)?;
                 Some(g.chain(Box::new(node)))
+            }
+            "fade_in" => {
+                let fade = path_fade(expr.args.first()?)?;
+                let fade_time = eval_float(expr.args.get(1)?, lapis)?;
+                let unit = Box::new(eval_net(expr.args.get(2)?, lapis)?);
+                let k = nth_path_ident(&expr.receiver, 0)?;
+                let g = &mut lapis.gmap.get_mut(&k)?;
+                Some(g.fade_in(fade, fade_time, unit))
             }
             _ => None,
         },

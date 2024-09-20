@@ -134,7 +134,6 @@ for i in [4,6,8] {
 <details><summary>deviations</summary>
 <p>
 
-- `remove`, `remove_link`, `replace` will work but won't return a node
 - `node`, `node_mut`, `wrap`, `wrap_id`, `check`, `backend`, `has_backend` aren't supported
 - `.play_backend()` method allows you to play the backend of a net while still being able to edit that same net and commit changes to it. it should only be called once for any given net. the net has to be stored in a variable, have 0 inputs, and 2 outputs
 
