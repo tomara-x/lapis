@@ -344,6 +344,12 @@ pub fn call_net(expr: &ExprCall, lapis: &mut Lapis) -> Option<Net> {
                 _ => None,
             }
         }
+        "Box" => {
+            if nth_path_ident(&expr.func, 1)? == "new" {
+                return eval_net(expr.args.first()?, lapis);
+            }
+            None
+        }
         "add" => {
             let tuple = expr.args.first()?;
             if let Expr::Tuple(expr) = tuple {
