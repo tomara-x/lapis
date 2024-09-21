@@ -11,9 +11,17 @@ pub fn eval_float(expr: &Expr, lapis: &Lapis) -> Option<f32> {
         Expr::Path(expr) => path_float(&expr.path, lapis),
         Expr::Unary(expr) => unary_float(expr, lapis),
         Expr::MethodCall(expr) => method_call_float(expr, lapis),
+        Expr::Index(expr) => index_float(expr, lapis),
         _ => None,
     }
 }
+
+fn index_float(expr: &ExprIndex, lapis: &Lapis) -> Option<f32> {
+    let k = nth_path_ident(&expr.expr, 0)?;
+    let index = eval_usize(&expr.index, lapis)?;
+    lapis.vmap.get(&k)?.get(index).copied()
+}
+
 pub fn method_call_float(expr: &ExprMethodCall, lapis: &Lapis) -> Option<f32> {
     match expr.method.to_string().as_str() {
         "value" => {

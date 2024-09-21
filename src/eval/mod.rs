@@ -13,7 +13,10 @@ mod nets;
 mod sequencers;
 mod units;
 mod waves;
-use {arrays::*, atomics::*, bools::*, floats::*, helpers::*, nets::*, sequencers::*, waves::*};
+use {
+    arrays::*, atomics::*, bools::*, floats::*, helpers::*, ints::*, nets::*, sequencers::*,
+    waves::*,
+};
 
 pub fn eval(lapis: &mut Lapis) {
     if let Ok(stmt) = parse_str::<Stmt>(&lapis.input) {
@@ -142,42 +145,58 @@ fn eval_stmt(s: Stmt, lapis: &mut Lapis) {
                     method_eventid(&expr, lapis);
                 }
             },
-            Expr::Assign(expr) => {
-                let Some(ident) = nth_path_ident(&expr.left, 0) else { return };
-                if let Some(f) = eval_float(&expr.right, lapis) {
-                    if let Some(var) = lapis.fmap.get_mut(&ident) {
-                        *var = f;
-                    }
-                } else if lapis.gmap.contains_key(&ident) {
-                    if let Some(g) = eval_net(&expr.right, lapis) {
-                        lapis.gmap.insert(ident, g);
-                    }
-                } else if lapis.vmap.contains_key(&ident) {
-                    if let Some(a) = eval_vec(&expr.right, lapis) {
-                        lapis.vmap.insert(ident, a);
-                    }
-                } else if let Some(id) =
-                    method_nodeid(&expr.right, lapis).or(path_nodeid(&expr.right, lapis))
-                {
-                    if let Some(var) = lapis.idmap.get_mut(&ident) {
-                        *var = id;
-                    }
-                } else if let Some(b) = eval_bool(&expr.right, lapis) {
-                    if let Some(var) = lapis.bmap.get_mut(&ident) {
-                        *var = b;
-                    }
-                } else if let Some(s) = eval_shared(&expr.right, lapis) {
-                    if let Some(var) = lapis.smap.get_mut(&ident) {
-                        *var = s;
-                    }
-                } else if let Some(event) =
-                    method_eventid(&expr.right, lapis).or(path_eventid(&expr.right, lapis))
-                {
-                    if let Some(var) = lapis.eventmap.get_mut(&ident) {
-                        *var = event;
+            Expr::Assign(expr) => match *expr.left {
+                Expr::Path(_) => {
+                    let Some(ident) = nth_path_ident(&expr.left, 0) else { return };
+                    if let Some(f) = eval_float(&expr.right, lapis) {
+                        if let Some(var) = lapis.fmap.get_mut(&ident) {
+                            *var = f;
+                        }
+                    } else if lapis.gmap.contains_key(&ident) {
+                        if let Some(g) = eval_net(&expr.right, lapis) {
+                            lapis.gmap.insert(ident, g);
+                        }
+                    } else if lapis.vmap.contains_key(&ident) {
+                        if let Some(a) = eval_vec(&expr.right, lapis) {
+                            lapis.vmap.insert(ident, a);
+                        }
+                    } else if let Some(id) =
+                        method_nodeid(&expr.right, lapis).or(path_nodeid(&expr.right, lapis))
+                    {
+                        if let Some(var) = lapis.idmap.get_mut(&ident) {
+                            *var = id;
+                        }
+                    } else if let Some(b) = eval_bool(&expr.right, lapis) {
+                        if let Some(var) = lapis.bmap.get_mut(&ident) {
+                            *var = b;
+                        }
+                    } else if let Some(s) = eval_shared(&expr.right, lapis) {
+                        if let Some(var) = lapis.smap.get_mut(&ident) {
+                            *var = s;
+                        }
+                    } else if let Some(event) =
+                        method_eventid(&expr.right, lapis).or(path_eventid(&expr.right, lapis))
+                    {
+                        if let Some(var) = lapis.eventmap.get_mut(&ident) {
+                            *var = event;
+                        }
                     }
                 }
-            }
+                Expr::Index(left) => {
+                    if let Some(k) = nth_path_ident(&left.expr, 0) {
+                        if let Some(index) = eval_usize(&left.index, lapis) {
+                            if let Some(right) = eval_float(&expr.right, lapis) {
+                                if let Some(vec) = lapis.vmap.get_mut(&k) {
+                                    if let Some(v) = vec.get_mut(index) {
+                                        *v = right;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                _ => {}
+            },
             Expr::ForLoop(expr) => {
                 let Some(ident) = pat_ident(&expr.pat) else { return };
                 let bounds = range_bounds(&expr.expr, lapis);
