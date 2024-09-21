@@ -86,3 +86,22 @@ pub fn eval_vec_cloned(expr: &Expr, lapis: &Lapis) -> Option<Vec<f32>> {
         _ => None,
     }
 }
+
+pub fn vec_methods(expr: &ExprMethodCall, lapis: &mut Lapis) -> Option<()> {
+    match expr.method.to_string().as_str() {
+        "push" => {
+            let arg = expr.args.first()?;
+            let v = eval_float(arg, lapis)?;
+            let k = nth_path_ident(&expr.receiver, 0)?;
+            let vec = &mut lapis.vmap.get_mut(&k)?;
+            vec.push(v);
+        }
+        "pop" => {
+            let k = nth_path_ident(&expr.receiver, 0)?;
+            let vec = &mut lapis.vmap.get_mut(&k)?;
+            vec.pop();
+        }
+        _ => {}
+    }
+    None
+}

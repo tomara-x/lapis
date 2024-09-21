@@ -139,6 +139,7 @@ fn eval_stmt(s: Stmt, lapis: &mut Lapis) {
                     }
                     wave_methods(method, lapis);
                     net_methods(method, lapis);
+                    vec_methods(method, lapis);
                     shared_methods(method, lapis);
                     method_nodeid(&expr, lapis);
                     seq_methods(method, lapis);

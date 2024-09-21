@@ -118,8 +118,12 @@ pub fn method_call_float(expr: &ExprMethodCall, lapis: &Lapis) -> Option<f32> {
         }
         "len" | "length" => {
             let k = nth_path_ident(&expr.receiver, 0)?;
-            let wave = lapis.wmap.get(&k)?;
-            Some(wave.len() as f32)
+            if let Some(wave) = lapis.wmap.get(&k) {
+                Some(wave.len() as f32)
+            } else {
+                let vec = lapis.vmap.get(&k)?;
+                Some(vec.len() as f32)
+            }
         }
         "duration" => {
             let k = nth_path_ident(&expr.receiver, 0)?;
