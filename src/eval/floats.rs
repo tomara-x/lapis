@@ -150,6 +150,22 @@ pub fn method_call_float(expr: &ExprMethodCall, lapis: &Lapis) -> Option<f32> {
             let net = lapis.gmap.get(&k)?;
             Some(net.outputs() as f32)
         }
+        "first" => {
+            let k = nth_path_ident(&expr.receiver, 0)?;
+            let vec = &mut lapis.vmap.get(&k)?;
+            vec.first().copied()
+        }
+        "last" => {
+            let k = nth_path_ident(&expr.receiver, 0)?;
+            let vec = &mut lapis.vmap.get(&k)?;
+            vec.last().copied()
+        }
+        "get" => {
+            let index = eval_usize(expr.args.first()?, lapis)?;
+            let k = nth_path_ident(&expr.receiver, 0)?;
+            let vec = &mut lapis.vmap.get(&k)?;
+            vec.get(index).copied()
+        }
         _ => None,
     }
 }

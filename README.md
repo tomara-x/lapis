@@ -22,7 +22,6 @@ lists marked non_exhaustive may be incomplete. if you notice something incorrect
 - all nodes are wrapped in `Net`s, it's all nets (﻿🌍﻿ 🧑‍🚀﻿ 🔫﻿ 🧑‍🚀﻿)
 - mutability is ignored. everything is mutable
 - type annotations are ignored. types are inferred (`f32`, `Net`, `Vec<f32>`, `bool`, `NodeId`, `Arc<Wave>`, `Shared`, `Sequencer`, `EventId`,)
-- when writing vectors you write them as you would an array literal. `let arr = [2, 50.4, 4.03];` instead of `vec![2, 50.4, 4.03]`
 - the `.play()` method for graphs allows you to listen to the graph directly. (graph has to have 0 inputs and 1 or 2 outputs)
 - the `input()` node has 2 outputs (left and right) representing the input from mic
 - all number variables are f32, even if you type it as `4` it's still `4.0`
@@ -117,6 +116,39 @@ for i in [4,6,8] {
         i * j;
     }
 }
+```
+**vectors**
+<details><summary>deviations</summary>
+<p>
+
+- when writing vectors you write them as you would an array literal. `let arr = [1,2,3];` instead of `let arr = vec![1,2,3];`
+- only `push`, `pop`, `insert`, `remove`, `resize`, `clear`, `len`, `clone`, `first`, `last`, and `get` are supported
+- `pop` and `remove` don't return a value, they just remove
+
+</p>
+</details>
+
+```rust
+let v1 = [1,2,4,6];
+let v2 = v1.clone();
+v1;
+// [1.0, 2.0, 4.0, 6.0]
+v2;
+// [1.0, 2.0, 4.0, 6.0]
+v1[0] = 42;
+let f = v1.first();
+f;
+// 42.0
+v1.pop();
+v1;
+// [42.0, 2.0, 4.0]
+v2;
+// [1.0, 2.0, 4.0, 6.0]
+v1.resize(10,0.1);
+v1;
+// [42.0, 2.0, 4.0, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1]
+v2;
+// [1.0, 2.0, 4.0, 6.0]
 ```
 **blocks**
 ```rust

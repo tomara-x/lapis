@@ -101,6 +101,35 @@ pub fn vec_methods(expr: &ExprMethodCall, lapis: &mut Lapis) -> Option<()> {
             let vec = &mut lapis.vmap.get_mut(&k)?;
             vec.pop();
         }
+        "insert" => {
+            let index = eval_usize(expr.args.first()?, lapis)?;
+            let val = eval_float(expr.args.get(1)?, lapis)?;
+            let k = nth_path_ident(&expr.receiver, 0)?;
+            let vec = &mut lapis.vmap.get_mut(&k)?;
+            if index < vec.len() {
+                vec.insert(index, val);
+            }
+        }
+        "remove" => {
+            let index = eval_usize(expr.args.first()?, lapis)?;
+            let k = nth_path_ident(&expr.receiver, 0)?;
+            let vec = &mut lapis.vmap.get_mut(&k)?;
+            if index < vec.len() {
+                vec.remove(index);
+            }
+        }
+        "resize" => {
+            let new_len = eval_usize(expr.args.first()?, lapis)?;
+            let val = eval_float(expr.args.get(1)?, lapis)?;
+            let k = nth_path_ident(&expr.receiver, 0)?;
+            let vec = &mut lapis.vmap.get_mut(&k)?;
+            vec.resize(new_len, val);
+        }
+        "clear" => {
+            let k = nth_path_ident(&expr.receiver, 0)?;
+            let vec = &mut lapis.vmap.get_mut(&k)?;
+            vec.clear();
+        }
         _ => {}
     }
     None
