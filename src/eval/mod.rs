@@ -36,7 +36,7 @@ fn eval_stmt(s: Stmt, lapis: &mut Lapis) {
                     } else if let Some(v) = eval_net(&expr.expr, lapis) {
                         remove_from_all_maps(&k, lapis);
                         lapis.gmap.insert(k, v);
-                    } else if let Some(arr) = array_cloned(&expr.expr, lapis) {
+                    } else if let Some(arr) = eval_vec(&expr.expr, lapis) {
                         remove_from_all_maps(&k, lapis);
                         lapis.vmap.insert(k, arr);
                     } else if let Some(id) =
@@ -81,7 +81,7 @@ fn eval_stmt(s: Stmt, lapis: &mut Lapis) {
                 }
                 "tick" => {
                     let Some(input) = method.args.first() else { return };
-                    let Some(in_arr) = array_cloned(input, lapis) else { return };
+                    let Some(in_arr) = eval_vec_cloned(input, lapis) else { return };
                     let mut output = Vec::new();
                     if let Some(k) = nth_path_ident(&method.receiver, 0) {
                         if let Some(g) = &mut lapis.gmap.get_mut(&k) {
@@ -130,7 +130,7 @@ fn eval_stmt(s: Stmt, lapis: &mut Lapis) {
                     if let Some(n) = method_call_float(method, lapis) {
                         lapis.buffer.push_str(&format!("\n// {:?}", n));
                         return;
-                    } else if let Some(arr) = method_call_arr_ref(method, lapis) {
+                    } else if let Some(arr) = method_call_vec_ref(method, lapis) {
                         lapis.buffer.push_str(&format!("\n// {:?}", arr));
                         return;
                     }
@@ -152,9 +152,9 @@ fn eval_stmt(s: Stmt, lapis: &mut Lapis) {
                     if let Some(g) = eval_net(&expr.right, lapis) {
                         lapis.gmap.insert(ident, g);
                     }
-                } else if let Some(a) = array_cloned(&expr.right, lapis) {
-                    if let Some(var) = lapis.vmap.get_mut(&ident) {
-                        *var = a;
+                } else if lapis.vmap.contains_key(&ident) {
+                    if let Some(a) = eval_vec(&expr.right, lapis) {
+                        lapis.vmap.insert(ident, a);
                     }
                 } else if let Some(id) =
                     method_nodeid(&expr.right, lapis).or(path_nodeid(&expr.right, lapis))
@@ -181,7 +181,7 @@ fn eval_stmt(s: Stmt, lapis: &mut Lapis) {
             Expr::ForLoop(expr) => {
                 let Some(ident) = pat_ident(&expr.pat) else { return };
                 let bounds = range_bounds(&expr.expr, lapis);
-                let arr = array_cloned(&expr.expr, lapis);
+                let arr = eval_vec(&expr.expr, lapis);
                 let tmp = lapis.fmap.remove(&ident);
                 if let Some((r0, r1)) = bounds {
                     for i in r0..r1 {
@@ -226,7 +226,7 @@ fn eval_stmt(s: Stmt, lapis: &mut Lapis) {
             _ => {
                 if let Some(n) = eval_float(&expr, lapis) {
                     lapis.buffer.push_str(&format!("\n// {:?}", n));
-                } else if let Some(arr) = eval_arr_ref(&expr, lapis) {
+                } else if let Some(arr) = eval_vec_ref(&expr, lapis) {
                     lapis.buffer.push_str(&format!("\n// {:?}", arr));
                 } else if let Some(mut g) = eval_net_cloned(&expr, lapis) {
                     let info = g.display().replace('\n', "\n// ");

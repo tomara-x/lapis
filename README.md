@@ -153,9 +153,9 @@ net.commit();
 ```rust
 let net = mul(10);
 net.tick([4]); // prints [40.0]
-let in = [6];
-let out = [];
-net.tick(in, out); // out is now [60.0]
+let i = [6];
+let o = [];
+net.tick(i, o); // o is now [60.0]
 ```
 **shared/var**
 ```rust

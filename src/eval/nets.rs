@@ -987,7 +987,7 @@ pub fn call_net(expr: &ExprCall, lapis: &mut Lapis) -> Option<Net> {
         }
         "reverb4_stereo_delays" => {
             let arg = expr.args.first()?;
-            let delays = array_cloned(arg, lapis)?;
+            let delays = eval_vec(arg, lapis)?;
             let time = args.first()?;
             if delays.len() != 32 {
                 return None;
