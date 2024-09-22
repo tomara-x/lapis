@@ -82,53 +82,9 @@ impl eframe::App for Lapis {
                 let version = format!("{} {}", env!("CARGO_PKG_VERSION"), env!("COMMIT_HASH"));
                 ui.label(format!("version: {}", version));
             });
-
-            Window::new("maps").open(&mut self.maps).pivot(center).show(ctx, |ui| {
-                ui.group(|ui| {
-                    if ui.button("clear floats").clicked() {
-                        self.fmap.clear();
-                        self.fmap.shrink_to_fit();
-                    }
-                    if ui.button("clear vectors").clicked() {
-                        self.vmap.clear();
-                        self.vmap.shrink_to_fit();
-                    }
-                    if ui.button("clear graphs").clicked() {
-                        self.gmap.clear();
-                        self.gmap.shrink_to_fit();
-                    }
-                    if ui.button("clear waves").clicked() {
-                        self.wmap.clear();
-                        self.wmap.shrink_to_fit();
-                    }
-                    if ui.button("clear bools").clicked() {
-                        self.bmap.clear();
-                        self.bmap.shrink_to_fit();
-                    }
-                    if ui.button("clear shared").clicked() {
-                        self.smap.clear();
-                        self.smap.shrink_to_fit();
-                    }
-                    if ui.button("clear node ids").clicked() {
-                        self.idmap.clear();
-                        self.idmap.shrink_to_fit();
-                    }
-                    if ui.button("clear sequencers").clicked() {
-                        self.seqmap.clear();
-                        self.seqmap.shrink_to_fit();
-                    }
-                    if ui.button("clear event ids").clicked() {
-                        self.eventmap.clear();
-                        self.eventmap.shrink_to_fit();
-                    }
-                });
-            });
             ui.horizontal(|ui| {
                 if ui.button("settings").clicked() {
                     self.settings = !self.settings;
-                }
-                if ui.button("maps").clicked() {
-                    self.maps = !self.maps;
                 }
                 if ui.button("about").clicked() {
                     self.about = !self.about;

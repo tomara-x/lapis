@@ -12,10 +12,8 @@ lists marked non_exhaustive may be incomplete. if you notice something incorrect
 
 ## todo
 #[non_exhaustive, help_welcome]
-- atomic synth
 - TODO marks in eval/nets.rs
 - optimize egui stuff (high cpu use if large amount of text is in buffer)
-- be nice if the maps button could display all assignments and the option to selectively drop variables?or just remove the whole thing and gimme a `drop` method?
 
 ## deviations
 #[non_exhaustive]

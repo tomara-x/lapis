@@ -129,6 +129,11 @@ fn eval_stmt(s: Stmt, lapis: &mut Lapis) {
                         }
                     }
                 }
+                "drop" => {
+                    if let Some(k) = nth_path_ident(&method.receiver, 0) {
+                        remove_from_all_maps(&k, lapis);
+                    }
+                }
                 _ => {
                     if let Some(n) = method_call_float(method, lapis) {
                         lapis.buffer.push_str(&format!("\n// {:?}", n));
