@@ -69,6 +69,8 @@ lists marked non_exhaustive may be incomplete. if you notice something incorrect
 </p>
 </details>
 
+all the functions in the sound module
+
 **assignment**
 ```rust
 let x = 9;
@@ -290,6 +292,15 @@ g.play();
 s.push_relative(0, 2, Fade::Smooth, 0.2, 0.1,
 	sine_hz(124) | sine_hz(323)
 );
+```
+**drop**
+```rust
+// calling drop on any variable will drop that value
+let f = 40;
+f + 2;
+// 42.0
+f.drop();
+f; // prints nothing
 ```
 
 ## building
