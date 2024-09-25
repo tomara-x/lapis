@@ -62,6 +62,7 @@ pub fn pat_ident(pat: &Pat) -> Option<String> {
     match pat {
         Pat::Ident(expr) => Some(expr.ident.to_string()),
         Pat::Type(expr) => pat_ident(&expr.pat),
+        Pat::Wild(_) => Some(String::from("_")),
         _ => None,
     }
 }
