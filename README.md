@@ -17,7 +17,8 @@ lists marked non_exhaustive may be incomplete. if you notice something incorrect
 
 ## deviations
 #[non_exhaustive]
-- all nodes are wrapped in `Net`s, it's all nets (﻿🌍﻿ 🧑‍🚀﻿ 🔫﻿ 🧑‍🚀﻿)
+- every nodes is wrapped in a `Net`, it's all nets (﻿🌍﻿ 🧑‍🚀﻿ 🔫﻿ 🧑‍🚀﻿)
+- i can't support `map`. as a workaround we have `f`. which takes a str argument and outputs that function wrapped in a node. you don't get to define custom functions (at runtime), but at least you get a bunch of basic ones that can then be stitched together like other nodes. see this match for a list of supported functions: https://github.com/tomara-x/lapis/blob/2cace59742819337d414430914c77dd6f225ce74/src/eval/nets.rs#L852
 - mutability is ignored. everything is mutable
 - type annotations are ignored. types are inferred (`f32`, `Net`, `Vec<f32>`, `bool`, `NodeId`, `Arc<Wave>`, `Shared`, `Sequencer`, `EventId`,)
 - the `.play()` method for graphs allows you to listen to the graph directly. (graph has to have 0 inputs and 1 or 2 outputs)
