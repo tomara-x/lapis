@@ -307,7 +307,6 @@ f; // prints nothing
 ## building
 
 - install rust: https://www.rust-lang.org/tools/install
-- install egui dependencies: https://github.com/emilk/egui#demo
 - on linux also install libjack-dev
 - clone lapis
 ```
