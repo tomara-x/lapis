@@ -3,6 +3,7 @@ use crate::{
     eval::{arrays::*, atomics::*, bools::*, floats::*, helpers::*, ints::*, units::*},
 };
 use fundsp::{hacker32::*, sound::*};
+use std::num::Wrapping;
 use syn::*;
 
 pub fn eval_net(expr: &Expr, lapis: &mut Lapis) -> Option<Net> {
@@ -840,6 +841,185 @@ pub fn call_net(expr: &ExprCall, lapis: &mut Lapis) -> Option<Net> {
             Some(Net::wrap(Box::new(lowshelf_q(*q, *gain))))
         }
         "map" => None, //TODO i'll be seeing you...
+        "f" => {
+            let arg = expr.args.first()?;
+            let mut f = String::new();
+            if let Expr::Lit(expr) = arg {
+                if let Lit::Str(expr) = &expr.lit {
+                    f = expr.value();
+                }
+            }
+            match f.as_str() {
+                "" => None,
+                "rise" => Some(Net::wrap(Box::new(
+                    (pass() ^ tick())
+                        >> map(|i: &Frame<f32, U2>| if i[0] > i[1] { 1. } else { 0. }),
+                ))),
+                "fall" => Some(Net::wrap(Box::new(
+                    (pass() ^ tick())
+                        >> map(|i: &Frame<f32, U2>| if i[0] < i[1] { 1. } else { 0. }),
+                ))),
+                ">" => Some(Net::wrap(Box::new(map(
+                    |i: &Frame<f32, U2>| if i[0] > i[1] { 1. } else { 0. },
+                )))),
+                "<" => Some(Net::wrap(Box::new(map(
+                    |i: &Frame<f32, U2>| if i[0] < i[1] { 1. } else { 0. },
+                )))),
+                "==" => Some(Net::wrap(Box::new(map(
+                    |i: &Frame<f32, U2>| if i[0] == i[1] { 1. } else { 0. },
+                )))),
+                "!=" => Some(Net::wrap(Box::new(map(
+                    |i: &Frame<f32, U2>| if i[0] != i[1] { 1. } else { 0. },
+                )))),
+                ">=" => Some(Net::wrap(Box::new(map(
+                    |i: &Frame<f32, U2>| if i[0] >= i[1] { 1. } else { 0. },
+                )))),
+                "<=" => Some(Net::wrap(Box::new(map(
+                    |i: &Frame<f32, U2>| if i[0] <= i[1] { 1. } else { 0. },
+                )))),
+                "min" => Some(Net::wrap(Box::new(map(|i: &Frame<f32, U2>| i[0].min(i[1]))))),
+                "max" => Some(Net::wrap(Box::new(map(|i: &Frame<f32, U2>| i[0].max(i[1]))))),
+                "pow" => Some(Net::wrap(Box::new(map(|i: &Frame<f32, U2>| i[0].pow(i[1]))))),
+                "mod" | "rem" | "rem_euclid" => {
+                    Some(Net::wrap(Box::new(map(|i: &Frame<f32, U2>| i[0].rem_euclid(i[1])))))
+                }
+                "log" => Some(Net::wrap(Box::new(map(|i: &Frame<f32, U2>| i[0].log(i[1]))))),
+                "bitand" => Some(Net::wrap(Box::new(map(|i: &Frame<f32, U2>| {
+                    (i[0] as i32 & i[1] as i32) as f32
+                })))),
+                "bitor" => Some(Net::wrap(Box::new(map(|i: &Frame<f32, U2>| {
+                    (i[0] as i32 | i[1] as i32) as f32
+                })))),
+                "bitxor" => Some(Net::wrap(Box::new(map(|i: &Frame<f32, U2>| {
+                    (i[0] as i32 ^ i[1] as i32) as f32
+                })))),
+                "shl" => Some(Net::wrap(Box::new(map(|i: &Frame<f32, U2>| {
+                    let i = Wrapping(i[0] as i32) << (i[1] as usize);
+                    i.0 as f32
+                })))),
+                "shr" => Some(Net::wrap(Box::new(map(|i: &Frame<f32, U2>| {
+                    let i = Wrapping(i[0] as i32) >> (i[1] as usize);
+                    i.0 as f32
+                })))),
+                "lerp" => {
+                    Some(Net::wrap(Box::new(map(|i: &Frame<f32, U3>| lerp(i[0], i[1], i[2])))))
+                }
+                "lerp11" => {
+                    Some(Net::wrap(Box::new(map(|i: &Frame<f32, U3>| lerp11(i[0], i[1], i[2])))))
+                }
+                "delerp" => {
+                    Some(Net::wrap(Box::new(map(|i: &Frame<f32, U3>| delerp(i[0], i[1], i[2])))))
+                }
+                "delerp11" => {
+                    Some(Net::wrap(Box::new(map(|i: &Frame<f32, U3>| delerp11(i[0], i[1], i[2])))))
+                }
+                "xerp" => {
+                    Some(Net::wrap(Box::new(map(|i: &Frame<f32, U3>| xerp(i[0], i[1], i[2])))))
+                }
+                "xerp11" => {
+                    Some(Net::wrap(Box::new(map(|i: &Frame<f32, U3>| xerp11(i[0], i[1], i[2])))))
+                }
+                "dexerp" => {
+                    Some(Net::wrap(Box::new(map(|i: &Frame<f32, U3>| dexerp(i[0], i[1], i[2])))))
+                }
+                "dexerp11" => {
+                    Some(Net::wrap(Box::new(map(|i: &Frame<f32, U3>| dexerp11(i[0], i[1], i[2])))))
+                }
+                "abs" => Some(Net::wrap(Box::new(map(|i: &Frame<f32, U1>| i[0].abs())))),
+                "signum" => Some(Net::wrap(Box::new(map(|i: &Frame<f32, U1>| i[0].signum())))),
+                "floor" => Some(Net::wrap(Box::new(map(|i: &Frame<f32, U1>| i[0].floor())))),
+                "fract" => Some(Net::wrap(Box::new(map(|i: &Frame<f32, U1>| i[0].fract())))),
+                "ceil" => Some(Net::wrap(Box::new(map(|i: &Frame<f32, U1>| i[0].ceil())))),
+                "round" => Some(Net::wrap(Box::new(map(|i: &Frame<f32, U1>| i[0].round())))),
+                "sqrt" => Some(Net::wrap(Box::new(map(|i: &Frame<f32, U1>| i[0].sqrt())))),
+                "exp" => Some(Net::wrap(Box::new(map(|i: &Frame<f32, U1>| i[0].exp())))),
+                "exp2" => Some(Net::wrap(Box::new(map(|i: &Frame<f32, U1>| i[0].exp2())))),
+                "exp10" => Some(Net::wrap(Box::new(map(|i: &Frame<f32, U1>| (exp10(i[0])))))),
+                "exp_m1" => Some(Net::wrap(Box::new(map(|i: &Frame<f32, U1>| (i[0].ln_1p()))))),
+                "ln_1p" => Some(Net::wrap(Box::new(map(|i: &Frame<f32, U1>| (i[0].exp_m1()))))),
+                "ln" => Some(Net::wrap(Box::new(map(|i: &Frame<f32, U1>| i[0].ln())))),
+                "log2" => Some(Net::wrap(Box::new(map(|i: &Frame<f32, U1>| i[0].log2())))),
+                "log10" => Some(Net::wrap(Box::new(map(|i: &Frame<f32, U1>| i[0].log10())))),
+                "hypot" => Some(Net::wrap(Box::new(map(|i: &Frame<f32, U2>| i[0].hypot(i[1]))))),
+                "atan2" => Some(Net::wrap(Box::new(map(|i: &Frame<f32, U2>| i[0].atan2(i[1]))))),
+                "sin" => Some(Net::wrap(Box::new(map(|i: &Frame<f32, U1>| i[0].sin())))),
+                "cos" => Some(Net::wrap(Box::new(map(|i: &Frame<f32, U1>| i[0].cos())))),
+                "tan" => Some(Net::wrap(Box::new(map(|i: &Frame<f32, U1>| i[0].tan())))),
+                "asin" => Some(Net::wrap(Box::new(map(|i: &Frame<f32, U1>| i[0].asin())))),
+                "acos" => Some(Net::wrap(Box::new(map(|i: &Frame<f32, U1>| i[0].acos())))),
+                "atan" => Some(Net::wrap(Box::new(map(|i: &Frame<f32, U1>| i[0].atan())))),
+                "sinh" => Some(Net::wrap(Box::new(map(|i: &Frame<f32, U1>| i[0].sinh())))),
+                "cosh" => Some(Net::wrap(Box::new(map(|i: &Frame<f32, U1>| i[0].cosh())))),
+                "tanh" => Some(Net::wrap(Box::new(map(|i: &Frame<f32, U1>| i[0].tanh())))),
+                "asinh" => Some(Net::wrap(Box::new(map(|i: &Frame<f32, U1>| i[0].asinh())))),
+                "acosh" => Some(Net::wrap(Box::new(map(|i: &Frame<f32, U1>| i[0].acosh())))),
+                "atanh" => Some(Net::wrap(Box::new(map(|i: &Frame<f32, U1>| i[0].atanh())))),
+                "squared" => Some(Net::wrap(Box::new(map(|i: &Frame<f32, U1>| i[0] * i[0])))),
+                "cubed" => Some(Net::wrap(Box::new(map(|i: &Frame<f32, U1>| i[0] * i[0] * i[0])))),
+                "dissonance" => {
+                    Some(Net::wrap(Box::new(map(|i: &Frame<f32, U2>| dissonance(i[0], i[1])))))
+                }
+                "dissonance_max" => {
+                    Some(Net::wrap(Box::new(map(|i: &Frame<f32, U1>| dissonance_max(i[0])))))
+                }
+                "db_amp" => Some(Net::wrap(Box::new(map(|i: &Frame<f32, U1>| db_amp(i[0]))))),
+                "amp_db" => Some(Net::wrap(Box::new(map(|i: &Frame<f32, U1>| amp_db(i[0]))))),
+                "a_weight" => Some(Net::wrap(Box::new(map(|i: &Frame<f32, U1>| a_weight(i[0]))))),
+                "m_weight" => Some(Net::wrap(Box::new(map(|i: &Frame<f32, U1>| m_weight(i[0]))))),
+                "spline" => Some(Net::wrap(Box::new(map(|i: &Frame<f32, U5>| {
+                    spline(i[0], i[1], i[2], i[3], i[4])
+                })))),
+                "spline_mono" => Some(Net::wrap(Box::new(map(|i: &Frame<f32, U5>| {
+                    spline_mono(i[0], i[1], i[2], i[3], i[4])
+                })))),
+                "softsign" => Some(Net::wrap(Box::new(map(|i: &Frame<f32, U1>| softsign(i[0]))))),
+                "softexp" => Some(Net::wrap(Box::new(map(|i: &Frame<f32, U1>| softexp(i[0]))))),
+                "softmix" => {
+                    Some(Net::wrap(Box::new(map(|i: &Frame<f32, U3>| softmix(i[0], i[1], i[2])))))
+                }
+                "smooth3" => Some(Net::wrap(Box::new(map(|i: &Frame<f32, U1>| smooth3(i[0]))))),
+                "smooth5" => Some(Net::wrap(Box::new(map(|i: &Frame<f32, U1>| smooth5(i[0]))))),
+                "smooth7" => Some(Net::wrap(Box::new(map(|i: &Frame<f32, U1>| smooth7(i[0]))))),
+                "smooth9" => Some(Net::wrap(Box::new(map(|i: &Frame<f32, U1>| smooth9(i[0]))))),
+                "uparc" => Some(Net::wrap(Box::new(map(|i: &Frame<f32, U1>| uparc(i[0]))))),
+                "downarc" => Some(Net::wrap(Box::new(map(|i: &Frame<f32, U1>| downarc(i[0]))))),
+                "sine_ease" => Some(Net::wrap(Box::new(map(|i: &Frame<f32, U1>| sine_ease(i[0]))))),
+                "sin_hz" => Some(Net::wrap(Box::new(map(|i: &Frame<f32, U2>| sin_hz(i[0], i[1]))))),
+                "cos_hz" => Some(Net::wrap(Box::new(map(|i: &Frame<f32, U2>| cos_hz(i[0], i[1]))))),
+                "sqr_hz" => Some(Net::wrap(Box::new(map(|i: &Frame<f32, U2>| sqr_hz(i[0], i[1]))))),
+                "tri_hz" => Some(Net::wrap(Box::new(map(|i: &Frame<f32, U2>| tri_hz(i[0], i[1]))))),
+                "semitone_ratio" => {
+                    Some(Net::wrap(Box::new(map(|i: &Frame<f32, U1>| semitone_ratio(i[0])))))
+                }
+                "rnd1" => {
+                    Some(Net::wrap(Box::new(map(|i: &Frame<f32, U1>| rnd1(i[0] as u64) as f32))))
+                }
+                "rnd2" => {
+                    Some(Net::wrap(Box::new(map(|i: &Frame<f32, U1>| rnd2(i[0] as u64) as f32))))
+                }
+                "spline_noise" => Some(Net::wrap(Box::new(map(|i: &Frame<f32, U2>| {
+                    spline_noise(i[0] as u64, i[1]) as f32
+                })))),
+                "fractal_noise" => Some(Net::wrap(Box::new(map(|i: &Frame<f32, U4>| {
+                    fractal_noise(i[0] as i64, i[1].min(1.) as i64, i[2], i[3]) as f32
+                })))),
+                "pol" => Some(Net::wrap(Box::new(map(|i: &Frame<f32, U2>| {
+                    (i[0].hypot(i[1]), i[1].atan2(i[0]))
+                })))),
+                "car" => Some(Net::wrap(Box::new(map(|i: &Frame<f32, U2>| {
+                    (i[0] * i[1].cos(), i[0] * i[1].sin())
+                })))),
+                "deg" => Some(Net::wrap(Box::new(map(|i: &Frame<f32, U1>| i[0].to_degrees())))),
+                "rad" => Some(Net::wrap(Box::new(map(|i: &Frame<f32, U1>| i[0].to_radians())))),
+                "recip" => Some(Net::wrap(Box::new(map(|i: &Frame<f32, U1>| i[0].recip())))),
+                "normal" => {
+                    Some(Net::wrap(Box::new(map(
+                        |i: &Frame<f32, U1>| if i[0].is_normal() { i[0] } else { 0. },
+                    ))))
+                }
+                _ => None,
+            }
+        }
         "meter" => {
             let arg = expr.args.first()?;
             let m = eval_meter(arg, lapis)?;
