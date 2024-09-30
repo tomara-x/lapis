@@ -307,7 +307,7 @@ f; // prints nothing
 ## building
 
 - install rust: https://www.rust-lang.org/tools/install
-- on linux also install libjack-dev
+- on linux you need `libjack-dev` and `libasound2-dev` (`jack-devel` and `alsa-lib-devel` on void)
 - clone lapis
 ```
 git clone https://github.com/tomara-x/lapis.git
