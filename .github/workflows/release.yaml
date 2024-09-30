@@ -30,7 +30,7 @@ jobs:
 
       - name: install dependencies
         run: |
-          sudo apt-get update; sudo apt-get libjack-dev
+          sudo apt-get update; sudo apt-get install libjack-dev
 
       - name: Build
         run: |
