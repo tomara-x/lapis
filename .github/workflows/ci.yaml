@@ -23,7 +23,7 @@ jobs:
 
       - name: install dependencies
         run: |
-          sudo apt-get update; sudo apt-get install libjack-dev pkg-config
+          sudo apt-get update; sudo apt-get install libjack-dev pkg-config libasound2-dev
 
       - name: Build
         run: |
