@@ -6,7 +6,7 @@ lists marked non_exhaustive may be incomplete. if you notice something incorrect
 #[non_exhaustive]
 - you don't have the rust compiler looking over your shoulder
 - this isn't rust, you have a very small subset of the syntax
-- for functions that accept [`Shape`](https://docs.rs/fundsp/0.19.0/fundsp/shape/trait.Shape.html) as input, `Adaptive` and `ShapeFn` aren't supported
+- for functions that accept [`Shape`](https://docs.rs/fundsp/latest/fundsp/shape/trait.Shape.html) as input, `Adaptive` and `ShapeFn` aren't supported
 - no closures and therefore none of the functions that take closures as input (yet)
 - no `break` or `continue` in loops
 
@@ -28,7 +28,7 @@ lists marked non_exhaustive may be incomplete. if you notice something incorrect
 - when a function takes an integer or usize, if you type it as a literal integer, then they are parsed to the corresponding type. otherwise (a variable or an expression) they are evaluated as floats then cast to the needed type
 - a statement with just a variable name `variable;` will print that variable's value (or call .display() for graphs) same for expressions `2 + 2;` will print 4
 - everything is global. nothing is limited to scope except for the loop variable in for loops
-- [`Meter`](https://docs.rs/fundsp/0.19.0/fundsp/dynamics/enum.Meter.html) modes peak and rms are actually passed cast f32 not f64
+- [`Meter`](https://docs.rs/fundsp/latest/fundsp/dynamics/enum.Meter.html) modes Peak and Rms are actually passed cast f32 not f64
 
 ## what's supported
 #[non_exhaustive]
@@ -37,8 +37,7 @@ lists marked non_exhaustive may be incomplete. if you notice something incorrect
 <p>
 
 - branchf, branchi, busf, busi, pipef, pipei, stackf, stacki, sumf, sumi
-- envelope, envelope2, envelope3, envelope_in,
-- lfo, lfo2, lfo3, lfo_in
+- envelope, envelope2, envelope3, envelope_in (lfo, lfo2, lfo3, lfo_in)
 - fdn, fdn2
 - multitap, multitap_linear
 - feedback2
@@ -208,7 +207,7 @@ v2;
     x;
 }
 ```
-**Net**
+[**Net**](https://docs.rs/fundsp/latest/fundsp/net/struct.Net.html)
 
 <details><summary>deviations</summary>
 <p>
@@ -242,7 +241,7 @@ let g = var(s) >> sine();
 g.play();
 s.set(220);
 ```
-**Wave**
+[**Wave**](https://docs.rs/fundsp/latest/fundsp/wave/struct.Wave.html)
 
 <details><summary>deviations</summary>
 <p>
@@ -301,7 +300,7 @@ s;                                      // print info
 s.save_wav16("awawawa.wav");            // save the wave as a 16-bit wav file
 ```
 
-**Sequencer**
+[**Sequencer**](https://docs.rs/fundsp/latest/fundsp/sequencer/struct.Sequencer.html)
 
 <details><summary>deviations</summary>
 <p>
