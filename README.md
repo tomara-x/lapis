@@ -70,7 +70,53 @@ lists marked non_exhaustive may be incomplete. if you notice something incorrect
 </p>
 </details>
 
-all the functions in the sound module
+<details><summary>some f32 methods</summary>
+<p>
+
+- floor
+- ceil
+- round
+- trunc
+- fract
+- abs
+- signum
+- copysign
+- div_euclid
+- rem_euclid
+- powi
+- powf
+- sqrt
+- exp
+- exp2
+- ln
+- log
+- log2
+- log10
+- cbrt
+- hypot
+- sin
+- cos
+- tan
+- asin
+- acos
+- atan
+- sinh
+- cosh
+- tanh
+- asinh
+- acosh
+- atanh
+- atan2
+- recip
+- to_degrees
+- to_radians
+- max
+- min
+
+</p>
+</details>
+
+and all the functions in the sound module
 
 **assignment**
 ```rust
