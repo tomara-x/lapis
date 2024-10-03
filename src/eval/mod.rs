@@ -134,6 +134,47 @@ fn eval_stmt(s: Stmt, lapis: &mut Lapis) {
                         remove_from_all_maps(&k, lapis);
                     }
                 }
+                "error" => {
+                    if let Some(k) = nth_path_ident(&method.receiver, 0) {
+                        if let Some(g) = &mut lapis.gmap.get_mut(&k) {
+                            lapis.buffer.push_str(&format!("\n// {:?}", g.error()));
+                        }
+                    }
+                }
+                "source" => {
+                    if let Some(k) = nth_path_ident(&method.receiver, 0) {
+                        if let Some(g) = &mut lapis.gmap.get(&k) {
+                            let arg0 = method.args.first();
+                            let arg1 = method.args.get(1);
+                            if let (Some(arg0), Some(arg1)) = (arg0, arg1) {
+                                let id = path_nodeid(arg0, lapis);
+                                let chan = eval_usize(arg1, lapis);
+                                if let (Some(id), Some(chan)) = (id, chan) {
+                                    if g.contains(id) && chan < g.inputs_in(id) {
+                                        lapis
+                                            .buffer
+                                            .push_str(&format!("\n// {:?}", g.source(id, chan)));
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                "output_source" => {
+                    if let Some(k) = nth_path_ident(&method.receiver, 0) {
+                        if let Some(g) = &mut lapis.gmap.get(&k) {
+                            let arg0 = method.args.first();
+                            if let Some(arg0) = arg0 {
+                                let chan = eval_usize(arg0, lapis);
+                                if let Some(chan) = chan {
+                                    lapis
+                                        .buffer
+                                        .push_str(&format!("\n// {:?}", g.output_source(chan)));
+                                }
+                            }
+                        }
+                    }
+                }
                 _ => {
                     if let Some(n) = method_call_float(method, lapis) {
                         lapis.buffer.push_str(&format!("\n// {:?}", n));

@@ -1,4 +1,7 @@
-use crate::{components::*, eval::helpers::*, eval::ints::*};
+use crate::{
+    components::*,
+    eval::{helpers::*, ints::*, nets::*},
+};
 use fundsp::hacker32::*;
 use syn::*;
 
@@ -149,6 +152,26 @@ pub fn method_call_float(expr: &ExprMethodCall, lapis: &Lapis) -> Option<f32> {
             let k = nth_path_ident(&expr.receiver, 0)?;
             let net = lapis.gmap.get(&k)?;
             Some(net.outputs() as f32)
+        }
+        "inputs_in" => {
+            let k = nth_path_ident(&expr.receiver, 0)?;
+            let net = lapis.gmap.get(&k)?;
+            let id = path_nodeid(expr.args.first()?, lapis)?;
+            if net.contains(id) {
+                Some(net.inputs_in(id) as f32)
+            } else {
+                None
+            }
+        }
+        "outputs_in" => {
+            let k = nth_path_ident(&expr.receiver, 0)?;
+            let net = lapis.gmap.get(&k)?;
+            let id = path_nodeid(expr.args.first()?, lapis)?;
+            if net.contains(id) {
+                Some(net.outputs_in(id) as f32)
+            } else {
+                None
+            }
         }
         "first" => {
             let k = nth_path_ident(&expr.receiver, 0)?;

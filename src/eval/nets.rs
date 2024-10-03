@@ -308,6 +308,49 @@ pub fn net_methods(expr: &ExprMethodCall, lapis: &mut Lapis) -> Option<()> {
                 net.pipe_all(src, snk);
             }
         }
+        "set_source" => {
+            let id = path_nodeid(expr.args.first()?, lapis)?;
+            let chan = eval_usize(expr.args.get(1)?, lapis)?;
+            let source = eval_source(expr.args.get(2)?, lapis)?;
+            let k = nth_path_ident(&expr.receiver, 0)?;
+            let net = &mut lapis.gmap.get_mut(&k)?;
+            if net.contains(id) {
+                // TODO use inputs_in and outputs_in with the other methods
+                if chan < net.inputs_in(id) {
+                    if let Source::Local(src_id, src_chan) = source {
+                        if id != src_id && net.contains(src_id) && src_chan < net.outputs_in(src_id)
+                        {
+                            net.set_source(id, chan, source);
+                        }
+                    } else if let Source::Global(g_chan) = source {
+                        if g_chan < net.inputs() {
+                            net.set_source(id, chan, source);
+                        }
+                    } else {
+                        net.set_source(id, chan, source);
+                    }
+                }
+            }
+        }
+        "set_output_source" => {
+            let chan = eval_usize(expr.args.first()?, lapis)?;
+            let source = eval_source(expr.args.get(1)?, lapis)?;
+            let k = nth_path_ident(&expr.receiver, 0)?;
+            let net = &mut lapis.gmap.get_mut(&k)?;
+            if chan < net.outputs() {
+                if let Source::Local(src_id, src_chan) = source {
+                    if net.contains(src_id) && src_chan < net.outputs_in(src_id) {
+                        net.set_output_source(chan, source);
+                    }
+                } else if let Source::Global(i) = source {
+                    if i < net.inputs() {
+                        net.set_output_source(chan, source);
+                    }
+                } else {
+                    net.set_output_source(chan, source);
+                }
+            }
+        }
         "commit" => {
             let k = nth_path_ident(&expr.receiver, 0)?;
             let net = &mut lapis.gmap.get_mut(&k)?;
