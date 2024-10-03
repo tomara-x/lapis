@@ -9,7 +9,7 @@ use {audio::*, components::*, eval::*};
 fn main() -> eframe::Result {
     let options = eframe::NativeOptions {
         viewport: ViewportBuilder {
-            inner_size: Some(Vec2::new(550., 440.)),
+            inner_size: Some(Vec2::new(550., 445.)),
             min_inner_size: Some(Vec2::new(100., 100.)),
             ..Default::default()
         },
@@ -37,17 +37,19 @@ impl eframe::App for Lapis {
         };
         let mut in_device_change = false;
         let mut out_device_change = false;
-        TopBottomPanel::bottom("input").resizable(true).show_separator_line(false).show(
-            ctx,
-            |ui| {
+        TopBottomPanel::bottom("input")
+            .resizable(true)
+            .show_separator_line(false)
+            .min_height(80.)
+            .show(ctx, |ui| {
                 ScrollArea::vertical().stick_to_bottom(true).show(ui, |ui| {
                     let input_focused = ui
                         .add(
                             TextEdit::multiline(&mut self.input)
-                                .hint_text("type code then press ctrl+enter")
+                                .hint_text("type a statement then press ctrl+enter")
                                 .font(TextStyle::Monospace)
                                 .code_editor()
-                                .desired_rows(1)
+                                .desired_rows(5)
                                 .lock_focus(true)
                                 .desired_width(f32::INFINITY)
                                 .layouter(&mut layouter),
@@ -59,8 +61,7 @@ impl eframe::App for Lapis {
                         eval(self);
                     }
                 });
-            },
-        );
+            });
         TopBottomPanel::top("top_panel").show_separator_line(false).show(ctx, |ui| {
             Window::new("about").open(&mut self.about).pivot(center).show(ctx, |ui| {
                 ui.horizontal(|ui| {
@@ -214,7 +215,7 @@ impl eframe::App for Lapis {
                     TextEdit::multiline(&mut self.buffer)
                         .font(TextStyle::Monospace)
                         .code_editor()
-                        .desired_rows(2)
+                        .desired_rows(23)
                         .lock_focus(true)
                         .desired_width(f32::INFINITY)
                         .layouter(&mut layouter),
