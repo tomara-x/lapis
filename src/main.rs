@@ -22,11 +22,16 @@ fn main() -> eframe::Result {
 impl eframe::App for Lapis {
     fn update(&mut self, ctx: &Context, _frame: &mut eframe::Frame) {
         let center = Align2::CENTER_CENTER;
-        let mut theme = egui_extras::syntax_highlighting::CodeTheme::from_memory(ctx);
+        let mut theme = egui_extras::syntax_highlighting::CodeTheme::from_memory(ctx, &ctx.style());
         let theme_copy = theme.clone();
         let mut layouter = |ui: &Ui, string: &str, wrap_width: f32| {
-            let mut layout_job =
-                egui_extras::syntax_highlighting::highlight(ui.ctx(), &theme_copy, string, "rs");
+            let mut layout_job = egui_extras::syntax_highlighting::highlight(
+                ui.ctx(),
+                ui.style(),
+                &theme_copy,
+                string,
+                "rs",
+            );
             layout_job.wrap.max_width = wrap_width;
             ui.fonts(|f| f.layout_job(layout_job))
         };
@@ -105,7 +110,7 @@ impl eframe::App for Lapis {
                         ui.horizontal(|ui| {
                             ui.group(|ui| {
                                 ui.label("input");
-                                let host_change = ComboBox::from_id_source("in_host")
+                                let host_change = ComboBox::from_id_salt("in_host")
                                     .show_index(ui, &mut self.in_host, cpal::ALL_HOSTS.len(), |i| {
                                         if let Some(host) = cpal::ALL_HOSTS.get(i) {
                                             host.name()
@@ -129,7 +134,7 @@ impl eframe::App for Lapis {
                                         }
                                     }
                                 }
-                                in_device_change = ComboBox::from_id_source("in_device")
+                                in_device_change = ComboBox::from_id_salt("in_device")
                                     .show_index(
                                         ui,
                                         &mut self.in_device,
@@ -152,7 +157,7 @@ impl eframe::App for Lapis {
                         ui.horizontal(|ui| {
                             ui.group(|ui| {
                                 ui.label("output");
-                                let host_change = ComboBox::from_id_source("out_host")
+                                let host_change = ComboBox::from_id_salt("out_host")
                                     .show_index(
                                         ui,
                                         &mut self.out_host,
@@ -181,7 +186,7 @@ impl eframe::App for Lapis {
                                         }
                                     }
                                 }
-                                out_device_change = ComboBox::from_id_source("out_device")
+                                out_device_change = ComboBox::from_id_salt("out_device")
                                     .show_index(
                                         ui,
                                         &mut self.out_device,
