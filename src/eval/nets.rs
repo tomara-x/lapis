@@ -380,6 +380,17 @@ pub fn method_nodeid(expr: &Expr, lapis: &mut Lapis) -> Option<NodeId> {
                 let g = &mut lapis.gmap.get_mut(&k)?;
                 Some(g.fade_in(fade, fade_time, unit))
             }
+            "nth" => {
+                let index = eval_usize(expr.args.first()?, lapis)?;
+                if let Expr::MethodCall(ref expr) = *expr.receiver {
+                    if expr.method == "ids" {
+                        let k = nth_path_ident(&expr.receiver, 0)?;
+                        let g = &lapis.gmap.get(&k)?;
+                        return g.ids().nth(index).copied();
+                    }
+                }
+                None
+            }
             _ => None,
         },
         _ => None,
