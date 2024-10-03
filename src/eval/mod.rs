@@ -182,14 +182,18 @@ fn eval_stmt(s: Stmt, lapis: &mut Lapis) {
                     } else if let Some(arr) = method_call_vec_ref(method, lapis) {
                         lapis.buffer.push_str(&format!("\n// {:?}", arr));
                         return;
+                    } else if let Some(nodeid) = method_nodeid(&expr, lapis) {
+                        lapis.buffer.push_str(&format!("\n// {:?}", nodeid));
+                        return;
+                    } else if let Some(event) = method_eventid(&expr, lapis) {
+                        lapis.buffer.push_str(&format!("\n// {:?}", event));
+                        return;
                     }
                     wave_methods(method, lapis);
                     net_methods(method, lapis);
                     vec_methods(method, lapis);
                     shared_methods(method, lapis);
-                    method_nodeid(&expr, lapis);
                     seq_methods(method, lapis);
-                    method_eventid(&expr, lapis);
                 }
             },
             Expr::Assign(expr) => match *expr.left {
@@ -294,10 +298,13 @@ fn eval_stmt(s: Stmt, lapis: &mut Lapis) {
                     lapis.buffer.push_str(&format!("\n// {:?}", n));
                 } else if let Some(arr) = eval_vec_ref(&expr, lapis) {
                     lapis.buffer.push_str(&format!("\n// {:?}", arr));
+                } else if let Some(arr) = eval_vec_cloned(&expr, lapis) {
+                    lapis.buffer.push_str(&format!("\n// {:?}", arr));
                 } else if let Some(mut g) = eval_net_cloned(&expr, lapis) {
                     let info = g.display().replace('\n', "\n// ");
                     lapis.buffer.push_str(&format!("\n// {}", info));
                     lapis.buffer.push_str(&format!("Size           : {}", g.size()));
+                // nodeid
                 } else if let Some(id) = path_nodeid(&expr, lapis) {
                     lapis.buffer.push_str(&format!("\n// {:?}", id));
                 } else if let Some(b) = eval_bool(&expr, lapis) {
@@ -312,11 +319,21 @@ fn eval_stmt(s: Stmt, lapis: &mut Lapis) {
                         w.len(),
                         w.duration()
                     ));
-                } else if let Some(seq) = path_seq(&expr, lapis) {
+                } else if let Some(w) = eval_wave(&expr, lapis) {
+                    lapis.buffer.push_str(&format!(
+                        "\n// Wave(ch:{}, sr:{}, len:{}, dur:{})",
+                        w.channels(),
+                        w.sample_rate(),
+                        w.len(),
+                        w.duration()
+                    ));
+                } else if let Some(seq) = path_seq(&expr, lapis).or(call_seq(&expr, lapis).as_ref())
+                {
                     let info = format!(
-                        "\n// Sequencer(outs: {}, has_backend: {})",
+                        "\n// Sequencer(outs: {}, has_backend: {}, replay: {})",
                         seq.outputs(),
-                        seq.has_backend()
+                        seq.has_backend(),
+                        seq.replay_events()
                     );
                     lapis.buffer.push_str(&info);
                 } else if let Some(event) = path_eventid(&expr, lapis) {

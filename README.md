@@ -25,7 +25,7 @@ lists marked non_exhaustive may be incomplete. if you notice something incorrect
 - all number variables are f32, even if you type it as `4` it's still `4.0`
 - for functions that accept floats you can just type `3` and it's parsed as a float.
 - when a function takes an integer or usize, if you type it as a literal integer, then they are parsed to the corresponding type. otherwise (a variable or an expression) they are evaluated as floats then cast to the needed type
-- a statement with just a variable name `variable;` will print that variable's value (or call .display() for graphs) same for expressions `2 + 2;` will print 4
+- an expression ending in a semicolon, like `variable;`, `2 + 2;`, `lowpass();`, or `[x, x+1, x+2];` will print that expression's value. for Net, Wave, Sequencer, Shared, NodeId, EventId, it will print info about them.
 - everything is global. nothing is limited to scope except for the loop variable in for loops
 - [`Meter`](https://docs.rs/fundsp/latest/fundsp/dynamics/enum.Meter.html) modes Peak and Rms are actually passed cast f32 not f64
 
