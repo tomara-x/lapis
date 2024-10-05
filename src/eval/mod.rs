@@ -23,7 +23,7 @@ pub fn eval(lapis: &mut Lapis) {
         lapis.buffer.push('\n');
         lapis.buffer.push_str(&lapis.input);
         lapis.input.clear();
-        println!("{:#?}", stmt);
+        //println!("{:#?}", stmt);
         eval_stmt(stmt, lapis);
     }
 }
