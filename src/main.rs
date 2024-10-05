@@ -37,6 +37,7 @@ impl eframe::App for Lapis {
         };
         let mut in_device_change = false;
         let mut out_device_change = false;
+        let mut settings_win_opened = false;
         TopBottomPanel::bottom("input")
             .resizable(true)
             .show_separator_line(false)
@@ -85,12 +86,15 @@ impl eframe::App for Lapis {
                         "https://codeberg.org/tomara-x/lapis/",
                     );
                 });
-                let version = format!("{} {}", env!("CARGO_PKG_VERSION"), env!("COMMIT_HASH"));
+                let version = format!("{} ({})", env!("CARGO_PKG_VERSION"), env!("COMMIT_HASH"));
                 ui.label(format!("version: {}", version));
             });
             ui.horizontal(|ui| {
                 if ui.button("settings").clicked() {
                     self.settings = !self.settings;
+                    settings_win_opened = true;
+                    self.in_host.0 = self.in_host.1;
+                    self.out_host.0 = self.out_host.1;
                 }
                 if ui.button("about").clicked() {
                     self.about = !self.about;
@@ -99,113 +103,105 @@ impl eframe::App for Lapis {
         });
         CentralPanel::default().show(ctx, |ui| {
             Window::new("settings").open(&mut self.settings).pivot(center).show(ctx, |ui| {
-                ui.horizontal(|ui| {
-                    ui.vertical(|ui| {
+                ui.vertical(|ui| {
+                    ui.group(|ui| {
+                        theme.ui(ui);
+                        theme.store_in_memory(ui.ctx());
+                    });
+                });
+                ui.vertical(|ui| {
+                    ui.horizontal(|ui| {
                         ui.group(|ui| {
-                            theme.ui(ui);
-                            theme.clone().store_in_memory(ui.ctx());
+                            ui.monospace("input ");
+                            let host_change = ComboBox::from_id_salt("in_host")
+                                .show_index(ui, &mut self.in_host.0, cpal::ALL_HOSTS.len(), |i| {
+                                    if let Some(host) = cpal::ALL_HOSTS.get(i) {
+                                        host.name()
+                                    } else {
+                                        cpal::default_host().id().name()
+                                    }
+                                })
+                                .changed();
+                            if host_change || settings_win_opened {
+                                let i = self.in_host.0;
+                                let host = if let Some(host) = cpal::ALL_HOSTS.get(i) {
+                                    cpal::host_from_id(*host).unwrap_or(cpal::default_host())
+                                } else {
+                                    cpal::default_host()
+                                };
+                                if let Ok(devices) = host.input_devices() {
+                                    self.in_device_names.clear();
+                                    for device in devices {
+                                        self.in_device_names
+                                            .push(device.name().unwrap_or(String::from("Err")));
+                                    }
+                                }
+                            }
+                            in_device_change = ComboBox::from_id_salt("in_device")
+                                .show_index(
+                                    ui,
+                                    &mut self.in_device,
+                                    self.in_device_names.len(),
+                                    |i| {
+                                        if let Some(device) = self.in_device_names.get(i) {
+                                            device.clone()
+                                        } else if let Some(device) =
+                                            cpal::default_host().default_output_device()
+                                        {
+                                            device.name().unwrap_or(String::from("Err"))
+                                        } else {
+                                            String::from("Err")
+                                        }
+                                    },
+                                )
+                                .changed();
                         });
                     });
-                    // TODO(amy): cleanup!
-                    ui.vertical(|ui| {
-                        ui.horizontal(|ui| {
-                            ui.group(|ui| {
-                                ui.label("input");
-                                let host_change = ComboBox::from_id_salt("in_host")
-                                    .show_index(ui, &mut self.in_host, cpal::ALL_HOSTS.len(), |i| {
-                                        if let Some(host) = cpal::ALL_HOSTS.get(i) {
-                                            host.name()
+                    ui.horizontal(|ui| {
+                        ui.group(|ui| {
+                            ui.monospace("output");
+                            let host_change = ComboBox::from_id_salt("out_host")
+                                .show_index(ui, &mut self.out_host.0, cpal::ALL_HOSTS.len(), |i| {
+                                    if let Some(host) = cpal::ALL_HOSTS.get(i) {
+                                        host.name()
+                                    } else {
+                                        cpal::default_host().id().name()
+                                    }
+                                })
+                                .changed();
+                            if host_change || settings_win_opened {
+                                let i = self.out_host.0;
+                                let host = if let Some(host) = cpal::ALL_HOSTS.get(i) {
+                                    cpal::host_from_id(*host).unwrap_or(cpal::default_host())
+                                } else {
+                                    cpal::default_host()
+                                };
+                                if let Ok(devices) = host.output_devices() {
+                                    self.out_device_names.clear();
+                                    for device in devices {
+                                        self.out_device_names
+                                            .push(device.name().unwrap_or(String::from("Err")));
+                                    }
+                                }
+                            }
+                            out_device_change = ComboBox::from_id_salt("out_device")
+                                .show_index(
+                                    ui,
+                                    &mut self.out_device,
+                                    self.out_device_names.len(),
+                                    |i| {
+                                        if let Some(device) = self.out_device_names.get(i) {
+                                            device.clone()
+                                        } else if let Some(device) =
+                                            cpal::default_host().default_output_device()
+                                        {
+                                            device.name().unwrap_or(String::from("Err"))
                                         } else {
-                                            cpal::default_host().id().name()
+                                            String::from("Err")
                                         }
-                                    })
-                                    .changed();
-                                if host_change {
-                                    let i = self.in_host;
-                                    let host = if let Some(host) = cpal::ALL_HOSTS.get(i) {
-                                        cpal::host_from_id(*host).unwrap_or(cpal::default_host())
-                                    } else {
-                                        cpal::default_host()
-                                    };
-                                    if let Ok(devices) = host.input_devices() {
-                                        self.in_device_names.clear();
-                                        for device in devices {
-                                            self.in_device_names
-                                                .push(device.name().unwrap_or(String::from("Err")));
-                                        }
-                                    }
-                                }
-                                in_device_change = ComboBox::from_id_salt("in_device")
-                                    .show_index(
-                                        ui,
-                                        &mut self.in_device,
-                                        self.in_device_names.len(),
-                                        |i| {
-                                            if let Some(device) = self.in_device_names.get(i) {
-                                                device.clone()
-                                            } else if let Some(device) =
-                                                cpal::default_host().default_output_device()
-                                            {
-                                                device.name().unwrap_or(String::from("Err"))
-                                            } else {
-                                                String::from("Err")
-                                            }
-                                        },
-                                    )
-                                    .changed();
-                            });
-                        });
-                        ui.horizontal(|ui| {
-                            ui.group(|ui| {
-                                ui.label("output");
-                                let host_change = ComboBox::from_id_salt("out_host")
-                                    .show_index(
-                                        ui,
-                                        &mut self.out_host,
-                                        cpal::ALL_HOSTS.len(),
-                                        |i| {
-                                            if let Some(host) = cpal::ALL_HOSTS.get(i) {
-                                                host.name()
-                                            } else {
-                                                cpal::default_host().id().name()
-                                            }
-                                        },
-                                    )
-                                    .changed();
-                                if host_change {
-                                    let i = self.out_host;
-                                    let host = if let Some(host) = cpal::ALL_HOSTS.get(i) {
-                                        cpal::host_from_id(*host).unwrap_or(cpal::default_host())
-                                    } else {
-                                        cpal::default_host()
-                                    };
-                                    if let Ok(devices) = host.output_devices() {
-                                        self.out_device_names.clear();
-                                        for device in devices {
-                                            self.out_device_names
-                                                .push(device.name().unwrap_or(String::from("Err")));
-                                        }
-                                    }
-                                }
-                                out_device_change = ComboBox::from_id_salt("out_device")
-                                    .show_index(
-                                        ui,
-                                        &mut self.out_device,
-                                        self.out_device_names.len(),
-                                        |i| {
-                                            if let Some(device) = self.out_device_names.get(i) {
-                                                device.clone()
-                                            } else if let Some(device) =
-                                                cpal::default_host().default_output_device()
-                                            {
-                                                device.name().unwrap_or(String::from("Err"))
-                                            } else {
-                                                String::from("Err")
-                                            }
-                                        },
-                                    )
-                                    .changed();
-                            });
+                                    },
+                                )
+                                .changed();
                         });
                     });
                 });
@@ -223,9 +219,11 @@ impl eframe::App for Lapis {
             });
         });
         if in_device_change {
+            self.in_host.1 = self.in_host.0;
             set_in_device(self);
         }
         if out_device_change {
+            self.out_host.1 = self.out_host.0;
             set_out_device(self);
         }
     }

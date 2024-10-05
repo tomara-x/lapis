@@ -27,7 +27,7 @@ pub fn default_out_device(slot: SlotBackend) -> Option<Stream> {
 }
 
 pub fn set_out_device(lapis: &mut Lapis) {
-    if let Some(host_id) = cpal::ALL_HOSTS.get(lapis.out_host) {
+    if let Some(host_id) = cpal::ALL_HOSTS.get(lapis.out_host.1) {
         if let Ok(host) = cpal::host_from_id(*host_id) {
             if let Ok(mut devices) = host.output_devices() {
                 if let Some(device) = devices.nth(lapis.out_device) {
@@ -114,7 +114,7 @@ pub fn default_in_device(ls: Sender<f32>, rs: Sender<f32>) -> Option<Stream> {
 }
 
 pub fn set_in_device(lapis: &mut Lapis) {
-    if let Some(host_id) = cpal::ALL_HOSTS.get(lapis.in_host) {
+    if let Some(host_id) = cpal::ALL_HOSTS.get(lapis.in_host.1) {
         if let Ok(host) = cpal::host_from_id(*host_id) {
             if let Ok(mut devices) = host.input_devices() {
                 if let Some(device) = devices.nth(lapis.in_device) {
