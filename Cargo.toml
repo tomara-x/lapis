@@ -7,7 +7,7 @@ repository = "https://github.com/tomara-x/lapis"
 license = "MIT OR Apache-2.0"
 
 [dependencies]
-fundsp = "0.20"
+fundsp = "0.20" # update the label in main.rs
 cpal = {version = "0.15.3", features = ["jack"]}
 eframe = "0.29.1"
 egui_extras = { version = "0.29.1", default-features = false, features = ["syntect"] }
@@ -27,4 +27,4 @@ debug = false
 panic = 'abort'
 strip = true
 codegen-units = 1
-lto = "thin"
+lto = "fat"
