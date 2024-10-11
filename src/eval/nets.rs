@@ -1204,6 +1204,16 @@ pub fn call_net(expr: &ExprCall, lapis: &mut Lapis) -> Option<Net> {
             let hf_damp = args.get(2)?;
             Some(Net::wrap(Box::new(pluck(*freq, *gain_per_sec, *hf_damp))))
         }
+        "poly_saw" => Some(Net::wrap(Box::new(poly_saw()))),
+        "poly_saw_hz" => {
+            let f = args.first()?;
+            Some(Net::wrap(Box::new(poly_saw_hz(*f))))
+        }
+        "poly_square" => Some(Net::wrap(Box::new(poly_square()))),
+        "poly_square_hz" => {
+            let f = args.first()?;
+            Some(Net::wrap(Box::new(poly_square_hz(*f))))
+        }
         "product" => {
             let arg0 = expr.args.first()?;
             let x = eval_net(arg0, lapis)?;

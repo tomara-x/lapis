@@ -88,7 +88,7 @@ impl eframe::App for Lapis {
                 });
                 let version = format!("{} ({})", env!("CARGO_PKG_VERSION"), env!("COMMIT_HASH"));
                 ui.label(format!("version: {}", version));
-                ui.label("FunDSP version: 0.20")
+                ui.label("FunDSP version: master")
             });
             ui.horizontal(|ui| {
                 if ui.button("settings").clicked() {
