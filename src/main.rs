@@ -35,6 +35,13 @@ impl eframe::App for Lapis {
             layout_job.wrap.max_width = wrap_width;
             ui.fonts(|f| f.layout_job(layout_job))
         };
+        if self.keys_active {
+            for (shortcut, stmt) in self.keys.clone() {
+                if ctx.input_mut(|i| i.consume_shortcut(&shortcut)) {
+                    eval_stmt(stmt, self);
+                }
+            }
+        }
         let mut in_device_change = false;
         let mut out_device_change = false;
         let mut settings_win_opened = false;
@@ -100,6 +107,7 @@ impl eframe::App for Lapis {
                 if ui.button("about").clicked() {
                     self.about = !self.about;
                 }
+                ui.checkbox(&mut self.keys_active, "keys");
             });
         });
         CentralPanel::default().show(ctx, |ui| {

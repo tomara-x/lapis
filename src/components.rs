@@ -3,6 +3,8 @@ use crossbeam_channel::{bounded, Receiver};
 use fundsp::hacker32::*;
 use std::collections::HashMap;
 use std::sync::Arc;
+use eframe::egui::KeyboardShortcut;
+use syn::Stmt;
 
 #[allow(dead_code)]
 pub struct Lapis {
@@ -29,6 +31,8 @@ pub struct Lapis {
     pub out_device: usize,
     pub in_device_names: Vec<String>,
     pub out_device_names: Vec<String>,
+    pub keys: HashMap<KeyboardShortcut, Stmt>,
+    pub keys_active: bool,
 }
 
 impl Lapis {
@@ -62,6 +66,8 @@ impl Lapis {
             out_device: usize::MAX,
             in_device_names: Vec::new(),
             out_device_names: Vec::new(),
+            keys: HashMap::new(),
+            keys_active: false,
         }
     }
 }

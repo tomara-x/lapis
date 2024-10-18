@@ -28,7 +28,7 @@ pub fn eval(lapis: &mut Lapis) {
     }
 }
 
-fn eval_stmt(s: Stmt, lapis: &mut Lapis) {
+pub fn eval_stmt(s: Stmt, lapis: &mut Lapis) {
     match s {
         Stmt::Local(expr) => {
             if let Some(k) = pat_ident(&expr.pat) {
@@ -246,6 +246,20 @@ fn eval_stmt(s: Stmt, lapis: &mut Lapis) {
                                     if let Some(v) = vec.get_mut(index) {
                                         *v = right;
                                     }
+                                }
+                            }
+                        }
+                    }
+                }
+                Expr::Lit(left) => {
+                    if let Lit::Str(left) = left.lit {
+                        if let Expr::Block(ref block) = *expr.right {
+                            if let Some(shortcut) = parse_shortcut(left.value()) {
+                                if block.block.stmts.len() == 0 {
+                                    lapis.keys.remove(&shortcut);
+                                } else {
+                                    let stmt = Stmt::Expr(*expr.right, None);
+                                    lapis.keys.insert(shortcut, stmt);
                                 }
                             }
                         }

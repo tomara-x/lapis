@@ -5,6 +5,7 @@ use crate::{
 use fundsp::hacker32::*;
 use syn::punctuated::Punctuated;
 use syn::*;
+use eframe::egui::{KeyboardShortcut, Modifiers, Key};
 
 pub fn remove_from_all_maps(k: &String, lapis: &mut Lapis) {
     lapis.fmap.remove(k);
@@ -16,6 +17,24 @@ pub fn remove_from_all_maps(k: &String, lapis: &mut Lapis) {
     lapis.wmap.remove(k);
     lapis.seqmap.remove(k);
     lapis.eventmap.remove(k);
+}
+pub fn parse_shortcut(mut k: String) -> Option<KeyboardShortcut> {
+    k = k.replace(char::is_whitespace, "");
+    let mut modifiers = Modifiers::NONE;
+    if k.contains("Ctrl") || k.contains("ctrl") {
+        modifiers = modifiers.plus(Modifiers::CTRL);
+    }
+    if k.contains("Alt") || k.contains("alt") {
+        modifiers = modifiers.plus(Modifiers::ALT);
+    }
+    if k.contains("Shift") || k.contains("shift") {
+        modifiers = modifiers.plus(Modifiers::SHIFT);
+    }
+    k = k.replace("Ctrl+", "").replace("ctrl+", "")
+         .replace("Alt+", "").replace("alt+", "")
+         .replace("Shift+", "").replace("shift+", "");
+    let key = Key::from_name(&k)?;
+    Some(KeyboardShortcut::new(modifiers, key))
 }
 pub fn path_fade(expr: &Expr) -> Option<Fade> {
     let f = nth_path_ident(expr, 0)?;
