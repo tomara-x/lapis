@@ -188,6 +188,11 @@ fn eval_stmt(s: Stmt, lapis: &mut Lapis) {
                     } else if let Some(event) = method_eventid(&expr, lapis) {
                         lapis.buffer.push_str(&format!("\n// {:?}", event));
                         return;
+                    } else if let Some(mut g) = method_net(method, lapis) {
+                        let info = g.display().replace('\n', "\n// ");
+                        lapis.buffer.push_str(&format!("\n// {}", info));
+                        lapis.buffer.push_str(&format!("Size           : {}", g.size()));
+                        return;
                     }
                     wave_methods(method, lapis);
                     net_methods(method, lapis);
@@ -304,7 +309,6 @@ fn eval_stmt(s: Stmt, lapis: &mut Lapis) {
                     let info = g.display().replace('\n', "\n// ");
                     lapis.buffer.push_str(&format!("\n// {}", info));
                     lapis.buffer.push_str(&format!("Size           : {}", g.size()));
-                // nodeid
                 } else if let Some(id) = path_nodeid(&expr, lapis) {
                     lapis.buffer.push_str(&format!("\n// {:?}", id));
                 } else if let Some(b) = eval_bool(&expr, lapis) {

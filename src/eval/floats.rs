@@ -255,7 +255,7 @@ pub fn call_float(expr: &ExprCall, lapis: &Lapis) -> Option<f32> {
         "floor" => Some(floor(*args.first()?)),
         "fractal_ease_noise" => None, //TODO
         "fractal_noise" => {
-            let seed = eval_i64(expr.args.first()?, lapis)?;
+            let seed = eval_u64(expr.args.first()?, lapis)?;
             let octaves = eval_i64(expr.args.get(1)?, lapis)?;
             let roughness = eval_float(expr.args.get(2)?, lapis)?;
             let x = eval_float(expr.args.get(3)?, lapis)?;

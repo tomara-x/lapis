@@ -28,7 +28,7 @@ pub fn eval_net_cloned(expr: &Expr, lapis: &mut Lapis) -> Option<Net> {
         _ => None,
     }
 }
-fn method_net(expr: &ExprMethodCall, lapis: &mut Lapis) -> Option<Net> {
+pub fn method_net(expr: &ExprMethodCall, lapis: &mut Lapis) -> Option<Net> {
     match expr.method.to_string().as_str() {
         "backend" => {
             let k = nth_path_ident(&expr.receiver, 0)?;
@@ -77,6 +77,26 @@ fn method_net(expr: &ExprMethodCall, lapis: &mut Lapis) -> Option<Net> {
                 return Some(Net::wrap(net.replace(id, Box::new(unit))));
             }
             None
+        }
+        "phase" => {
+            let p = eval_float(expr.args.first()?, lapis)?;
+            let mut net = eval_net(&expr.receiver, lapis)?;
+            // bad amy
+            for i in 0..net.ids().len() {
+                net.set(Setting::phase(p).node(*net.ids().nth(i)?).right());
+            }
+            net.reset();
+            Some(net)
+        }
+        "seed" => {
+            let s = eval_u64(expr.args.first()?, lapis)?;
+            let mut net = eval_net(&expr.receiver, lapis)?;
+            // really bad amy
+            for i in 0..net.ids().len() {
+                net.set(Setting::seed(s).node(*net.ids().nth(i)?).left());
+            }
+            net.reset();
+            Some(net)
         }
         _ => None,
     }
@@ -1036,7 +1056,7 @@ pub fn call_net(expr: &ExprCall, lapis: &mut Lapis) -> Option<Net> {
                     spline_noise(i[0] as u64, i[1]) as f32
                 })))),
                 "fractal_noise" => Some(Net::wrap(Box::new(map(|i: &Frame<f32, U4>| {
-                    fractal_noise(i[0] as i64, i[1].min(1.) as i64, i[2], i[3]) as f32
+                    fractal_noise(i[0] as u64, i[1].min(1.) as i64, i[2], i[3]) as f32
                 })))),
                 "pol" => Some(Net::wrap(Box::new(map(|i: &Frame<f32, U2>| {
                     (i[0].hypot(i[1]), i[1].atan2(i[0]))
@@ -1231,15 +1251,6 @@ pub fn call_net(expr: &ExprCall, lapis: &mut Lapis) -> Option<Net> {
             let f = args.first()?;
             Some(Net::wrap(Box::new(ramp_hz(*f))))
         }
-        "ramp_hz_phase" => {
-            let f = args.first()?;
-            let p = args.get(1)?;
-            Some(Net::wrap(Box::new(ramp_hz_phase(*f, *p))))
-        }
-        "ramp_phase" => {
-            let p = args.first()?;
-            Some(Net::wrap(Box::new(ramp_phase(*p))))
-        }
         "resample" => None, //TODO
         "resonator" => Some(Net::wrap(Box::new(resonator()))),
         "resonator_hz" => {
@@ -1321,10 +1332,6 @@ pub fn call_net(expr: &ExprCall, lapis: &mut Lapis) -> Option<Net> {
         "sine_hz" => {
             let f = args.first()?;
             Some(Net::wrap(Box::new(sine_hz(*f))))
-        }
-        "sine_phase" => {
-            let p = args.first()?;
-            Some(Net::wrap(Box::new(sine_phase(*p))))
         }
         "sink" => Some(Net::wrap(Box::new(sink()))),
         "snaredrum" => {
