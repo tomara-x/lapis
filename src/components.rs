@@ -1,9 +1,9 @@
 use crate::audio::*;
 use crossbeam_channel::{bounded, Receiver};
+use eframe::egui::KeyboardShortcut;
 use fundsp::hacker32::*;
 use std::collections::HashMap;
 use std::sync::Arc;
-use eframe::egui::KeyboardShortcut;
 use syn::Stmt;
 
 #[allow(dead_code)]

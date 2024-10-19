@@ -2,10 +2,10 @@ use crate::{
     components::*,
     eval::{floats::*, ints::*, nets::*},
 };
+use eframe::egui::{Key, KeyboardShortcut, Modifiers};
 use fundsp::hacker32::*;
 use syn::punctuated::Punctuated;
 use syn::*;
-use eframe::egui::{KeyboardShortcut, Modifiers, Key};
 
 pub fn remove_from_all_maps(k: &String, lapis: &mut Lapis) {
     lapis.fmap.remove(k);
@@ -30,9 +30,13 @@ pub fn parse_shortcut(mut k: String) -> Option<KeyboardShortcut> {
     if k.contains("Shift") || k.contains("shift") {
         modifiers = modifiers.plus(Modifiers::SHIFT);
     }
-    k = k.replace("Ctrl+", "").replace("ctrl+", "")
-         .replace("Alt+", "").replace("alt+", "")
-         .replace("Shift+", "").replace("shift+", "");
+    k = k
+        .replace("Ctrl+", "")
+        .replace("ctrl+", "")
+        .replace("Alt+", "")
+        .replace("alt+", "")
+        .replace("Shift+", "")
+        .replace("shift+", "");
     let key = Key::from_name(&k)?;
     Some(KeyboardShortcut::new(modifiers, key))
 }
