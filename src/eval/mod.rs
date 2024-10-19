@@ -255,11 +255,10 @@ pub fn eval_stmt(s: Stmt, lapis: &mut Lapis) {
                     if let Lit::Str(left) = left.lit {
                         if let Expr::Block(ref block) = *expr.right {
                             if let Some(shortcut) = parse_shortcut(left.value()) {
-                                if block.block.stmts.len() == 0 {
-                                    lapis.keys.remove(&shortcut);
-                                } else {
+                                lapis.keys.retain(|x| x.0 != shortcut);
+                                if !block.block.stmts.is_empty() {
                                     let stmt = Stmt::Expr(*expr.right, None);
-                                    lapis.keys.insert(shortcut, stmt);
+                                    lapis.keys.push((shortcut, stmt));
                                 }
                             }
                         }

@@ -31,7 +31,7 @@ pub struct Lapis {
     pub out_device: usize,
     pub in_device_names: Vec<String>,
     pub out_device_names: Vec<String>,
-    pub keys: HashMap<KeyboardShortcut, Stmt>,
+    pub keys: Vec<(KeyboardShortcut, Stmt)>,
     pub keys_active: bool,
 }
 
@@ -66,7 +66,7 @@ impl Lapis {
             out_device: usize::MAX,
             in_device_names: Vec::new(),
             out_device_names: Vec::new(),
-            keys: HashMap::new(),
+            keys: Vec::new(),
             keys_active: false,
         }
     }

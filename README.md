@@ -28,7 +28,7 @@ lists marked non_exhaustive may be incomplete. if you notice something incorrect
 - an expression ending in a semicolon, like `variable;`, `2 + 2;`, `lowpass();`, or `[x, x+1, x+2];` will print that expression's value. for Net, Wave, Sequencer, Shared, NodeId, EventId, it will print info about them.
 - everything is global. nothing is limited to scope except for the loop variable in for loops
 - [`Meter`](https://docs.rs/fundsp/latest/fundsp/dynamics/enum.Meter.html) modes Peak and Rms are actually passed cast f32 not f64
-- executing something like `"a" = { <statements> };` or `"Ctrl+shift+a" = { <statements> };` allows you to bind arbitrary blocks of code to a keyboard shortcut. keys follow the [egui key names](https://docs.rs/egui/0.29.1/src/egui/data/key.rs.html#309-425), and modifiers ctrl, shift, and alt are supported. rebinding to an empty block removes that key binding. shortcuts can be enabled/disabled using the "keys" checkbox.
+- executing something like `"a" = { <statements> };` or `"Ctrl+shift+a" = { <statements> };` allows you to bind arbitrary blocks of code to a keyboard shortcut. keys follow the [egui key names](https://docs.rs/egui/0.29.1/src/egui/data/key.rs.html#309-425), and modifiers ctrl, shift, and alt are supported. rebinding to an empty block removes that key binding. shortcuts can be enabled/disabled using the "keys" checkbox. always define the more specific shortcuts (more modifiers) before the less specific ones.
 
 ## what's supported
 #[non_exhaustive]
