@@ -577,6 +577,7 @@ pub fn call_net(expr: &ExprCall, lapis: &mut Lapis) -> Option<Net> {
             let b2 = args.get(4)?;
             Some(Net::wrap(Box::new(biquad(*a1, *a2, *b0, *b1, *b2))))
         }
+        "biquad_bank" => None, // TODO
         "branch" => {
             let arg0 = expr.args.first()?;
             let x = eval_net(arg0, lapis)?;

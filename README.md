@@ -1,21 +1,15 @@
 > yeah, cause when i think "fun", i think "lapis"
 
-lists marked non_exhaustive may be incomplete. if you notice something incorrect, missing, or confusing, please open an issue to tell me about it, or fix it in a pull request if you can.
+if you notice something incorrect, missing, or confusing, please open an issue to tell me about it, or fix it in a pull request if you can.
 
 ## limitations
-#[non_exhaustive]
 - you don't have the rust compiler looking over your shoulder
 - this isn't rust, you have a very small subset of the syntax
 - for functions that accept [`Shape`](https://docs.rs/fundsp/latest/fundsp/shape/trait.Shape.html) as input, `Adaptive` and `ShapeFn` aren't supported
 - no closures and therefore none of the functions that take closures as input (yet)
 - no `break` or `continue` in loops
 
-## todo
-#[non_exhaustive, help_welcome]
-- TODO marks in eval/nets.rs
-
 ## deviations
-#[non_exhaustive]
 - every nodes is wrapped in a `Net`, it's all nets (﻿🌍﻿ 🧑‍🚀﻿ 🔫﻿ 🧑‍🚀﻿)
 - i can't support `map`. as a workaround we have `f`. which takes a str argument and outputs that function wrapped in a node. you don't get to define custom functions (at runtime), but at least you get a bunch of basic ones that can then be stitched together like other nodes. see this match for a list of supported functions: https://github.com/tomara-x/lapis/blob/2cace59742819337d414430914c77dd6f225ce74/src/eval/nets.rs#L852
 - mutability is ignored. everything is mutable
@@ -31,12 +25,12 @@ lists marked non_exhaustive may be incomplete. if you notice something incorrect
 - executing something like `"a" = { <statements> };` or `"Ctrl+shift+a" = { <statements> };` allows you to bind arbitrary blocks of code to a keyboard shortcut. keys follow the [egui key names](https://docs.rs/egui/0.29.1/src/egui/data/key.rs.html#309-425), and modifiers ctrl, shift, and alt are supported. rebinding to an empty block removes that key binding. shortcuts can be enabled/disabled using the "keys" checkbox. always define the more specific shortcuts (more modifiers) involving the same key before the less specific ones, so `ctrl+shift+a` then `ctrl+a` and `shift+a` then `a`.
 
 ## what's supported
-#[non_exhaustive]
 
 <details><summary>all functions in hacker32 except for</summary>
 <p>
 
 - branchf, branchi, busf, busi, pipef, pipei, stackf, stacki, sumf, sumi
+- biquad_bank
 - envelope, envelope2, envelope3, envelope_in (lfo, lfo2, lfo3, lfo_in)
 - fdn, fdn2
 - multitap, multitap_linear
