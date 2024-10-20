@@ -82,3 +82,18 @@ pub fn eval_usize(expr: &Expr, lapis: &Lapis) -> Option<usize> {
         Some(eval_float(expr, lapis)? as usize)
     }
 }
+
+pub fn eval_isize(expr: &Expr, lapis: &Lapis) -> Option<isize> {
+    let i = match expr {
+        Expr::Lit(expr) => match &expr.lit {
+            Lit::Int(expr) => expr.base10_parse::<isize>().ok(),
+            _ => None,
+        },
+        _ => None,
+    };
+    if i.is_some() {
+        i
+    } else {
+        Some(eval_float(expr, lapis)? as isize)
+    }
+}

@@ -157,6 +157,16 @@ pub fn wave_methods(expr: &ExprMethodCall, lapis: &mut Lapis) -> Option<()> {
                 Arc::make_mut(wave).insert_channel(chan, &samps);
             }
         }
+        "mix_channel" => {
+            let chan = eval_usize(expr.args.first()?, lapis)?;
+            let offset = eval_isize(expr.args.get(1)?, lapis)?;
+            let samps = eval_vec_cloned(expr.args.get(2)?, lapis)?;
+            let k = nth_path_ident(&expr.receiver, 0)?;
+            let wave = &mut lapis.wmap.get_mut(&k)?;
+            if chan < wave.channels() {
+                Arc::make_mut(wave).mix_channel(chan, offset, &samps);
+            }
+        }
         "set" => {
             let arg0 = expr.args.first()?;
             let arg1 = expr.args.get(1)?;
@@ -168,6 +178,19 @@ pub fn wave_methods(expr: &ExprMethodCall, lapis: &mut Lapis) -> Option<()> {
             let wave = &mut lapis.wmap.get_mut(&k)?;
             if chan < wave.channels() && index < wave.len() {
                 Arc::make_mut(wave).set(chan, index, val);
+            }
+        }
+        "mix" => {
+            let arg0 = expr.args.first()?;
+            let arg1 = expr.args.get(1)?;
+            let arg2 = expr.args.get(2)?;
+            let chan = eval_usize(arg0, lapis)?;
+            let index = eval_usize(arg1, lapis)?;
+            let val = eval_float(arg2, lapis)?;
+            let k = nth_path_ident(&expr.receiver, 0)?;
+            let wave = &mut lapis.wmap.get_mut(&k)?;
+            if chan < wave.channels() && index < wave.len() {
+                Arc::make_mut(wave).mix(chan, index, val);
             }
         }
         "push" => {
