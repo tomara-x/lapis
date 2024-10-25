@@ -101,13 +101,14 @@ pub fn eval_stmt(s: Stmt, lapis: &mut Lapis) {
                         output.resize(g.outputs(), 0.);
                         g.tick(&in_arr, &mut output);
                     }
-                    lapis.buffer.push_str(&format!("\n// {:?}", output));
                     if let Some(out) = method.args.get(1) {
                         if let Some(k) = nth_path_ident(out, 0) {
                             if let Some(var) = lapis.vmap.get_mut(&k) {
                                 *var = output;
                             }
                         }
+                    } else {
+                        lapis.buffer.push_str(&format!("\n// {:?}", output));
                     }
                 }
                 "play_backend" => {
