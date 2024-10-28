@@ -1842,7 +1842,10 @@ dependencies = [
  "eframe",
  "egui_extras",
  "fundsp",
+ "log",
  "syn 2.0.81",
+ "wasm-bindgen-futures",
+ "web-sys",
 ]
 
 [[package]]
