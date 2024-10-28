@@ -417,6 +417,7 @@ cargo run --release
 - syn https://github.com/dtolnay/syn
 - cpal https://github.com/rustaudio/cpal
 - crossbeam_channel https://github.com/crossbeam-rs/crossbeam
+- eframe_template https://github.com/emilk/eframe_template
 
 ## license
 
