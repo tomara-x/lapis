@@ -344,6 +344,32 @@ f.drop();
 f; // prints nothing
 ```
 
+**device selection**
+
+`list_in_devices` and `list_out_devices` will print an indexed list of hosts and the devices within them. you can use the indexes with `set_in_device` and `set_out_device` to select the devices lapis uses
+```rust
+list_in_devices();
+// input devices:
+// 0: Jack:
+//     0: Ok("cpal_client_in")
+//     1: Ok("cpal_client_out")
+// 1: Alsa:
+//     0: Ok("pipewire")
+//     1: Ok("default")
+//     2: Ok("sysdefault:CARD=sofhdadsp")
+list_out_devices();
+// output devices:
+// 0: Jack:
+//     0: Ok("cpal_client_in")
+//     1: Ok("cpal_client_out")
+// 1: Alsa:
+//     0: Ok("pipewire")
+//     1: Ok("default")
+
+set_in_device(1, 2); // selects host 1 (alsa), device 2 (sysdef...) from the input devices list
+set_out_device(1, 0); // selects host 1 (alsa), device 0 (pipewire) from the output list
+```
+
 ## building
 
 - install rust: https://www.rust-lang.org/tools/install
