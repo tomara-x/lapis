@@ -1,6 +1,6 @@
 {
-  "name": "egui Template PWA",
-  "short_name": "egui-template-pwa",
+  "name": "lapis",
+  "short_name": "lapis",
   "icons": [
     {
       "src": "./icon-256.png",
