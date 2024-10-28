@@ -1,6 +1,12 @@
 > yeah, cause when i think "fun", i think "lapis"
 
+
 if you notice something incorrect, missing, or confusing, please open an issue to tell me about it, or fix it in a pull request if you can.
+
+## wasm
+there's a wasm version here: https://tomara-x.github.io/lapis/
+
+execute `set_out_device(0,0);` for audio output to work
 
 ## limitations
 - you don't have the rust compiler looking over your shoulder
@@ -8,6 +14,7 @@ if you notice something incorrect, missing, or confusing, please open an issue t
 - for functions that accept [`Shape`](https://docs.rs/fundsp/latest/fundsp/shape/trait.Shape.html) as input, `Adaptive` and `ShapeFn` aren't supported
 - no closures and therefore none of the functions that take closures as input (yet)
 - no `break` or `continue` in loops
+- `input()` won't work in the wasm version
 
 ## deviations
 - every nodes is wrapped in a `Net`, it's all nets (﻿🌍﻿ 🧑‍🚀﻿ 🔫﻿ 🧑‍🚀﻿)
