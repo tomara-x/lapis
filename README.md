@@ -29,7 +29,6 @@ execute `set_out_device(0,0);` for audio output to work
 - an expression ending in a semicolon, like `variable;`, `2 + 2;`, `lowpass();`, or `[x, x+1, x+2];` will print that expression's value. for Net, Wave, Sequencer, Shared, NodeId, EventId, it will print info about them.
 - everything is global. nothing is limited to scope except for the loop variable in for loops
 - [`Meter`](https://docs.rs/fundsp/latest/fundsp/dynamics/enum.Meter.html) modes Peak and Rms are actually passed cast f32 not f64
-- executing something like `"a" = { <statements> };` or `"Ctrl+shift+a" = { <statements> };` allows you to bind arbitrary blocks of code to a keyboard shortcut. keys follow the [egui key names](https://docs.rs/egui/0.29.1/src/egui/data/key.rs.html#309-425), and modifiers ctrl, shift, and alt are supported. rebinding to an empty block removes that key binding. shortcuts can be enabled/disabled using the "keys" checkbox. always define the more specific shortcuts (more modifiers) involving the same key before the less specific ones, so `ctrl+shift+a` then `ctrl+a` and `shift+a` then `a`.
 
 ## what's supported
 
@@ -350,6 +349,26 @@ f + 2;
 f.drop();
 f; // prints nothing
 ```
+
+**keyboard shortcuts**
+
+you can bind blocks of code to keyboard shortcuts. keys follow the [egui key names](https://docs.rs/egui/0.29.1/src/egui/data/key.rs.html#309-425), and modifiers `ctrl`, `shift`, and `alt` are supported
+
+```rust
+"ctrl+shift+a" = {
+    // statements
+};
+"shift+a" = {
+    // statements
+};
+"a" = { // statements };
+// reassign to an empty block to remove the key binding
+"shift+a" = {};
+```
+
+shortcuts can be enabled/disabled using the "keys" checkbox at the top of the ui
+
+note: always define the more specific shortcuts (more modifiers) involving the same key before the less specific ones, so `ctrl+shift+a` then `ctrl+a` and `shift+a` then `a`
 
 **device selection**
 
