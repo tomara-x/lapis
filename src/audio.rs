@@ -26,11 +26,11 @@ pub fn default_out_device(slot: SlotBackend) -> Option<Stream> {
     None
 }
 
-pub fn set_out_device(lapis: &mut Lapis) {
-    if let Some(host_id) = cpal::ALL_HOSTS.get(lapis.out_host.1) {
+pub fn set_out_device(h: usize, d: usize, lapis: &mut Lapis) {
+    if let Some(host_id) = cpal::ALL_HOSTS.get(h) {
         if let Ok(host) = cpal::host_from_id(*host_id) {
             if let Ok(mut devices) = host.output_devices() {
-                if let Some(device) = devices.nth(lapis.out_device) {
+                if let Some(device) = devices.nth(d) {
                     if let Ok(default_config) = device.default_output_config() {
                         let mut config = default_config.config();
                         config.channels = 2;
@@ -113,11 +113,11 @@ pub fn default_in_device(ls: Sender<f32>, rs: Sender<f32>) -> Option<Stream> {
     None
 }
 
-pub fn set_in_device(lapis: &mut Lapis) {
-    if let Some(host_id) = cpal::ALL_HOSTS.get(lapis.in_host.1) {
+pub fn set_in_device(h: usize, d: usize, lapis: &mut Lapis) {
+    if let Some(host_id) = cpal::ALL_HOSTS.get(h) {
         if let Ok(host) = cpal::host_from_id(*host_id) {
             if let Ok(mut devices) = host.input_devices() {
-                if let Some(device) = devices.nth(lapis.in_device) {
+                if let Some(device) = devices.nth(d) {
                     if let Ok(config) = device.default_input_config() {
                         let (ls, lr) = bounded(4096);
                         let (rs, rr) = bounded(4096);

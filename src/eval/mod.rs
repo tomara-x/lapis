@@ -356,6 +356,8 @@ pub fn eval_stmt(s: Stmt, lapis: &mut Lapis) {
                     lapis.buffer.push_str(&info);
                 } else if let Some(event) = path_eventid(&expr, lapis) {
                     lapis.buffer.push_str(&format!("\n// {:?}", event));
+                } else if let Expr::Call(expr) = expr {
+                    device_commands(expr, lapis);
                 }
             }
         },

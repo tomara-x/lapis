@@ -1,7 +1,9 @@
 use crate::{
+    audio::*,
     components::*,
     eval::{floats::*, ints::*, nets::*},
 };
+use cpal::traits::{DeviceTrait, HostTrait};
 use eframe::egui::{Key, KeyboardShortcut, Modifiers};
 use fundsp::hacker32::*;
 use syn::punctuated::Punctuated;
@@ -17,6 +19,47 @@ pub fn remove_from_all_maps(k: &String, lapis: &mut Lapis) {
     lapis.wmap.remove(k);
     lapis.seqmap.remove(k);
     lapis.eventmap.remove(k);
+}
+pub fn device_commands(expr: ExprCall, lapis: &mut Lapis) -> Option<()> {
+    let func = nth_path_ident(&expr.func, 0)?;
+    match func.as_str() {
+        "list_in_devices" => {
+            let hosts = cpal::platform::ALL_HOSTS;
+            lapis.buffer.push_str("\n// input devices:\n");
+            for (i, host) in hosts.iter().enumerate() {
+                lapis.buffer.push_str(&format!("// {}: {:?}:\n", i, host));
+                if let Ok(devices) = cpal::platform::host_from_id(*host).unwrap().input_devices() {
+                    for (j, device) in devices.enumerate() {
+                        lapis.buffer.push_str(&format!("//     {}: {:?}\n", j, device.name()));
+                    }
+                }
+            }
+        }
+        "list_out_devices" => {
+            let hosts = cpal::platform::ALL_HOSTS;
+            lapis.buffer.push_str("\n// output devices:\n");
+            for (i, host) in hosts.iter().enumerate() {
+                lapis.buffer.push_str(&format!("// {}: {:?}:\n", i, host));
+                if let Ok(devices) = cpal::platform::host_from_id(*host).unwrap().output_devices() {
+                    for (j, device) in devices.enumerate() {
+                        lapis.buffer.push_str(&format!("//     {}: {:?}\n", j, device.name()));
+                    }
+                }
+            }
+        }
+        "set_in_device" => {
+            let h = eval_usize(expr.args.first()?, lapis)?;
+            let d = eval_usize(expr.args.get(1)?, lapis)?;
+            set_in_device(h, d, lapis);
+        }
+        "set_out_device" => {
+            let h = eval_usize(expr.args.first()?, lapis)?;
+            let d = eval_usize(expr.args.get(1)?, lapis)?;
+            set_out_device(h, d, lapis);
+        }
+        _ => {}
+    }
+    None
 }
 pub fn parse_shortcut(mut k: String) -> Option<KeyboardShortcut> {
     k = k.replace(char::is_whitespace, "");
