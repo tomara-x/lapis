@@ -352,7 +352,7 @@ f; // prints nothing
 
 **keyboard shortcuts**
 
-you can bind blocks of code to keyboard shortcuts. keys follow the [egui key names](https://docs.rs/egui/0.29.1/src/egui/data/key.rs.html#309-425), and modifiers `ctrl`, `shift`, and `alt` are supported
+you can bind blocks of code to keyboard shortcuts. keys follow the [egui key names](https://docs.rs/egui/0.29.1/src/egui/data/key.rs.html#309-425), and modifiers `ctrl`, `shift`, `alt`, and `command` are supported
 
 ```rust
 "ctrl+shift+a" = {

@@ -73,13 +73,18 @@ pub fn parse_shortcut(mut k: String) -> Option<KeyboardShortcut> {
     if k.contains("Shift") || k.contains("shift") {
         modifiers = modifiers.plus(Modifiers::SHIFT);
     }
+    if k.contains("Command") || k.contains("command") {
+        modifiers = modifiers.plus(Modifiers::COMMAND);
+    }
     k = k
         .replace("Ctrl+", "")
         .replace("ctrl+", "")
         .replace("Alt+", "")
         .replace("alt+", "")
         .replace("Shift+", "")
-        .replace("shift+", "");
+        .replace("shift+", "")
+        .replace("Command+", "")
+        .replace("command+", "");
     let key = Key::from_name(&k)?;
     Some(KeyboardShortcut::new(modifiers, key))
 }
