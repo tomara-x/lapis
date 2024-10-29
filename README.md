@@ -361,7 +361,7 @@ you can bind blocks of code to keyboard shortcuts. keys follow the [egui key nam
 "shift+a" = {
     // statements
 };
-"a" = { // statements };
+"a" = { /* statements */ };
 // reassign to an empty block to remove the key binding
 "shift+a" = {};
 ```
