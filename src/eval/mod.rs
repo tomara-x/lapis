@@ -19,12 +19,17 @@ use {
 };
 
 pub fn eval(lapis: &mut Lapis) {
-    if let Ok(stmt) = parse_str::<Stmt>(&lapis.input) {
-        lapis.buffer.push('\n');
-        lapis.buffer.push_str(&lapis.input);
-        lapis.input.clear();
-        //println!("{:#?}", stmt);
-        eval_stmt(stmt, lapis);
+    lapis.buffer.push('\n');
+    match parse_str::<Stmt>(&lapis.input) {
+        Ok(stmt) => {
+            lapis.buffer.push_str(&lapis.input);
+            lapis.input.clear();
+            //println!("{:#?}", stmt);
+            eval_stmt(stmt, lapis);
+        }
+        Err(err) => {
+            lapis.buffer.push_str(&format!("// error: {}", err));
+        }
     }
 }
 
