@@ -102,8 +102,7 @@ impl eframe::App for Lapis {
                                 .layouter(&mut layouter),
                         )
                         .has_focus();
-                    let shortcut =
-                        KeyboardShortcut { modifiers: Modifiers::COMMAND, logical_key: Key::Enter };
+                    let shortcut = KeyboardShortcut::new(Modifiers::COMMAND, Key::Enter);
                     if input_focused && ctx.input_mut(|i| i.consume_shortcut(&shortcut)) {
                         eval(self);
                     }
