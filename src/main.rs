@@ -149,7 +149,9 @@ impl eframe::App for Lapis {
                 if ui.button("about").clicked() {
                     self.about = !self.about;
                 }
-                ui.checkbox(&mut self.keys_active, "keys");
+                ui.with_layout(Layout::right_to_left(Align::TOP), |ui| {
+                    ui.checkbox(&mut self.keys_active, "keys");
+                });
             });
         });
         CentralPanel::default().show(ctx, |ui| {
