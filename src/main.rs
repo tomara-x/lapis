@@ -89,7 +89,7 @@ impl eframe::App for Lapis {
             .show_separator_line(false)
             .min_height(80.)
             .show(ctx, |ui| {
-                ScrollArea::vertical().stick_to_bottom(true).show(ui, |ui| {
+                ScrollArea::vertical().show(ui, |ui| {
                     ui.horizontal(|ui| {
                         ui.with_layout(Layout::right_to_left(Align::TOP), |ui| {
                             let execute = ui.button("e");
