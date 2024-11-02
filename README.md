@@ -361,12 +361,14 @@ you can bind blocks of code to keyboard shortcuts. keys follow the [egui key nam
 "shift+a" = {
     // statements
 };
-"a" = { /* statements */ };
+"a" = {
+    // statements
+};
 // reassign to an empty block to remove the key binding
 "shift+a" = {};
 ```
 
-shortcuts can be enabled/disabled using the "keys" checkbox at the top of the ui
+shortcuts can be enabled/disabled using the "keys" checkbox at the top of the ui (or execute `"keys" = true/false`)
 
 note: always define the more specific shortcuts (more modifiers) involving the same key before the less specific ones, so `ctrl+shift+a` then `ctrl+a` and `shift+a` then `a`
 
