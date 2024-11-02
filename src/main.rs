@@ -14,6 +14,11 @@ fn main() -> eframe::Result {
         viewport: ViewportBuilder {
             inner_size: Some(Vec2::new(550., 445.)),
             min_inner_size: Some(Vec2::new(100., 100.)),
+            icon: Some(
+                eframe::icon_data::from_png_bytes(&include_bytes!("../assets/icon-256.png")[..])
+                    .unwrap()
+                    .into(),
+            ),
             ..Default::default()
         },
         centered: true,
