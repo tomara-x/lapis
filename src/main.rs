@@ -89,7 +89,7 @@ impl eframe::App for Lapis {
             .show_separator_line(false)
             .min_height(80.)
             .show(ctx, |ui| {
-                ScrollArea::vertical().show(ui, |ui| {
+                ScrollArea::vertical().auto_shrink(false).show(ui, |ui| {
                     ui.horizontal(|ui| {
                         ui.with_layout(Layout::right_to_left(Align::TOP), |ui| {
                             let execute = ui.button("e");
@@ -166,7 +166,7 @@ impl eframe::App for Lapis {
                     TextEdit::multiline(&mut self.buffer)
                         .font(TextStyle::Monospace)
                         .code_editor()
-                        .desired_rows(23)
+                        .desired_rows(1)
                         .lock_focus(true)
                         .desired_width(f32::INFINITY)
                         .layouter(&mut layouter),
