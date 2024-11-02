@@ -90,22 +90,29 @@ impl eframe::App for Lapis {
             .min_height(80.)
             .show(ctx, |ui| {
                 ScrollArea::vertical().stick_to_bottom(true).show(ui, |ui| {
-                    let input_focused = ui
-                        .add(
-                            TextEdit::multiline(&mut self.input)
-                                .hint_text("type a statement then press ctrl+enter")
-                                .font(TextStyle::Monospace)
-                                .code_editor()
-                                .desired_rows(5)
-                                .lock_focus(true)
-                                .desired_width(f32::INFINITY)
-                                .layouter(&mut layouter),
-                        )
-                        .has_focus();
-                    let shortcut = KeyboardShortcut::new(Modifiers::COMMAND, Key::Enter);
-                    if input_focused && ctx.input_mut(|i| i.consume_shortcut(&shortcut)) {
-                        eval(self);
-                    }
+                    ui.horizontal(|ui| {
+                        ui.with_layout(Layout::right_to_left(Align::TOP), |ui| {
+                            let execute = ui.button("e");
+                            let input_focused = ui
+                                .add(
+                                    TextEdit::multiline(&mut self.input)
+                                        .hint_text("type a statement then press ctrl+enter")
+                                        .font(TextStyle::Monospace)
+                                        .code_editor()
+                                        .desired_rows(5)
+                                        .lock_focus(true)
+                                        .desired_width(f32::INFINITY)
+                                        .layouter(&mut layouter),
+                                )
+                                .has_focus();
+                            let shortcut = KeyboardShortcut::new(Modifiers::COMMAND, Key::Enter);
+                            if input_focused && ctx.input_mut(|i| i.consume_shortcut(&shortcut))
+                                || execute.clicked()
+                            {
+                                eval(self);
+                            }
+                        });
+                    });
                 });
             });
         TopBottomPanel::top("top_panel").show_separator_line(false).show(ctx, |ui| {

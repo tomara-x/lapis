@@ -267,6 +267,10 @@ pub fn eval_stmt(s: Stmt, lapis: &mut Lapis) {
                                     lapis.keys.push((shortcut, stmt));
                                 }
                             }
+                        } else if let Some(b) = eval_bool(&expr.right, lapis) {
+                            if left.value() == "keys" {
+                                lapis.keys_active = b;
+                            }
                         }
                     }
                 }
