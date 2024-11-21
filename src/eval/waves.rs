@@ -292,6 +292,28 @@ pub fn wave_methods(expr: &ExprMethodCall, lapis: &mut Lapis) -> Option<()> {
                 Arc::make_mut(wave).remove_channel(chan);
             }
         }
+        "append" => {
+            let arg = expr.args.first()?;
+            let src = lapis.wmap.get(&nth_path_ident(arg, 0)?)?.clone();
+            let k = nth_path_ident(&expr.receiver, 0)?;
+            let wave = &mut lapis.wmap.get_mut(&k)?;
+            if wave.channels() == src.channels() {
+                Arc::make_mut(wave).append(&src);
+            }
+        }
+        "retain" => {
+            let start = eval_isize(expr.args.first()?, lapis)?;
+            let length = eval_usize(expr.args.get(1)?, lapis)?;
+            let k = nth_path_ident(&expr.receiver, 0)?;
+            let wave = &mut lapis.wmap.get_mut(&k)?;
+            Arc::make_mut(wave).retain(start, length);
+        }
+        "amplify" => {
+            let amp = eval_float(expr.args.first()?, lapis)?;
+            let k = nth_path_ident(&expr.receiver, 0)?;
+            let wave = &mut lapis.wmap.get_mut(&k)?;
+            Arc::make_mut(wave).amplify(amp);
+        }
         _ => {}
     }
     None
