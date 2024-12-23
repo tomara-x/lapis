@@ -20,7 +20,7 @@ use {
 
 pub fn eval(lapis: &mut Lapis) {
     lapis.buffer.push('\n');
-    match parse_str::<Stmt>(&lapis.input) {
+    match parse_str::<Stmt>(&format!("{{{}}}", &lapis.input)) {
         Ok(stmt) => {
             lapis.buffer.push_str(&lapis.input);
             lapis.input.clear();

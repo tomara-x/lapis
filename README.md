@@ -196,17 +196,6 @@ v1;
 v2;
 // [1.0, 2.0, 4.0, 6.0]
 ```
-**blocks**
-```rust
-// to execute multiple statements at once, put them in a block
-{
-    let x = 0;
-    for i in 0..3 {
-        x = x + i;
-    }
-    x;
-}
-```
 [**Net**](https://docs.rs/fundsp/latest/fundsp/net/struct.Net.html)
 
 <details><summary>deviations</summary>
