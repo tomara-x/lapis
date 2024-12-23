@@ -68,11 +68,13 @@ pub fn eval_source(expr: &Expr, lapis: &Lapis) -> Option<Source> {
         }
         Expr::Path(expr) => {
             let seg0 = &expr.path.segments.first()?.ident;
-            let seg1 = &expr.path.segments.get(1)?.ident;
-            if seg0 == "Source" && seg1 == "Zero" {
-                Some(Source::Zero)
-            } else {
+            if let Some(seg1) = &expr.path.segments.get(1) {
+                if seg0 == "Source" && seg1.ident == "Zero" {
+                    return Some(Source::Zero);
+                }
                 None
+            } else {
+                lapis.srcmap.get(&seg0.to_string()).copied()
             }
         }
         Expr::MethodCall(expr) => method_source(expr, lapis),

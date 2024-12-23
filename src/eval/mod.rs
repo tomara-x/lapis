@@ -67,6 +67,9 @@ pub fn eval_stmt(s: Stmt, lapis: &mut Lapis) {
                     } else if let Some(seq) = call_seq(&expr.expr, lapis) {
                         remove_from_all_maps(&k, lapis);
                         lapis.seqmap.insert(k, seq);
+                    } else if let Some(source) = eval_source(&expr.expr, lapis) {
+                        remove_from_all_maps(&k, lapis);
+                        lapis.srcmap.insert(k, source);
                     } else if let Some(event) =
                         method_eventid(&expr.expr, lapis).or(path_eventid(&expr.expr, lapis))
                     {
@@ -207,6 +210,10 @@ pub fn eval_stmt(s: Stmt, lapis: &mut Lapis) {
                         if let Some(var) = lapis.smap.get_mut(&ident) {
                             *var = s;
                         }
+                    } else if let Some(s) = eval_source(&expr.right, lapis) {
+                        if let Some(var) = lapis.srcmap.get_mut(&ident) {
+                            *var = s;
+                        }
                     } else if let Some(event) =
                         method_eventid(&expr.right, lapis).or(path_eventid(&expr.right, lapis))
                     {
@@ -334,6 +341,8 @@ pub fn eval_stmt(s: Stmt, lapis: &mut Lapis) {
                         seq.replay_events()
                     );
                     lapis.buffer.push_str(&info);
+                } else if let Some(source) = eval_source(&expr, lapis) {
+                    lapis.buffer.push_str(&format!("\n// {:?}", source));
                 } else if let Some(event) = path_eventid(&expr, lapis) {
                     lapis.buffer.push_str(&format!("\n// {:?}", event));
                 } else if let Expr::Call(expr) = expr {
