@@ -9,17 +9,6 @@ use fundsp::hacker32::*;
 use syn::punctuated::Punctuated;
 use syn::*;
 
-pub fn remove_from_all_maps(k: &String, lapis: &mut Lapis) {
-    lapis.fmap.remove(k);
-    lapis.vmap.remove(k);
-    lapis.gmap.remove(k);
-    lapis.idmap.remove(k);
-    lapis.bmap.remove(k);
-    lapis.smap.remove(k);
-    lapis.wmap.remove(k);
-    lapis.seqmap.remove(k);
-    lapis.eventmap.remove(k);
-}
 pub fn device_commands(expr: ExprCall, lapis: &mut Lapis) -> Option<()> {
     let func = nth_path_ident(&expr.func, 0)?;
     match func.as_str() {

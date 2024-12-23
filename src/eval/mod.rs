@@ -41,39 +41,39 @@ pub fn eval_stmt(s: Stmt, lapis: &mut Lapis) {
             if let Some(k) = pat_ident(&expr.pat) {
                 if let Some(expr) = expr.init {
                     if let Some(v) = eval_float(&expr.expr, lapis) {
-                        remove_from_all_maps(&k, lapis);
+                        lapis.drop(&k);
                         lapis.fmap.insert(k, v);
                     } else if let Some(v) = eval_net(&expr.expr, lapis) {
-                        remove_from_all_maps(&k, lapis);
+                        lapis.drop(&k);
                         lapis.gmap.insert(k, v);
                     } else if let Some(arr) = eval_vec(&expr.expr, lapis) {
-                        remove_from_all_maps(&k, lapis);
+                        lapis.drop(&k);
                         lapis.vmap.insert(k, arr);
                     } else if let Some(id) =
                         method_nodeid(&expr.expr, lapis).or(path_nodeid(&expr.expr, lapis))
                     {
-                        remove_from_all_maps(&k, lapis);
+                        lapis.drop(&k);
                         lapis.idmap.insert(k, id);
                     } else if let Some(b) = eval_bool(&expr.expr, lapis) {
-                        remove_from_all_maps(&k, lapis);
+                        lapis.drop(&k);
                         lapis.bmap.insert(k, b);
                     } else if let Some(s) = eval_shared(&expr.expr, lapis) {
-                        remove_from_all_maps(&k, lapis);
+                        lapis.drop(&k);
                         lapis.smap.insert(k, s);
                     } else if let Some(w) = eval_wave(&expr.expr, lapis) {
-                        remove_from_all_maps(&k, lapis);
+                        lapis.drop(&k);
                         let wave = Arc::new(w);
                         lapis.wmap.insert(k, wave);
                     } else if let Some(seq) = call_seq(&expr.expr, lapis) {
-                        remove_from_all_maps(&k, lapis);
+                        lapis.drop(&k);
                         lapis.seqmap.insert(k, seq);
                     } else if let Some(source) = eval_source(&expr.expr, lapis) {
-                        remove_from_all_maps(&k, lapis);
+                        lapis.drop(&k);
                         lapis.srcmap.insert(k, source);
                     } else if let Some(event) =
                         method_eventid(&expr.expr, lapis).or(path_eventid(&expr.expr, lapis))
                     {
-                        remove_from_all_maps(&k, lapis);
+                        lapis.drop(&k);
                         lapis.eventmap.insert(k, event);
                     }
                 }
@@ -142,7 +142,7 @@ pub fn eval_stmt(s: Stmt, lapis: &mut Lapis) {
                 }
                 "drop" => {
                     if let Some(k) = nth_path_ident(&method.receiver, 0) {
-                        remove_from_all_maps(&k, lapis);
+                        lapis.drop(&k);
                     }
                 }
                 "error" => {

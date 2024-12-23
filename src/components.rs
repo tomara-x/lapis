@@ -59,4 +59,16 @@ impl Lapis {
             keys_active: false,
         }
     }
+    pub fn drop(&mut self, k: &String) {
+        self.fmap.remove(k);
+        self.vmap.remove(k);
+        self.gmap.remove(k);
+        self.idmap.remove(k);
+        self.bmap.remove(k);
+        self.smap.remove(k);
+        self.wmap.remove(k);
+        self.seqmap.remove(k);
+        self.eventmap.remove(k);
+        self.srcmap.remove(k);
+    }
 }
