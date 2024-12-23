@@ -40,8 +40,8 @@ fn main() {
         let document = web_sys::window().expect("No window").document().expect("No document");
 
         let canvas = document
-            .get_element_by_id("the_canvas_id")
-            .expect("Failed to find the_canvas_id")
+            .get_element_by_id("lapis_canvas")
+            .expect("Failed to find lapis_canvas")
             .dyn_into::<web_sys::HtmlCanvasElement>()
             .expect("the_canvas_id was not a HtmlCanvasElement");
 
