@@ -1,7 +1,7 @@
 use crate::{
     audio::*,
     components::*,
-    eval::{floats::*, ints::*, nets::*},
+    eval::{floats::*, ints::*},
 };
 use cpal::traits::{DeviceTrait, HostTrait};
 use eframe::egui::{Key, KeyboardShortcut, Modifiers};
@@ -122,41 +122,6 @@ pub fn eval_meter(expr: &Expr, lapis: &Lapis) -> Option<Meter> {
             let seg1 = &expr.path.segments.get(1)?.ident;
             if seg0 == "Meter" && seg1 == "Sample" {
                 Some(Meter::Sample)
-            } else {
-                None
-            }
-        }
-        _ => None,
-    }
-}
-pub fn eval_source(expr: &Expr, lapis: &Lapis) -> Option<Source> {
-    match expr {
-        Expr::Call(expr) => {
-            let seg0 = nth_path_ident(&expr.func, 0)?;
-            let seg1 = nth_path_ident(&expr.func, 1)?;
-            if seg0 == "Source" {
-                if seg1 == "Local" {
-                    let arg0 = expr.args.first()?;
-                    let arg1 = expr.args.get(1)?;
-                    let id = path_nodeid(arg0, lapis)?;
-                    let index = eval_usize(arg1, lapis)?;
-                    Some(Source::Local(id, index))
-                } else if seg1 == "Global" {
-                    let arg0 = expr.args.first()?;
-                    let index = eval_usize(arg0, lapis)?;
-                    Some(Source::Global(index))
-                } else {
-                    None
-                }
-            } else {
-                None
-            }
-        }
-        Expr::Path(expr) => {
-            let seg0 = &expr.path.segments.first()?.ident;
-            let seg1 = &expr.path.segments.get(1)?.ident;
-            if seg0 == "Source" && seg1 == "Zero" {
-                Some(Source::Zero)
             } else {
                 None
             }

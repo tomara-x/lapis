@@ -1,6 +1,6 @@
 use crate::{
     components::*,
-    eval::{arrays::*, atomics::*, bools::*, floats::*, helpers::*, ints::*, units::*},
+    eval::{arrays::*, atomics::*, bools::*, floats::*, helpers::*, ints::*, sources::*, units::*},
 };
 use fundsp::{hacker32::*, sound::*};
 use std::num::Wrapping;

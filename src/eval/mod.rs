@@ -11,11 +11,12 @@ mod helpers;
 mod ints;
 mod nets;
 mod sequencers;
+mod sources;
 mod units;
 mod waves;
 use {
     arrays::*, atomics::*, bools::*, floats::*, helpers::*, ints::*, nets::*, sequencers::*,
-    waves::*,
+    sources::*, waves::*,
 };
 
 pub fn eval(lapis: &mut Lapis) {
@@ -33,6 +34,7 @@ pub fn eval(lapis: &mut Lapis) {
     }
 }
 
+#[allow(clippy::map_entry)]
 pub fn eval_stmt(s: Stmt, lapis: &mut Lapis) {
     match s {
         Stmt::Local(expr) => {
@@ -147,40 +149,6 @@ pub fn eval_stmt(s: Stmt, lapis: &mut Lapis) {
                         }
                     }
                 }
-                "source" => {
-                    if let Some(k) = nth_path_ident(&method.receiver, 0) {
-                        if let Some(g) = &mut lapis.gmap.get(&k) {
-                            let arg0 = method.args.first();
-                            let arg1 = method.args.get(1);
-                            if let (Some(arg0), Some(arg1)) = (arg0, arg1) {
-                                let id = path_nodeid(arg0, lapis);
-                                let chan = eval_usize(arg1, lapis);
-                                if let (Some(id), Some(chan)) = (id, chan) {
-                                    if g.contains(id) && chan < g.inputs_in(id) {
-                                        lapis
-                                            .buffer
-                                            .push_str(&format!("\n// {:?}", g.source(id, chan)));
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-                "output_source" => {
-                    if let Some(k) = nth_path_ident(&method.receiver, 0) {
-                        if let Some(g) = &mut lapis.gmap.get(&k) {
-                            let arg0 = method.args.first();
-                            if let Some(arg0) = arg0 {
-                                let chan = eval_usize(arg0, lapis);
-                                if let Some(chan) = chan {
-                                    lapis
-                                        .buffer
-                                        .push_str(&format!("\n// {:?}", g.output_source(chan)));
-                                }
-                            }
-                        }
-                    }
-                }
                 _ => {
                     if let Some(n) = method_call_float(method, lapis) {
                         lapis.buffer.push_str(&format!("\n// {:?}", n));
@@ -198,6 +166,9 @@ pub fn eval_stmt(s: Stmt, lapis: &mut Lapis) {
                         let info = g.display().replace('\n', "\n// ");
                         lapis.buffer.push_str(&format!("\n// {}", info));
                         lapis.buffer.push_str(&format!("Size           : {}", g.size()));
+                        return;
+                    } else if let Some(source) = method_source(method, lapis) {
+                        lapis.buffer.push_str(&format!("\n// {:?}", source));
                         return;
                     }
                     wave_methods(method, lapis);
