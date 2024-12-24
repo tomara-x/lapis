@@ -1,5 +1,6 @@
 > yeah, cause when i think "fun", i think "lapis"
 
+this is an interactive interpreter for [FunDSP](https://github.com/SamiPerttu/fundsp). it allows you to experiment/play without needing to compile your code.
 
 if you notice something incorrect, missing, or confusing, please open an issue to tell me about it, or fix it in a pull request if you can.
 
@@ -230,6 +231,7 @@ let s = shared(440);
 let g = var(s) >> sine();
 g.play();
 s.set(220);
+s.set(s.value() + 42);
 ```
 [**Wave**](https://docs.rs/fundsp/latest/fundsp/wave/struct.Wave.html)
 
