@@ -192,14 +192,14 @@ pub fn method_call_float(expr: &ExprMethodCall, lapis: &Lapis) -> Option<f32> {
         _ => None,
     }
 }
-pub fn lit_float(expr: &Lit) -> Option<f32> {
+fn lit_float(expr: &Lit) -> Option<f32> {
     match expr {
         Lit::Float(expr) => expr.base10_parse::<f32>().ok(),
         Lit::Int(expr) => expr.base10_parse::<f32>().ok(),
         _ => None,
     }
 }
-pub fn bin_expr_float(expr: &ExprBinary, lapis: &Lapis) -> Option<f32> {
+fn bin_expr_float(expr: &ExprBinary, lapis: &Lapis) -> Option<f32> {
     let left = eval_float(&expr.left, lapis)?;
     let right = eval_float(&expr.right, lapis)?;
     match expr.op {
@@ -211,20 +211,20 @@ pub fn bin_expr_float(expr: &ExprBinary, lapis: &Lapis) -> Option<f32> {
         _ => None,
     }
 }
-pub fn path_float(expr: &Path, lapis: &Lapis) -> Option<f32> {
+fn path_float(expr: &Path, lapis: &Lapis) -> Option<f32> {
     let k = expr.segments.first()?.ident.to_string();
     if let Some(c) = constant_float(&k) {
         return Some(c);
     }
     lapis.fmap.get(&k).copied()
 }
-pub fn unary_float(expr: &ExprUnary, lapis: &Lapis) -> Option<f32> {
+fn unary_float(expr: &ExprUnary, lapis: &Lapis) -> Option<f32> {
     match expr.op {
         UnOp::Neg(_) => Some(-eval_float(&expr.expr, lapis)?),
         _ => None,
     }
 }
-pub fn call_float(expr: &ExprCall, lapis: &Lapis) -> Option<f32> {
+fn call_float(expr: &ExprCall, lapis: &Lapis) -> Option<f32> {
     let func = nth_path_ident(&expr.func, 0)?;
     let args = accumulate_args(&expr.args, lapis);
     match func.as_str() {

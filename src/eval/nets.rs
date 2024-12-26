@@ -101,7 +101,7 @@ pub fn method_net(expr: &ExprMethodCall, lapis: &mut Lapis) -> Option<Net> {
         _ => None,
     }
 }
-pub fn bin_expr_net(expr: &ExprBinary, lapis: &mut Lapis) -> Option<Net> {
+fn bin_expr_net(expr: &ExprBinary, lapis: &mut Lapis) -> Option<Net> {
     let left_net = eval_net(&expr.left, lapis);
     let right_net = eval_net(&expr.right, lapis);
     let left_float = eval_float(&expr.left, lapis);
@@ -138,18 +138,18 @@ pub fn bin_expr_net(expr: &ExprBinary, lapis: &mut Lapis) -> Option<Net> {
         None
     }
 }
-pub fn unary_net(expr: &ExprUnary, lapis: &mut Lapis) -> Option<Net> {
+fn unary_net(expr: &ExprUnary, lapis: &mut Lapis) -> Option<Net> {
     match expr.op {
         UnOp::Neg(_) => Some(-eval_net(&expr.expr, lapis)?),
         UnOp::Not(_) => Some(!eval_net(&expr.expr, lapis)?),
         _ => None,
     }
 }
-pub fn path_net(expr: &Path, lapis: &mut Lapis) -> Option<Net> {
+fn path_net(expr: &Path, lapis: &mut Lapis) -> Option<Net> {
     let k = expr.segments.first()?.ident.to_string();
     lapis.gmap.remove(&k)
 }
-pub fn path_net_cloned(expr: &Path, lapis: &Lapis) -> Option<Net> {
+fn path_net_cloned(expr: &Path, lapis: &Lapis) -> Option<Net> {
     let k = expr.segments.first()?.ident.to_string();
     lapis.gmap.get(&k).cloned()
 }
@@ -445,7 +445,7 @@ macro_rules! tuple_call_match {
         }
     }};
 }
-pub fn call_net(expr: &ExprCall, lapis: &mut Lapis) -> Option<Net> {
+fn call_net(expr: &ExprCall, lapis: &mut Lapis) -> Option<Net> {
     let func = nth_path_ident(&expr.func, 0)?;
     let args = accumulate_args(&expr.args, lapis);
     match func.as_str() {

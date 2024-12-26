@@ -14,12 +14,12 @@ pub fn eval_shared(expr: &Expr, lapis: &Lapis) -> Option<Shared> {
     }
 }
 
-pub fn path_shared(expr: &Path, lapis: &Lapis) -> Option<Shared> {
+fn path_shared(expr: &Path, lapis: &Lapis) -> Option<Shared> {
     let k = expr.segments.first()?.ident.to_string();
     lapis.smap.get(&k).cloned()
 }
 
-pub fn call_shared(expr: &ExprCall, lapis: &Lapis) -> Option<Shared> {
+fn call_shared(expr: &ExprCall, lapis: &Lapis) -> Option<Shared> {
     let func = nth_path_ident(&expr.func, 0)?;
     if func == "shared" {
         let arg = expr.args.first()?;
