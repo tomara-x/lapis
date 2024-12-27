@@ -312,6 +312,17 @@ fn call_float(expr: &ExprCall, lapis: &Lapis) -> Option<f32> {
         "uparc" => Some(uparc(*args.first()?)),
         "xerp" => Some(xerp(*args.first()?, *args.get(1)?, *args.get(2)?)),
         "xerp11" => Some(xerp11(*args.first()?, *args.get(1)?, *args.get(2)?)),
+        // amy functions
+        "wrap" => {
+            let x = *args.first()?;
+            Some(x - x.floor())
+        }
+        "mirror" => {
+            let x = *args.first()?;
+            let x = x/2. - 0.5;
+            let x = x - x.floor();
+            Some(abs(x - 0.5) * 2.)
+        }
         _ => None,
     }
 }
