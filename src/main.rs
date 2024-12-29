@@ -166,6 +166,15 @@ impl eframe::App for Lapis {
                         theme.ui(ui);
                         theme.store_in_memory(ui.ctx());
                     });
+                    ui.horizontal(|ui| {
+                        ui.label("zoom factor");
+                        ui.add(
+                            DragValue::new(&mut self.zoom_factor)
+                                .range(0.5..=4.)
+                                .speed(0.1),
+                        );
+                        ctx.set_zoom_factor(self.zoom_factor);
+                    });
                 });
             });
             ScrollArea::vertical().stick_to_bottom(true).show(ui, |ui| {
