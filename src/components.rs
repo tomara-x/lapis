@@ -27,6 +27,7 @@ pub struct Lapis {
     pub receivers: (Receiver<f32>, Receiver<f32>),
     pub keys: Vec<(KeyboardShortcut, Stmt)>,
     pub keys_active: bool,
+    pub zoom_factor: f32,
 }
 
 impl Lapis {
@@ -57,6 +58,7 @@ impl Lapis {
             receivers: (lr, rr),
             keys: Vec::new(),
             keys_active: false,
+            zoom_factor: 1.,
         }
     }
     pub fn drop(&mut self, k: &String) {
