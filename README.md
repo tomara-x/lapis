@@ -15,7 +15,7 @@ execute `set_out_device(0,0);` for audio output to work
 - for functions that accept [`Shape`](https://docs.rs/fundsp/latest/fundsp/shape/trait.Shape.html) as input, `Adaptive` and `ShapeFn` aren't supported
 - no closures and therefore none of the functions that take closures as input (yet)
 - no `break` or `continue` in loops
-- `input()` won't work in the wasm version
+- `input()` and file i/o Wave methods won't work in the wasm version
 
 ## deviations
 - every nodes is wrapped in a `Net`, it's all nets (﻿🌍﻿ 🧑‍🚀﻿ 🔫﻿ 🧑‍🚀﻿)
