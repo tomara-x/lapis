@@ -319,7 +319,7 @@ fn call_float(expr: &ExprCall, lapis: &Lapis) -> Option<f32> {
         }
         "mirror" => {
             let x = *args.first()?;
-            let x = x/2. - 0.5;
+            let x = x / 2. - 0.5;
             let x = x - x.floor();
             Some(abs(x - 0.5) * 2.)
         }
@@ -357,4 +357,18 @@ fn constant_float(s: &str) -> Option<f32> {
         "nan" | "Nan" | "NaN" | "NAN" => Some(f32::NAN),
         _ => None,
     }
+}
+
+pub fn float_bin_assign(expr: &ExprBinary, lapis: &mut Lapis) -> Option<()> {
+    let right = eval_float(&expr.right, lapis)?;
+    let k = nth_path_ident(&expr.left, 0)?;
+    match expr.op {
+        BinOp::AddAssign(_) => *lapis.fmap.get_mut(&k)? += right,
+        BinOp::SubAssign(_) => *lapis.fmap.get_mut(&k)? -= right,
+        BinOp::MulAssign(_) => *lapis.fmap.get_mut(&k)? *= right,
+        BinOp::DivAssign(_) => *lapis.fmap.get_mut(&k)? /= right,
+        BinOp::RemAssign(_) => *lapis.fmap.get_mut(&k)? %= right,
+        _ => {}
+    }
+    None
 }

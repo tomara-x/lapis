@@ -168,11 +168,7 @@ impl eframe::App for Lapis {
                     });
                     ui.horizontal(|ui| {
                         ui.label("zoom factor");
-                        ui.add(
-                            DragValue::new(&mut self.zoom_factor)
-                                .range(0.5..=4.)
-                                .speed(0.1),
-                        );
+                        ui.add(DragValue::new(&mut self.zoom_factor).range(0.5..=4.).speed(0.1));
                         ctx.set_zoom_factor(self.zoom_factor);
                     });
                 });

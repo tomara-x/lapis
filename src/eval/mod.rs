@@ -342,6 +342,8 @@ pub fn eval_stmt(s: Stmt, lapis: &mut Lapis) {
                     lapis.buffer.push_str(&format!("\n// {:?}", event));
                 } else if let Expr::Call(expr) = expr {
                     device_commands(expr, lapis);
+                } else if let Expr::Binary(expr) = expr {
+                    float_bin_assign(&expr, lapis);
                 }
             }
         },
