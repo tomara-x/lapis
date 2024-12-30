@@ -1073,6 +1073,8 @@ fn call_net(expr: &ExprCall, lapis: &mut Lapis) -> Option<Net> {
                         |i: &Frame<f32, U1>| if i[0].is_normal() { i[0] } else { 0. },
                     ))))
                 }
+                "wrap" => Some(Net::wrap(Box::new(map(|i: &Frame<f32, U1>| wrap(i[0]))))),
+                "mirror" => Some(Net::wrap(Box::new(map(|i: &Frame<f32, U1>| mirror(i[0]))))),
                 _ => None,
             }
         }
