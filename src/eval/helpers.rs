@@ -1,13 +1,7 @@
-use crate::{
-    audio::*,
-    components::*,
-    eval::{floats::*, ints::*},
-};
+use crate::{audio::*, eval::*};
 use cpal::traits::{DeviceTrait, HostTrait};
 use eframe::egui::{Key, KeyboardShortcut, Modifiers};
-use fundsp::hacker32::*;
 use syn::punctuated::Punctuated;
-use syn::*;
 
 pub fn device_commands(expr: ExprCall, lapis: &mut Lapis) -> Option<()> {
     let func = nth_path_ident(&expr.func, 0)?;

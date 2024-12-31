@@ -4,9 +4,8 @@
 use eframe::egui::*;
 
 mod audio;
-mod components;
 mod eval;
-use {components::*, eval::*};
+use eval::Lapis;
 
 #[cfg(not(target_arch = "wasm32"))]
 fn main() -> eframe::Result {
@@ -83,9 +82,9 @@ impl eframe::App for Lapis {
             ui.fonts(|f| f.layout_job(layout_job))
         };
         if self.keys_active {
-            for (shortcut, stmt) in self.keys.clone() {
+            for (shortcut, code) in self.keys.clone() {
                 if ctx.input_mut(|i| i.consume_shortcut(&shortcut)) {
-                    eval_stmt(stmt, self);
+                    self.eval(&code);
                 }
             }
         }
@@ -114,7 +113,7 @@ impl eframe::App for Lapis {
                             if input_focused && ctx.input_mut(|i| i.consume_shortcut(&shortcut))
                                 || execute.clicked()
                             {
-                                eval(self);
+                                self.eval_input();
                             }
                         });
                     });
@@ -155,7 +154,7 @@ impl eframe::App for Lapis {
                     self.about = !self.about;
                 }
                 ui.with_layout(Layout::right_to_left(Align::TOP), |ui| {
-                    ui.checkbox(&mut self.keys_active, "keys");
+                    ui.toggle_value(&mut self.keys_active, "keys");
                 });
             });
         });

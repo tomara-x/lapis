@@ -1,5 +1,4 @@
-use crate::{components::*, eval::floats::*};
-use syn::*;
+use crate::eval::*;
 
 pub fn eval_i32(expr: &Expr, lapis: &Lapis) -> Option<i32> {
     let i = match expr {

@@ -1,5 +1,4 @@
-use crate::{components::*, eval::floats::*};
-use syn::*;
+use crate::eval::*;
 
 pub fn eval_bool(expr: &Expr, lapis: &Lapis) -> Option<bool> {
     match expr {

@@ -1,9 +1,4 @@
-use crate::{
-    components::*,
-    eval::{helpers::*, ints::*, nets::*},
-};
-use fundsp::hacker32::*;
-use syn::*;
+use crate::eval::*;
 
 pub fn eval_float(expr: &Expr, lapis: &Lapis) -> Option<f32> {
     match expr {

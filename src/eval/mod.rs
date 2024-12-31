@@ -1,5 +1,8 @@
-use crate::components::*;
+use crate::audio::*;
+use crossbeam_channel::{bounded, Receiver};
+use eframe::egui::KeyboardShortcut;
 use fundsp::hacker32::*;
+use std::collections::HashMap;
 use std::sync::Arc;
 use syn::*;
 
@@ -16,26 +19,108 @@ mod units;
 mod waves;
 use {
     arrays::*, atomics::*, bools::*, floats::*, helpers::*, ints::*, nets::*, sequencers::*,
-    sources::*, waves::*,
+    sources::*, units::*, waves::*,
 };
 
-pub fn eval(lapis: &mut Lapis) {
-    lapis.buffer.push('\n');
-    match parse_str::<Stmt>(&format!("{{{}}}", &lapis.input)) {
-        Ok(stmt) => {
-            lapis.buffer.push_str(&lapis.input);
-            lapis.input.clear();
-            //println!("{:#?}", stmt);
-            eval_stmt(stmt, lapis);
+pub struct Lapis {
+    pub buffer: String,
+    pub input: String,
+    pub settings: bool,
+    pub about: bool,
+    pub fmap: HashMap<String, f32>,
+    pub vmap: HashMap<String, Vec<f32>>,
+    pub gmap: HashMap<String, Net>,
+    pub idmap: HashMap<String, NodeId>,
+    pub bmap: HashMap<String, bool>,
+    pub smap: HashMap<String, Shared>,
+    pub wmap: HashMap<String, Arc<Wave>>,
+    pub seqmap: HashMap<String, Sequencer>,
+    pub eventmap: HashMap<String, EventId>,
+    pub srcmap: HashMap<String, Source>,
+    pub slot: Slot,
+    pub out_stream: Option<cpal::Stream>,
+    pub in_stream: Option<cpal::Stream>,
+    pub receivers: (Receiver<f32>, Receiver<f32>),
+    pub keys: Vec<(KeyboardShortcut, String)>,
+    pub keys_active: bool,
+    pub zoom_factor: f32,
+}
+
+impl Lapis {
+    pub fn new() -> Self {
+        let (slot, slot_back) = Slot::new(Box::new(dc(0.) | dc(0.)));
+        let out_stream = default_out_device(slot_back);
+        let (ls, lr) = bounded(4096);
+        let (rs, rr) = bounded(4096);
+        let in_stream = default_in_device(ls, rs);
+        Lapis {
+            buffer: String::new(),
+            input: String::new(),
+            settings: false,
+            about: false,
+            fmap: HashMap::new(),
+            vmap: HashMap::new(),
+            gmap: HashMap::new(),
+            idmap: HashMap::new(),
+            bmap: HashMap::new(),
+            smap: HashMap::new(),
+            wmap: HashMap::new(),
+            seqmap: HashMap::new(),
+            eventmap: HashMap::new(),
+            srcmap: HashMap::new(),
+            slot,
+            out_stream,
+            in_stream,
+            receivers: (lr, rr),
+            keys: Vec::new(),
+            keys_active: false,
+            zoom_factor: 1.,
         }
-        Err(err) => {
-            lapis.buffer.push_str(&format!("// error: {}", err));
+    }
+    pub fn eval(&mut self, input: &str) {
+        if !input.is_empty() {
+            self.buffer.push('\n');
+            self.buffer.push_str(input);
+            match parse_str::<Stmt>(&format!("{{{}}}", input)) {
+                Ok(stmt) => {
+                    eval_stmt(stmt, self);
+                }
+                Err(err) => {
+                    self.buffer.push_str(&format!("\n// error: {}", err));
+                }
+            }
         }
+    }
+    pub fn eval_input(&mut self) {
+        if !self.input.is_empty() {
+            match parse_str::<Stmt>(&format!("{{{}}}", self.input)) {
+                Ok(stmt) => {
+                    self.buffer.push('\n');
+                    self.buffer.push_str(&std::mem::take(&mut self.input));
+                    eval_stmt(stmt, self);
+                }
+                Err(err) => {
+                    self.buffer.push_str(&format!("\n// error: {}", err));
+                }
+            }
+        }
+    }
+    pub fn drop(&mut self, k: &String) {
+        self.fmap.remove(k);
+        self.vmap.remove(k);
+        self.gmap.remove(k);
+        self.idmap.remove(k);
+        self.bmap.remove(k);
+        self.smap.remove(k);
+        self.wmap.remove(k);
+        self.seqmap.remove(k);
+        self.eventmap.remove(k);
+        self.srcmap.remove(k);
     }
 }
 
 #[allow(clippy::map_entry)]
-pub fn eval_stmt(s: Stmt, lapis: &mut Lapis) {
+fn eval_stmt(s: Stmt, lapis: &mut Lapis) {
     match s {
         Stmt::Local(expr) => {
             if let Some(k) = pat_ident(&expr.pat) {
@@ -232,17 +317,15 @@ pub fn eval_stmt(s: Stmt, lapis: &mut Lapis) {
                 }
                 Expr::Lit(left) => {
                     if let Lit::Str(left) = left.lit {
-                        if let Expr::Block(ref block) = *expr.right {
+                        if let Expr::Lit(right) = *expr.right {
                             if let Some(shortcut) = parse_shortcut(left.value()) {
                                 lapis.keys.retain(|x| x.0 != shortcut);
-                                if !block.block.stmts.is_empty() {
-                                    let stmt = Stmt::Expr(*expr.right, None);
-                                    lapis.keys.push((shortcut, stmt));
+                                if let Lit::Str(right) = right.lit {
+                                    let code = right.value();
+                                    if !code.is_empty() {
+                                        lapis.keys.push((shortcut, code));
+                                    }
                                 }
-                            }
-                        } else if let Some(b) = eval_bool(&expr.right, lapis) {
-                            if left.value() == "keys" {
-                                lapis.keys_active = b;
                             }
                         }
                     }

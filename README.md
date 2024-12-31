@@ -343,23 +343,26 @@ f; // prints nothing
 
 **keyboard shortcuts**
 
-you can bind blocks of code to keyboard shortcuts. keys follow the [egui key names](https://docs.rs/egui/0.29.1/src/egui/data/key.rs.html#309-425), and modifiers `ctrl`, `shift`, `alt`, and `command` are supported
+you can bind snippets of code to keyboard shortcuts. keys follow the [egui key names](https://docs.rs/egui/0.30.0/src/egui/data/key.rs.html#310), and modifiers `ctrl`, `shift`, `alt`, and `command` are supported
 
 ```rust
-"ctrl+shift+a" = {
+"ctrl+shift+a" = "
     // statements
-};
-"shift+a" = {
+";
+
+"shift+a" = "
     // statements
-};
-"a" = {
+";
+
+"a" = "
     // statements
-};
-// reassign to an empty block to remove the key binding
-"shift+a" = {};
+";
+
+// reassign to an empty string to remove the key binding
+"shift+a" = "";
 ```
 
-shortcuts can be enabled/disabled using the "keys" checkbox at the top of the ui (or execute `"keys" = true/false`)
+shortcuts can be enabled/disabled using the "keys" toggle at the top of the ui
 
 note: always define the more specific shortcuts (more modifiers) involving the same key before the less specific ones, so `ctrl+shift+a` then `ctrl+a` and `shift+a` then `a`
 

@@ -1,8 +1,4 @@
-use crate::{
-    components::*,
-    eval::{floats::*, helpers::*, ints::*},
-};
-use syn::*;
+use crate::eval::*;
 
 pub fn eval_vec_ref<'a>(expr: &'a Expr, lapis: &'a Lapis) -> Option<&'a Vec<f32>> {
     match expr {

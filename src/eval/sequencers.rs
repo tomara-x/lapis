@@ -1,9 +1,4 @@
-use crate::{
-    components::*,
-    eval::{bools::*, floats::*, helpers::*, ints::*, nets::*},
-};
-use fundsp::hacker32::*;
-use syn::*;
+use crate::eval::*;
 
 pub fn call_seq(expr: &Expr, lapis: &Lapis) -> Option<Sequencer> {
     match expr {
