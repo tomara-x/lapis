@@ -3,7 +3,6 @@
 
 use eframe::egui::*;
 
-mod audio;
 mod eval;
 use eval::Lapis;
 
