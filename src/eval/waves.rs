@@ -45,12 +45,8 @@ fn call_wave(expr: &ExprCall, lapis: &mut Lapis) -> Option<Wave> {
             let arg0 = expr.args.first()?;
             let arg1 = expr.args.get(1)?;
             let sr = eval_float(arg0, lapis)? as f64;
-            if let Some(samps) = eval_vec(arg1, lapis) {
-                Some(Wave::from_samples(sr, &samps))
-            } else {
-                let samps = eval_vec(arg1, lapis)?;
-                Some(Wave::from_samples(sr, &samps))
-            }
+            let samps = eval_vec(arg1, lapis)?;
+            Some(Wave::from_samples(sr, &samps))
         }
         "render" => {
             let arg0 = expr.args.first()?;
