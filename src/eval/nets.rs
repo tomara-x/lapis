@@ -13,6 +13,17 @@ pub fn eval_net(expr: &Expr, lapis: &mut Lapis) -> Option<Net> {
         _ => None,
     }
 }
+pub fn eval_net_cloned(expr: &Expr, lapis: &mut Lapis) -> Option<Net> {
+    match expr {
+        Expr::Call(expr) => call_net(expr, lapis),
+        Expr::Binary(expr) => bin_expr_net(expr, lapis),
+        Expr::Paren(expr) => eval_net(&expr.expr, lapis),
+        Expr::Path(expr) => path_net_cloned(&expr.path, lapis),
+        Expr::Unary(expr) => unary_net(expr, lapis),
+        Expr::MethodCall(expr) => method_net(expr, lapis),
+        _ => None,
+    }
+}
 pub fn method_net(expr: &ExprMethodCall, lapis: &mut Lapis) -> Option<Net> {
     match expr.method.to_string().as_str() {
         "backend" => {
@@ -130,7 +141,11 @@ fn unary_net(expr: &ExprUnary, lapis: &mut Lapis) -> Option<Net> {
         _ => None,
     }
 }
-fn path_net(expr: &Path, lapis: &Lapis) -> Option<Net> {
+fn path_net(expr: &Path, lapis: &mut Lapis) -> Option<Net> {
+    let k = expr.segments.first()?.ident.to_string();
+    lapis.gmap.remove(&k)
+}
+fn path_net_cloned(expr: &Path, lapis: &Lapis) -> Option<Net> {
     let k = expr.segments.first()?.ident.to_string();
     lapis.gmap.get(&k).cloned()
 }
