@@ -177,7 +177,7 @@ for i in [4,6,8] {
 
 ```rust
 let v1 = [1,2,4,6];
-let v2 = v1.clone();
+let v2 = v1; // identical to let v2 = v1.clone();
 v1;
 // [1.0, 2.0, 4.0, 6.0]
 v2;

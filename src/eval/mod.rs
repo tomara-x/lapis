@@ -182,7 +182,7 @@ fn eval_stmt(s: Stmt, lapis: &mut Lapis) {
                 }
                 "tick" => {
                     let Some(input) = method.args.first() else { return };
-                    let Some(in_arr) = eval_vec_cloned(input, lapis) else { return };
+                    let Some(in_arr) = eval_vec(input, lapis) else { return };
                     let mut output = Vec::new();
                     if let Some(k) = nth_path_ident(&method.receiver, 0) {
                         if let Some(g) = &mut lapis.gmap.get_mut(&k) {
@@ -243,7 +243,7 @@ fn eval_stmt(s: Stmt, lapis: &mut Lapis) {
                 _ => {
                     if let Some(n) = method_call_float(method, lapis) {
                         lapis.buffer.push_str(&format!("\n// {:?}", n));
-                    } else if let Some(arr) = method_call_vec_ref(method, lapis) {
+                    } else if let Some(arr) = method_call_vec(method, lapis) {
                         lapis.buffer.push_str(&format!("\n// {:?}", arr));
                     } else if let Some(nodeid) = method_nodeid(&expr, lapis) {
                         lapis.buffer.push_str(&format!("\n// {:?}", nodeid));
@@ -383,11 +383,9 @@ fn eval_stmt(s: Stmt, lapis: &mut Lapis) {
             _ => {
                 if let Some(n) = eval_float(&expr, lapis) {
                     lapis.buffer.push_str(&format!("\n// {:?}", n));
-                } else if let Some(arr) = eval_vec_ref(&expr, lapis) {
+                } else if let Some(arr) = eval_vec(&expr, lapis) {
                     lapis.buffer.push_str(&format!("\n// {:?}", arr));
-                } else if let Some(arr) = eval_vec_cloned(&expr, lapis) {
-                    lapis.buffer.push_str(&format!("\n// {:?}", arr));
-                } else if let Some(mut g) = eval_net_cloned(&expr, lapis) {
+                } else if let Some(mut g) = eval_net(&expr, lapis) {
                     let info = g.display().replace('\n', "\n// ");
                     lapis.buffer.push_str(&format!("\n// {}", info));
                     lapis.buffer.push_str(&format!("Size           : {}", g.size()));

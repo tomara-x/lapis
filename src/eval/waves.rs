@@ -45,8 +45,8 @@ fn call_wave(expr: &ExprCall, lapis: &mut Lapis) -> Option<Wave> {
             let arg0 = expr.args.first()?;
             let arg1 = expr.args.get(1)?;
             let sr = eval_float(arg0, lapis)? as f64;
-            if let Some(samps) = eval_vec_ref(arg1, lapis) {
-                Some(Wave::from_samples(sr, samps))
+            if let Some(samps) = eval_vec(arg1, lapis) {
+                Some(Wave::from_samples(sr, &samps))
             } else {
                 let samps = eval_vec(arg1, lapis)?;
                 Some(Wave::from_samples(sr, &samps))
@@ -134,7 +134,7 @@ pub fn wave_methods(expr: &ExprMethodCall, lapis: &mut Lapis) -> Option<()> {
         }
         "push_channel" => {
             let arg = expr.args.first()?;
-            let samps = eval_vec_cloned(arg, lapis)?;
+            let samps = eval_vec(arg, lapis)?;
             let k = nth_path_ident(&expr.receiver, 0)?;
             let wave = &mut lapis.wmap.get_mut(&k)?;
             if wave.channels() == 0 || wave.len() == samps.len() {
@@ -145,7 +145,7 @@ pub fn wave_methods(expr: &ExprMethodCall, lapis: &mut Lapis) -> Option<()> {
             let arg0 = expr.args.first()?;
             let arg1 = expr.args.get(1)?;
             let chan = eval_usize(arg0, lapis)?;
-            let samps = eval_vec_cloned(arg1, lapis)?;
+            let samps = eval_vec(arg1, lapis)?;
             let k = nth_path_ident(&expr.receiver, 0)?;
             let wave = &mut lapis.wmap.get_mut(&k)?;
             if chan <= wave.channels() && (wave.channels() == 0 || wave.len() == samps.len()) {
@@ -155,7 +155,7 @@ pub fn wave_methods(expr: &ExprMethodCall, lapis: &mut Lapis) -> Option<()> {
         "mix_channel" => {
             let chan = eval_usize(expr.args.first()?, lapis)?;
             let offset = eval_isize(expr.args.get(1)?, lapis)?;
-            let samps = eval_vec_cloned(expr.args.get(2)?, lapis)?;
+            let samps = eval_vec(expr.args.get(2)?, lapis)?;
             let k = nth_path_ident(&expr.receiver, 0)?;
             let wave = &mut lapis.wmap.get_mut(&k)?;
             if chan < wave.channels() {
