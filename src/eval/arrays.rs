@@ -1,5 +1,17 @@
 use crate::eval::*;
 
+pub fn eval_vec(expr: &Expr, lapis: &mut Lapis) -> Option<Vec<f32>> {
+    match expr {
+        Expr::Array(expr) => array_lit(expr, lapis),
+        Expr::Path(_) => {
+            let k = nth_path_ident(expr, 0)?;
+            lapis.vmap.get(&k).cloned()
+        }
+        Expr::MethodCall(expr) => method_call_vec(expr, lapis),
+        _ => None,
+    }
+}
+
 fn array_lit(expr: &ExprArray, lapis: &Lapis) -> Option<Vec<f32>> {
     let mut arr = Vec::new();
     for elem in &expr.elems {
@@ -27,18 +39,6 @@ pub fn method_call_vec(expr: &ExprMethodCall, lapis: &Lapis) -> Option<Vec<f32>>
             let k = nth_path_ident(&expr.receiver, 0)?;
             lapis.vmap.get(&k).cloned()
         }
-        _ => None,
-    }
-}
-
-pub fn eval_vec(expr: &Expr, lapis: &mut Lapis) -> Option<Vec<f32>> {
-    match expr {
-        Expr::Array(expr) => array_lit(expr, lapis),
-        Expr::Path(_) => {
-            let k = nth_path_ident(expr, 0)?;
-            lapis.vmap.get(&k).cloned()
-        }
-        Expr::MethodCall(expr) => method_call_vec(expr, lapis),
         _ => None,
     }
 }

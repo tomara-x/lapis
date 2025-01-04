@@ -10,12 +10,14 @@ pub fn eval_bool(expr: &Expr, lapis: &Lapis) -> Option<bool> {
         _ => None,
     }
 }
+
 fn lit_bool(expr: &Lit) -> Option<bool> {
     match expr {
         Lit::Bool(expr) => Some(expr.value),
         _ => None,
     }
 }
+
 fn bin_expr_bool(expr: &ExprBinary, lapis: &Lapis) -> Option<bool> {
     let left_bool = eval_bool(&expr.left, lapis);
     let right_bool = eval_bool(&expr.right, lapis);
@@ -41,10 +43,12 @@ fn bin_expr_bool(expr: &ExprBinary, lapis: &Lapis) -> Option<bool> {
         None
     }
 }
+
 fn path_bool(expr: &Path, lapis: &Lapis) -> Option<bool> {
     let k = expr.segments.first()?.ident.to_string();
     lapis.bmap.get(&k).copied()
 }
+
 fn unary_bool(expr: &ExprUnary, lapis: &Lapis) -> Option<bool> {
     match expr.op {
         UnOp::Not(_) => Some(!eval_bool(&expr.expr, lapis)?),

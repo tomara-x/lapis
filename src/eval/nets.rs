@@ -13,6 +13,7 @@ pub fn eval_net(expr: &Expr, lapis: &mut Lapis) -> Option<Net> {
         _ => None,
     }
 }
+
 pub fn eval_net_cloned(expr: &Expr, lapis: &mut Lapis) -> Option<Net> {
     match expr {
         Expr::Call(expr) => call_net(expr, lapis),
@@ -24,6 +25,7 @@ pub fn eval_net_cloned(expr: &Expr, lapis: &mut Lapis) -> Option<Net> {
         _ => None,
     }
 }
+
 pub fn method_net(expr: &ExprMethodCall, lapis: &mut Lapis) -> Option<Net> {
     match expr.method.to_string().as_str() {
         "backend" => {
@@ -97,6 +99,7 @@ pub fn method_net(expr: &ExprMethodCall, lapis: &mut Lapis) -> Option<Net> {
         _ => None,
     }
 }
+
 fn bin_expr_net(expr: &ExprBinary, lapis: &mut Lapis) -> Option<Net> {
     let left_net = eval_net(&expr.left, lapis);
     let right_net = eval_net(&expr.right, lapis);
@@ -134,6 +137,7 @@ fn bin_expr_net(expr: &ExprBinary, lapis: &mut Lapis) -> Option<Net> {
         None
     }
 }
+
 fn unary_net(expr: &ExprUnary, lapis: &mut Lapis) -> Option<Net> {
     match expr.op {
         UnOp::Neg(_) => Some(-eval_net(&expr.expr, lapis)?),
@@ -141,14 +145,17 @@ fn unary_net(expr: &ExprUnary, lapis: &mut Lapis) -> Option<Net> {
         _ => None,
     }
 }
+
 fn path_net(expr: &Path, lapis: &mut Lapis) -> Option<Net> {
     let k = expr.segments.first()?.ident.to_string();
     lapis.gmap.remove(&k)
 }
+
 fn path_net_cloned(expr: &Path, lapis: &Lapis) -> Option<Net> {
     let k = expr.segments.first()?.ident.to_string();
     lapis.gmap.get(&k).cloned()
 }
+
 pub fn net_methods(expr: &ExprMethodCall, lapis: &mut Lapis) -> Option<()> {
     match expr.method.to_string().as_str() {
         "remove" => {
@@ -371,6 +378,7 @@ pub fn net_methods(expr: &ExprMethodCall, lapis: &mut Lapis) -> Option<()> {
     }
     None
 }
+
 pub fn method_nodeid(expr: &Expr, lapis: &mut Lapis) -> Option<NodeId> {
     match expr {
         Expr::MethodCall(expr) => match expr.method.to_string().as_str() {
@@ -412,10 +420,12 @@ pub fn method_nodeid(expr: &Expr, lapis: &mut Lapis) -> Option<NodeId> {
         _ => None,
     }
 }
+
 pub fn path_nodeid(expr: &Expr, lapis: &Lapis) -> Option<NodeId> {
     let k = nth_path_ident(expr, 0)?;
     lapis.idmap.get(&k).copied()
 }
+
 macro_rules! tuple_call_match {
     ( $func:ident, $p:expr ) => {{
         match $p.len() {
@@ -441,6 +451,7 @@ macro_rules! tuple_call_match {
         }
     }};
 }
+
 fn call_net(expr: &ExprCall, lapis: &mut Lapis) -> Option<Net> {
     let func = nth_path_ident(&expr.func, 0)?;
     let args = accumulate_args(&expr.args, lapis);
