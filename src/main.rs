@@ -141,8 +141,11 @@ impl eframe::App for Lapis {
                         "https://codeberg.org/tomara-x/lapis/",
                     );
                 });
-                let version = format!("{} ({})", env!("CARGO_PKG_VERSION"), env!("COMMIT_HASH"));
-                ui.label(format!("version: {}", version));
+                ui.label(format!(
+                    "version: {} ({})",
+                    env!("CARGO_PKG_VERSION"),
+                    env!("COMMIT_HASH")
+                ));
                 ui.label("FunDSP version: master")
             });
             ui.horizontal(|ui| {
