@@ -26,7 +26,7 @@ pub fn eval_net_cloned(expr: &Expr, lapis: &mut Lapis) -> Option<Net> {
     }
 }
 
-pub fn method_net(expr: &ExprMethodCall, lapis: &mut Lapis) -> Option<Net> {
+fn method_net(expr: &ExprMethodCall, lapis: &mut Lapis) -> Option<Net> {
     match expr.method.to_string().as_str() {
         "backend" => {
             let k = nth_path_ident(&expr.receiver, 0)?;

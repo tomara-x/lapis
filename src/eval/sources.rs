@@ -1,6 +1,6 @@
 use crate::eval::*;
 
-pub fn method_source(expr: &ExprMethodCall, lapis: &Lapis) -> Option<Source> {
+fn method_source(expr: &ExprMethodCall, lapis: &Lapis) -> Option<Source> {
     match expr.method.to_string().as_str() {
         "source" => {
             if let Some(k) = nth_path_ident(&expr.receiver, 0) {

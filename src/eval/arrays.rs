@@ -7,7 +7,7 @@ pub fn eval_vec(expr: &Expr, lapis: &mut Lapis) -> Option<Vec<f32>> {
             let k = nth_path_ident(expr, 0)?;
             lapis.vmap.get(&k).cloned()
         }
-        Expr::MethodCall(expr) => method_call_vec(expr, lapis),
+        Expr::MethodCall(expr) => method_vec(expr, lapis),
         _ => None,
     }
 }
@@ -22,7 +22,7 @@ fn array_lit(expr: &ExprArray, lapis: &Lapis) -> Option<Vec<f32>> {
     Some(arr)
 }
 
-pub fn method_call_vec(expr: &ExprMethodCall, lapis: &Lapis) -> Option<Vec<f32>> {
+fn method_vec(expr: &ExprMethodCall, lapis: &Lapis) -> Option<Vec<f32>> {
     match expr.method.to_string().as_str() {
         "channel" => {
             let arg = expr.args.first()?;
