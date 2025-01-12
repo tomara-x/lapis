@@ -151,7 +151,7 @@ fn method_float(expr: &ExprMethodCall, lapis: &Lapis) -> Option<f32> {
         "inputs_in" => {
             let k = nth_path_ident(&expr.receiver, 0)?;
             let net = lapis.gmap.get(&k)?;
-            let id = path_nodeid(expr.args.first()?, lapis)?;
+            let id = eval_path_nodeid(expr.args.first()?, lapis)?;
             if net.contains(id) {
                 Some(net.inputs_in(id) as f32)
             } else {
@@ -161,7 +161,7 @@ fn method_float(expr: &ExprMethodCall, lapis: &Lapis) -> Option<f32> {
         "outputs_in" => {
             let k = nth_path_ident(&expr.receiver, 0)?;
             let net = lapis.gmap.get(&k)?;
-            let id = path_nodeid(expr.args.first()?, lapis)?;
+            let id = eval_path_nodeid(expr.args.first()?, lapis)?;
             if net.contains(id) {
                 Some(net.outputs_in(id) as f32)
             } else {

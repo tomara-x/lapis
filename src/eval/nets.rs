@@ -42,7 +42,7 @@ fn method_net(expr: &ExprMethodCall, lapis: &mut Lapis) -> Option<Net> {
         }
         "remove" => {
             let arg = expr.args.first()?;
-            let id = path_nodeid(arg, lapis)?;
+            let id = eval_nodeid(arg, lapis)?;
             let k = nth_path_ident(&expr.receiver, 0)?;
             let net = &mut lapis.gmap.get_mut(&k)?;
             if net.contains(id) {
@@ -53,7 +53,7 @@ fn method_net(expr: &ExprMethodCall, lapis: &mut Lapis) -> Option<Net> {
         }
         "remove_link" => {
             let arg = expr.args.first()?;
-            let id = path_nodeid(arg, lapis)?;
+            let id = eval_nodeid(arg, lapis)?;
             let k = nth_path_ident(&expr.receiver, 0)?;
             let net = &mut lapis.gmap.get_mut(&k)?;
             if net.contains(id) && net.inputs_in(id) == net.outputs_in(id) {
@@ -63,7 +63,7 @@ fn method_net(expr: &ExprMethodCall, lapis: &mut Lapis) -> Option<Net> {
         }
         "replace" => {
             let arg0 = expr.args.first()?;
-            let id = path_nodeid(arg0, lapis)?;
+            let id = eval_nodeid(arg0, lapis)?;
             let arg1 = expr.args.get(1)?;
             let unit = eval_net(arg1, lapis)?;
             let k = nth_path_ident(&expr.receiver, 0)?;
@@ -160,7 +160,7 @@ pub fn net_methods(expr: &ExprMethodCall, lapis: &mut Lapis) -> Option<()> {
     match expr.method.to_string().as_str() {
         "remove" => {
             let arg = expr.args.first()?;
-            let id = path_nodeid(arg, lapis)?;
+            let id = eval_nodeid(arg, lapis)?;
             let k = nth_path_ident(&expr.receiver, 0)?;
             let net = &mut lapis.gmap.get_mut(&k)?;
             if net.contains(id) {
@@ -169,7 +169,7 @@ pub fn net_methods(expr: &ExprMethodCall, lapis: &mut Lapis) -> Option<()> {
         }
         "remove_link" => {
             let arg = expr.args.first()?;
-            let id = path_nodeid(arg, lapis)?;
+            let id = eval_nodeid(arg, lapis)?;
             let k = nth_path_ident(&expr.receiver, 0)?;
             let net = &mut lapis.gmap.get_mut(&k)?;
             if net.contains(id) && net.inputs_in(id) == net.outputs_in(id) {
@@ -178,7 +178,7 @@ pub fn net_methods(expr: &ExprMethodCall, lapis: &mut Lapis) -> Option<()> {
         }
         "replace" => {
             let arg0 = expr.args.first()?;
-            let id = path_nodeid(arg0, lapis)?;
+            let id = eval_nodeid(arg0, lapis)?;
             let arg1 = expr.args.get(1)?;
             let unit = eval_net(arg1, lapis)?;
             let k = nth_path_ident(&expr.receiver, 0)?;
@@ -192,7 +192,7 @@ pub fn net_methods(expr: &ExprMethodCall, lapis: &mut Lapis) -> Option<()> {
         }
         "crossfade" => {
             let arg0 = expr.args.first()?;
-            let id = path_nodeid(arg0, lapis)?;
+            let id = eval_nodeid(arg0, lapis)?;
             let arg1 = expr.args.get(1)?;
             let fade = path_fade(arg1)?;
             let arg2 = expr.args.get(2)?;
@@ -210,11 +210,11 @@ pub fn net_methods(expr: &ExprMethodCall, lapis: &mut Lapis) -> Option<()> {
         }
         "connect" => {
             let arg0 = expr.args.first()?;
-            let src = path_nodeid(arg0, lapis)?;
+            let src = eval_nodeid(arg0, lapis)?;
             let arg1 = expr.args.get(1)?;
             let src_port = eval_usize(arg1, lapis)?;
             let arg2 = expr.args.get(2)?;
-            let snk = path_nodeid(arg2, lapis)?;
+            let snk = eval_nodeid(arg2, lapis)?;
             if src == snk {
                 return None;
             }
@@ -232,7 +232,7 @@ pub fn net_methods(expr: &ExprMethodCall, lapis: &mut Lapis) -> Option<()> {
         }
         "disconnect" => {
             let arg0 = expr.args.first()?;
-            let id = path_nodeid(arg0, lapis)?;
+            let id = eval_nodeid(arg0, lapis)?;
             let arg1 = expr.args.get(1)?;
             let port = eval_usize(arg1, lapis)?;
             let k = nth_path_ident(&expr.receiver, 0)?;
@@ -245,7 +245,7 @@ pub fn net_methods(expr: &ExprMethodCall, lapis: &mut Lapis) -> Option<()> {
             let arg0 = expr.args.first()?;
             let global_in = eval_usize(arg0, lapis)?;
             let arg1 = expr.args.get(1)?;
-            let snk = path_nodeid(arg1, lapis)?;
+            let snk = eval_nodeid(arg1, lapis)?;
             let arg2 = expr.args.get(2)?;
             let snk_port = eval_usize(arg2, lapis)?;
             let k = nth_path_ident(&expr.receiver, 0)?;
@@ -256,7 +256,7 @@ pub fn net_methods(expr: &ExprMethodCall, lapis: &mut Lapis) -> Option<()> {
         }
         "pipe_input" => {
             let arg0 = expr.args.first()?;
-            let snk = path_nodeid(arg0, lapis)?;
+            let snk = eval_nodeid(arg0, lapis)?;
             let k = nth_path_ident(&expr.receiver, 0)?;
             let net = &mut lapis.gmap.get_mut(&k)?;
             if net.contains(snk) {
@@ -265,7 +265,7 @@ pub fn net_methods(expr: &ExprMethodCall, lapis: &mut Lapis) -> Option<()> {
         }
         "connect_output" => {
             let arg0 = expr.args.first()?;
-            let src = path_nodeid(arg0, lapis)?;
+            let src = eval_nodeid(arg0, lapis)?;
             let arg1 = expr.args.get(1)?;
             let src_port = eval_usize(arg1, lapis)?;
             let arg2 = expr.args.get(2)?;
@@ -287,7 +287,7 @@ pub fn net_methods(expr: &ExprMethodCall, lapis: &mut Lapis) -> Option<()> {
         }
         "pipe_output" => {
             let arg0 = expr.args.first()?;
-            let src = path_nodeid(arg0, lapis)?;
+            let src = eval_nodeid(arg0, lapis)?;
             let k = nth_path_ident(&expr.receiver, 0)?;
             let net = &mut lapis.gmap.get_mut(&k)?;
             if net.contains(src) {
@@ -307,9 +307,9 @@ pub fn net_methods(expr: &ExprMethodCall, lapis: &mut Lapis) -> Option<()> {
         }
         "pipe_all" => {
             let arg0 = expr.args.first()?;
-            let src = path_nodeid(arg0, lapis)?;
+            let src = eval_nodeid(arg0, lapis)?;
             let arg1 = expr.args.get(1)?;
-            let snk = path_nodeid(arg1, lapis)?;
+            let snk = eval_nodeid(arg1, lapis)?;
             let k = nth_path_ident(&expr.receiver, 0)?;
             let net = &mut lapis.gmap.get_mut(&k)?;
             if net.contains(src) && net.contains(snk) {
@@ -317,7 +317,7 @@ pub fn net_methods(expr: &ExprMethodCall, lapis: &mut Lapis) -> Option<()> {
             }
         }
         "set_source" => {
-            let id = path_nodeid(expr.args.first()?, lapis)?;
+            let id = eval_nodeid(expr.args.first()?, lapis)?;
             let chan = eval_usize(expr.args.get(1)?, lapis)?;
             let source = eval_source(expr.args.get(2)?, lapis)?;
             let k = nth_path_ident(&expr.receiver, 0)?;
@@ -379,50 +379,63 @@ pub fn net_methods(expr: &ExprMethodCall, lapis: &mut Lapis) -> Option<()> {
     None
 }
 
-pub fn method_nodeid(expr: &Expr, lapis: &mut Lapis) -> Option<NodeId> {
+pub fn eval_nodeid(expr: &Expr, lapis: &mut Lapis) -> Option<NodeId> {
     match expr {
-        Expr::MethodCall(expr) => match expr.method.to_string().as_str() {
-            "push" => {
-                let arg = expr.args.first()?;
-                let node = eval_net(arg, lapis)?;
-                let k = nth_path_ident(&expr.receiver, 0)?;
-                let g = &mut lapis.gmap.get_mut(&k)?;
-                Some(g.push(Box::new(node)))
-            }
-            "chain" => {
-                let arg = expr.args.first()?;
-                let node = eval_net(arg, lapis)?;
-                let k = nth_path_ident(&expr.receiver, 0)?;
-                let g = &mut lapis.gmap.get_mut(&k)?;
-                Some(g.chain(Box::new(node)))
-            }
-            "fade_in" => {
-                let fade = path_fade(expr.args.first()?)?;
-                let fade_time = eval_float(expr.args.get(1)?, lapis)?;
-                let unit = Box::new(eval_net(expr.args.get(2)?, lapis)?);
-                let k = nth_path_ident(&expr.receiver, 0)?;
-                let g = &mut lapis.gmap.get_mut(&k)?;
-                Some(g.fade_in(fade, fade_time, unit))
-            }
-            "nth" => {
-                let index = eval_usize(expr.args.first()?, lapis)?;
-                if let Expr::MethodCall(ref expr) = *expr.receiver {
-                    if expr.method == "ids" {
-                        let k = nth_path_ident(&expr.receiver, 0)?;
-                        let g = &lapis.gmap.get(&k)?;
-                        return g.ids().nth(index).copied();
-                    }
-                }
-                None
-            }
-            _ => None,
-        },
+        Expr::MethodCall(expr) => method_nodeid(expr, lapis),
+        Expr::Path(expr) => path_nodeid(&expr.path, lapis),
         _ => None,
     }
 }
 
-pub fn path_nodeid(expr: &Expr, lapis: &Lapis) -> Option<NodeId> {
-    let k = nth_path_ident(expr, 0)?;
+fn method_nodeid(expr: &ExprMethodCall, lapis: &mut Lapis) -> Option<NodeId> {
+    match expr.method.to_string().as_str() {
+        "push" => {
+            let arg = expr.args.first()?;
+            let node = eval_net(arg, lapis)?;
+            let k = nth_path_ident(&expr.receiver, 0)?;
+            let g = &mut lapis.gmap.get_mut(&k)?;
+            Some(g.push(Box::new(node)))
+        }
+        "chain" => {
+            let arg = expr.args.first()?;
+            let node = eval_net(arg, lapis)?;
+            let k = nth_path_ident(&expr.receiver, 0)?;
+            let g = &mut lapis.gmap.get_mut(&k)?;
+            Some(g.chain(Box::new(node)))
+        }
+        "fade_in" => {
+            let fade = path_fade(expr.args.first()?)?;
+            let fade_time = eval_float(expr.args.get(1)?, lapis)?;
+            let unit = Box::new(eval_net(expr.args.get(2)?, lapis)?);
+            let k = nth_path_ident(&expr.receiver, 0)?;
+            let g = &mut lapis.gmap.get_mut(&k)?;
+            Some(g.fade_in(fade, fade_time, unit))
+        }
+        "nth" => {
+            let index = eval_usize(expr.args.first()?, lapis)?;
+            if let Expr::MethodCall(ref expr) = *expr.receiver {
+                if expr.method == "ids" {
+                    let k = nth_path_ident(&expr.receiver, 0)?;
+                    let g = &lapis.gmap.get(&k)?;
+                    return g.ids().nth(index).copied();
+                }
+            }
+            None
+        }
+        _ => None,
+    }
+}
+
+pub fn eval_path_nodeid(expr: &Expr, lapis: &Lapis) -> Option<NodeId> {
+    if let Expr::Path(expr) = expr {
+        path_nodeid(&expr.path, lapis)
+    } else {
+        None
+    }
+}
+
+fn path_nodeid(expr: &Path, lapis: &Lapis) -> Option<NodeId> {
+    let k = expr.segments.first()?.ident.to_string();
     lapis.idmap.get(&k).copied()
 }
 

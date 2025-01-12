@@ -23,7 +23,7 @@ pub fn call_seq(expr: &Expr, lapis: &Lapis) -> Option<Sequencer> {
 pub fn seq_methods(expr: &ExprMethodCall, lapis: &mut Lapis) -> Option<()> {
     match expr.method.to_string().as_str() {
         "edit" => {
-            let id = path_eventid(expr.args.first()?, lapis)?;
+            let id = eval_eventid(expr.args.first()?, lapis)?;
             let end_time = eval_float(expr.args.get(1)?, lapis)? as f64;
             let fade_out = eval_float(expr.args.get(2)?, lapis)? as f64;
             let k = nth_path_ident(&expr.receiver, 0)?;
@@ -31,7 +31,7 @@ pub fn seq_methods(expr: &ExprMethodCall, lapis: &mut Lapis) -> Option<()> {
             seq.edit(id, end_time, fade_out);
         }
         "edit_relative" => {
-            let id = path_eventid(expr.args.first()?, lapis)?;
+            let id = eval_eventid(expr.args.first()?, lapis)?;
             let end_time = eval_float(expr.args.get(1)?, lapis)? as f64;
             let fade_out = eval_float(expr.args.get(2)?, lapis)? as f64;
             let k = nth_path_ident(&expr.receiver, 0)?;
@@ -65,72 +65,77 @@ pub fn path_seq<'a>(expr: &'a Expr, lapis: &'a Lapis) -> Option<&'a Sequencer> {
     }
 }
 
-pub fn method_eventid(expr: &Expr, lapis: &mut Lapis) -> Option<EventId> {
+pub fn eval_eventid(expr: &Expr, lapis: &mut Lapis) -> Option<EventId> {
     match expr {
-        Expr::MethodCall(expr) => match expr.method.to_string().as_str() {
-            "push" => {
-                let start_time = eval_float(expr.args.first()?, lapis)? as f64;
-                let end_time = eval_float(expr.args.get(1)?, lapis)? as f64;
-                let fade = path_fade(expr.args.get(2)?)?;
-                let fade_in = eval_float(expr.args.get(3)?, lapis)? as f64;
-                let fade_out = eval_float(expr.args.get(4)?, lapis)? as f64;
-                let unit = Box::new(eval_net(expr.args.get(5)?, lapis)?);
-                let k = nth_path_ident(&expr.receiver, 0)?;
-                let seq = &mut lapis.seqmap.get_mut(&k)?;
-                let duration = end_time - start_time;
-                if unit.inputs() != 0
-                    || unit.outputs() != seq.outputs()
-                    || fade_in > duration
-                    || fade_out > duration
-                {
-                    return None;
-                }
-                Some(seq.push(start_time, end_time, fade, fade_in, fade_out, unit))
-            }
-            "push_relative" => {
-                let start_time = eval_float(expr.args.first()?, lapis)? as f64;
-                let end_time = eval_float(expr.args.get(1)?, lapis)? as f64;
-                let fade = path_fade(expr.args.get(2)?)?;
-                let fade_in = eval_float(expr.args.get(3)?, lapis)? as f64;
-                let fade_out = eval_float(expr.args.get(4)?, lapis)? as f64;
-                let unit = Box::new(eval_net(expr.args.get(5)?, lapis)?);
-                let k = nth_path_ident(&expr.receiver, 0)?;
-                let seq = &mut lapis.seqmap.get_mut(&k)?;
-                let duration = end_time - start_time;
-                if unit.inputs() != 0
-                    || unit.outputs() != seq.outputs()
-                    || fade_in > duration
-                    || fade_out > duration
-                {
-                    return None;
-                }
-                Some(seq.push_relative(start_time, end_time, fade, fade_in, fade_out, unit))
-            }
-            "push_duration" => {
-                let start_time = eval_float(expr.args.first()?, lapis)? as f64;
-                let duration = eval_float(expr.args.get(1)?, lapis)? as f64;
-                let fade = path_fade(expr.args.get(2)?)?;
-                let fade_in = eval_float(expr.args.get(3)?, lapis)? as f64;
-                let fade_out = eval_float(expr.args.get(4)?, lapis)? as f64;
-                let unit = Box::new(eval_net(expr.args.get(5)?, lapis)?);
-                let k = nth_path_ident(&expr.receiver, 0)?;
-                let seq = &mut lapis.seqmap.get_mut(&k)?;
-                if unit.inputs() != 0
-                    || unit.outputs() != seq.outputs()
-                    || fade_in > duration
-                    || fade_out > duration
-                {
-                    return None;
-                }
-                Some(seq.push_duration(start_time, duration, fade, fade_in, fade_out, unit))
-            }
-            _ => None,
-        },
+        Expr::MethodCall(expr) => method_eventid(expr, lapis),
+        Expr::Path(expr) => path_eventid(&expr.path, lapis),
         _ => None,
     }
 }
 
-pub fn path_eventid(expr: &Expr, lapis: &Lapis) -> Option<EventId> {
-    let k = nth_path_ident(expr, 0)?;
+fn method_eventid(expr: &ExprMethodCall, lapis: &mut Lapis) -> Option<EventId> {
+    match expr.method.to_string().as_str() {
+        "push" => {
+            let start_time = eval_float(expr.args.first()?, lapis)? as f64;
+            let end_time = eval_float(expr.args.get(1)?, lapis)? as f64;
+            let fade = path_fade(expr.args.get(2)?)?;
+            let fade_in = eval_float(expr.args.get(3)?, lapis)? as f64;
+            let fade_out = eval_float(expr.args.get(4)?, lapis)? as f64;
+            let unit = Box::new(eval_net(expr.args.get(5)?, lapis)?);
+            let k = nth_path_ident(&expr.receiver, 0)?;
+            let seq = &mut lapis.seqmap.get_mut(&k)?;
+            let duration = end_time - start_time;
+            if unit.inputs() != 0
+                || unit.outputs() != seq.outputs()
+                || fade_in > duration
+                || fade_out > duration
+            {
+                return None;
+            }
+            Some(seq.push(start_time, end_time, fade, fade_in, fade_out, unit))
+        }
+        "push_relative" => {
+            let start_time = eval_float(expr.args.first()?, lapis)? as f64;
+            let end_time = eval_float(expr.args.get(1)?, lapis)? as f64;
+            let fade = path_fade(expr.args.get(2)?)?;
+            let fade_in = eval_float(expr.args.get(3)?, lapis)? as f64;
+            let fade_out = eval_float(expr.args.get(4)?, lapis)? as f64;
+            let unit = Box::new(eval_net(expr.args.get(5)?, lapis)?);
+            let k = nth_path_ident(&expr.receiver, 0)?;
+            let seq = &mut lapis.seqmap.get_mut(&k)?;
+            let duration = end_time - start_time;
+            if unit.inputs() != 0
+                || unit.outputs() != seq.outputs()
+                || fade_in > duration
+                || fade_out > duration
+            {
+                return None;
+            }
+            Some(seq.push_relative(start_time, end_time, fade, fade_in, fade_out, unit))
+        }
+        "push_duration" => {
+            let start_time = eval_float(expr.args.first()?, lapis)? as f64;
+            let duration = eval_float(expr.args.get(1)?, lapis)? as f64;
+            let fade = path_fade(expr.args.get(2)?)?;
+            let fade_in = eval_float(expr.args.get(3)?, lapis)? as f64;
+            let fade_out = eval_float(expr.args.get(4)?, lapis)? as f64;
+            let unit = Box::new(eval_net(expr.args.get(5)?, lapis)?);
+            let k = nth_path_ident(&expr.receiver, 0)?;
+            let seq = &mut lapis.seqmap.get_mut(&k)?;
+            if unit.inputs() != 0
+                || unit.outputs() != seq.outputs()
+                || fade_in > duration
+                || fade_out > duration
+            {
+                return None;
+            }
+            Some(seq.push_duration(start_time, duration, fade, fade_in, fade_out, unit))
+        }
+        _ => None,
+    }
+}
+
+fn path_eventid(expr: &Path, lapis: &Lapis) -> Option<EventId> {
+    let k = expr.segments.first()?.ident.to_string();
     lapis.eventmap.get(&k).copied()
 }

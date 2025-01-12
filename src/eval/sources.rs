@@ -8,7 +8,7 @@ fn method_source(expr: &ExprMethodCall, lapis: &Lapis) -> Option<Source> {
                     let arg0 = expr.args.first();
                     let arg1 = expr.args.get(1);
                     if let (Some(arg0), Some(arg1)) = (arg0, arg1) {
-                        let id = path_nodeid(arg0, lapis);
+                        let id = eval_path_nodeid(arg0, lapis);
                         let chan = eval_usize(arg1, lapis);
                         if let (Some(id), Some(chan)) = (id, chan) {
                             if g.contains(id) && chan < g.inputs_in(id) {
@@ -47,7 +47,7 @@ pub fn eval_source(expr: &Expr, lapis: &Lapis) -> Option<Source> {
                 if seg1 == "Local" {
                     let arg0 = expr.args.first()?;
                     let arg1 = expr.args.get(1)?;
-                    let id = path_nodeid(arg0, lapis)?;
+                    let id = eval_path_nodeid(arg0, lapis)?;
                     let index = eval_usize(arg1, lapis)?;
                     Some(Source::Local(id, index))
                 } else if seg1 == "Global" {
