@@ -197,9 +197,9 @@ net.commit();
 > let x = sine();
 > let y = dc(220) >> x;
 > // x is no longer usable here as it's been moved into y
-> ```rust
-> but you can avoid this by cloning
 > ```
+> but you can avoid this by cloning
+> ```rust
 > let x = sine();
 > let y = dc(220) >> x.clone();
 > // x is still usable here
