@@ -33,42 +33,15 @@ execute `set_out_device(0,0);` for audio output to work
 
 ## what's supported
 
-<details><summary>all functions in hacker32 except for</summary>
-<p>
+- all functions in the [hacker32 module](https://docs.rs/fundsp/latest/fundsp/hacker/index.html)
+    - except for:
+        branchi, busi, pipei, stacki, sumi, (and f versions), biquad_bank,
+        envelope, envelope2, envelope3, envelope_in (and lfo), fdn, fdn2,
+        multitap, multitap_linear, feedback2, flanger, map, oversample,
+        phaser, resample, resynth, shape_fn, snoop, unit, update, var_fn
 
-- branchf, branchi, busf, busi, pipef, pipei, stackf, stacki, sumf, sumi
-- biquad_bank
-- envelope, envelope2, envelope3, envelope_in (lfo, lfo2, lfo3, lfo_in)
-- fdn, fdn2
-- multitap, multitap_linear
-- feedback2
-- flanger
-- map
-- oversample
-- phaser
-- resample
-- resynth
-- shape_fn
-- snoop
-- unit
-- update
-- var_fn
-
-</p>
-</details>
-
-
-<details><summary>all functions in the math module except for</summary>
-<p>
-
-- ease_noise
-- fractal_ease_noise
-- hash1
-- hash2
-- identity
-
-</p>
-</details>
+- all functions in the [math module](https://docs.rs/fundsp/latest/fundsp/math/index.html)
+    - except for: ease_noise, fractal_ease_noise, hash1, hash2, identity
 
 <details><summary>some f32 methods</summary>
 <p>
@@ -116,7 +89,7 @@ execute `set_out_device(0,0);` for audio output to work
 </p>
 </details>
 
-and all the functions in the sound module
+and all the functions in the [sound module] (https://docs.rs/fundsp/latest/fundsp/sound/index.html)
 
 **assignment**
 ```rust
@@ -129,6 +102,7 @@ let out = osc3 >> f;
 **reassignment**
 ```rust
 let x = 42;
+x += 1;
 x = 56;         // x is still a number. this works
 x = sine();     // x is a number can't assign an audio node (x is still 56.0)
 let x = sine(); // x is now a sine()
@@ -217,6 +191,20 @@ net.connect_output(id,0,0);
 net.connect_output(id,0,1);
 net.commit();
 ```
+> [!IMPORTANT]
+> nets are moved
+> ```
+> let x = sine();
+> let y = dc(220) >> x;
+> // x is no longer usable here as it's been moved into y
+> ```
+> but you can avoid this by cloning
+> ```
+> let x = sine();
+> let y = dc(220) >> x.clone();
+> // x is still usable here
+> ```
+
 **tick**
 ```rust
 let net = mul(10);
