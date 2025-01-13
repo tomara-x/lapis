@@ -89,7 +89,7 @@ execute `set_out_device(0,0);` for audio output to work
 </p>
 </details>
 
-and all the functions in the [sound module] (https://docs.rs/fundsp/latest/fundsp/sound/index.html)
+- all the functions in the [sound module] (https://docs.rs/fundsp/latest/fundsp/sound/index.html)
 
 **assignment**
 ```rust
@@ -193,11 +193,11 @@ net.commit();
 ```
 > [!IMPORTANT]
 > nets are moved
-> ```
+> ```rust
 > let x = sine();
 > let y = dc(220) >> x;
 > // x is no longer usable here as it's been moved into y
-> ```
+> ```rust
 > but you can avoid this by cloning
 > ```
 > let x = sine();
