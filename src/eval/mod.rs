@@ -48,6 +48,7 @@ pub struct Lapis {
     pub keys: Vec<(KeyboardShortcut, String)>,
     pub keys_active: bool,
     pub zoom_factor: f32,
+    pub quiet: bool,
 }
 
 impl Lapis {
@@ -79,6 +80,7 @@ impl Lapis {
             keys: Vec::new(),
             keys_active: false,
             zoom_factor: 1.,
+            quiet: false,
         }
     }
     pub fn eval(&mut self, input: &str) {
@@ -109,6 +111,11 @@ impl Lapis {
                     self.buffer.push_str(&format!("\n// error: {}", err));
                 }
             }
+        }
+    }
+    pub fn quiet_eval(&mut self, input: &str) {
+        if let Ok(stmt) = parse_str::<Stmt>(&format!("{{{}}}", input)) {
+            eval_stmt(stmt, self);
         }
     }
     pub fn drop(&mut self, k: &String) {

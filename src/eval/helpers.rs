@@ -3,29 +3,29 @@ use cpal::traits::{DeviceTrait, HostTrait};
 use eframe::egui::{Key, KeyboardShortcut, Modifiers};
 use syn::punctuated::Punctuated;
 
-pub fn device_commands(expr: ExprCall, lapis: &mut Lapis) -> Option<()> {
+pub fn device_commands(expr: ExprCall, lapis: &mut Lapis, buffer: &mut String) -> Option<()> {
     let func = nth_path_ident(&expr.func, 0)?;
     match func.as_str() {
         "list_in_devices" => {
             let hosts = cpal::platform::ALL_HOSTS;
-            lapis.buffer.push_str("\n// input devices:\n");
+            buffer.push_str("\n// input devices:\n");
             for (i, host) in hosts.iter().enumerate() {
-                lapis.buffer.push_str(&format!("// {}: {:?}:\n", i, host));
+                buffer.push_str(&format!("// {}: {:?}:\n", i, host));
                 if let Ok(devices) = cpal::platform::host_from_id(*host).unwrap().input_devices() {
                     for (j, device) in devices.enumerate() {
-                        lapis.buffer.push_str(&format!("//     {}: {:?}\n", j, device.name()));
+                        buffer.push_str(&format!("//     {}: {:?}\n", j, device.name()));
                     }
                 }
             }
         }
         "list_out_devices" => {
             let hosts = cpal::platform::ALL_HOSTS;
-            lapis.buffer.push_str("\n// output devices:\n");
+            buffer.push_str("\n// output devices:\n");
             for (i, host) in hosts.iter().enumerate() {
-                lapis.buffer.push_str(&format!("// {}: {:?}:\n", i, host));
+                buffer.push_str(&format!("// {}: {:?}:\n", i, host));
                 if let Ok(devices) = cpal::platform::host_from_id(*host).unwrap().output_devices() {
                     for (j, device) in devices.enumerate() {
-                        lapis.buffer.push_str(&format!("//     {}: {:?}\n", j, device.name()));
+                        buffer.push_str(&format!("//     {}: {:?}\n", j, device.name()));
                     }
                 }
             }

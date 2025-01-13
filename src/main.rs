@@ -81,9 +81,17 @@ impl eframe::App for Lapis {
             ui.fonts(|f| f.layout_job(layout_job))
         };
         if self.keys_active {
-            for (shortcut, code) in self.keys.clone() {
-                if ctx.input_mut(|i| i.consume_shortcut(&shortcut)) {
-                    self.eval(&code);
+            if self.quiet {
+                for (shortcut, code) in self.keys.clone() {
+                    if ctx.input_mut(|i| i.consume_shortcut(&shortcut)) {
+                        self.quiet_eval(&code);
+                    }
+                }
+            } else {
+                for (shortcut, code) in self.keys.clone() {
+                    if ctx.input_mut(|i| i.consume_shortcut(&shortcut)) {
+                        self.eval(&code);
+                    }
                 }
             }
         }
@@ -157,6 +165,8 @@ impl eframe::App for Lapis {
                 }
                 ui.with_layout(Layout::right_to_left(Align::TOP), |ui| {
                     ui.toggle_value(&mut self.keys_active, "keys");
+                    ui.toggle_value(&mut self.quiet, "quiet")
+                        .on_hover_text("don't log keybinding evaluation");
                 });
             });
         });

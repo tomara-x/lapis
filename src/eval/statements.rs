@@ -60,7 +60,7 @@ fn eval_expr(expr: Expr, lapis: &mut Lapis, buffer: &mut String) {
     } else if let Some(event) = eval_eventid(&expr, lapis) {
         buffer.push_str(&format!("\n// {:?}", event));
     } else if let Expr::Call(expr) = expr {
-        device_commands(expr, lapis);
+        device_commands(expr, lapis, buffer);
     } else if let Expr::Binary(expr) = expr {
         float_bin_assign(&expr, lapis);
     } else if let Expr::MethodCall(expr) = expr {
@@ -260,7 +260,13 @@ fn eval_assign(expr: &ExprAssign, lapis: &mut Lapis) {
         }
         Expr::Lit(left) => {
             if let Lit::Str(left) = &left.lit {
-                if let Expr::Lit(right) = &*expr.right {
+                if let Some(b) = eval_bool(&expr.right, lapis) {
+                    match left.value().as_str() {
+                        "keys" => lapis.keys_active = b,
+                        "quiet" => lapis.quiet = b,
+                        _ => {}
+                    }
+                } else if let Expr::Lit(right) = &*expr.right {
                     if let Some(shortcut) = parse_shortcut(left.value()) {
                         lapis.keys.retain(|x| x.0 != shortcut);
                         if let Lit::Str(right) = &right.lit {
