@@ -19,7 +19,6 @@ execute `set_out_device(0,0);` for audio output to work
 
 ## deviations
 - every nodes is wrapped in a `Net`, it's all nets (﻿🌍﻿ 🧑‍🚀﻿ 🔫﻿ 🧑‍🚀﻿)
-- i can't support `map`. as a workaround we have `f`. which takes a str argument and outputs that function wrapped in a node. you don't get to define custom functions (at runtime), but at least you get a bunch of basic ones that can then be stitched together like other nodes. see this match for a list of supported functions: https://github.com/tomara-x/lapis/blob/2cace59742819337d414430914c77dd6f225ce74/src/eval/nets.rs#L852
 - mutability is ignored. everything is mutable
 - type annotations are ignored. types are inferred (`f32`, `Net`, `Vec<f32>`, `bool`, `NodeId`, `Arc<Wave>`, `Shared`, `Sequencer`, `EventId`, `Source`,)
 - the `.play()` method for graphs allows you to listen to the graph directly. (graph has to have 0 inputs and 1 or 2 outputs)
@@ -379,6 +378,117 @@ list_out_devices();
 set_in_device(1, 2); // selects host 1 (alsa), device 2 (sysdef...) from the input devices list
 set_out_device(1, 0); // selects host 1 (alsa), device 0 (pipewire) from the output list
 ```
+
+**f**
+
+i can't support `map`. as a workaround we have `f`. it takes a str argument and outputs that function wrapped in a node. you don't get to define custom functions (at runtime), but at least you get a bunch of basic ones that can then be stitched together like other nodes
+
+```rust
+let x = f(">")
+x;
+// Inputs         : 2
+// Outputs        : 1
+// Latency        : 0.0 samples
+// Footprint      : 232 bytes
+// Size           : 1
+```
+
+<details><summary>function list</summary>
+<p>
+
+- rise
+- fall
+- \>
+- <
+- ==
+- !=
+- \>=
+- <=
+- min
+- max
+- pow
+- mod (or `rem` or `rem_euclid`)
+- log
+- bitand (those 5 bitwise functions cast their inputs to integer)
+- bitor
+- bitxor
+- shl
+- shr
+- lerp
+- lerp11
+- delerp
+- delerp11
+- xerp
+- xerp11
+- dexerp
+- dexerp11
+- abs
+- signum
+- floor
+- fract
+- ceil
+- round
+- sqrt
+- exp
+- exp2
+- exp10
+- exp_m1
+- ln_1p
+- ln
+- log2
+- log10
+- hypot
+- atan2
+- sin
+- cos
+- tan
+- asin
+- acos
+- atan
+- sinh
+- cosh
+- tanh
+- asinh
+- acosh
+- atanh
+- squared
+- cubed
+- dissonance
+- dissonance_max
+- db_amp
+- amp_db
+- a_weight
+- m_weight
+- spline
+- spline_mono
+- softsign
+- softexp
+- softmix
+- smooth3
+- smooth5
+- smooth7
+- smooth9
+- uparc
+- downarc
+- sine_ease
+- sin_hz
+- cos_hz
+- sqr_hz
+- tri_hz
+- semitone_ratio
+- rnd1
+- rnd2
+- spline_noise
+- fractal_noise
+- pol (takes cartesian, outputs polar)
+- car (takes polar, outputs cartesian)
+- deg (takes radians, outputs degrees)
+- rad (takes degrees, outputs radians)
+- recip
+- normal (filters inf/-inf/nan)
+
+</p>
+</details>
 
 ## building
 
