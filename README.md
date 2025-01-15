@@ -17,16 +17,17 @@ execute `set_out_device(0,0);` for audio output to work
 - no `break` or `continue` in loops
 - `input()` and file i/o Wave methods won't work in the wasm version
 
+## additions
+- the `.play()` method for graphs allows you to listen to the graph directly. (graph has to have 0 inputs and 1 or 2 outputs)
+- the `input()` node has 2 outputs (left and right) representing the input from mic
+
 ## deviations
 - every nodes is wrapped in a `Net`, it's all nets (﻿🌍﻿ 🧑‍🚀﻿ 🔫﻿ 🧑‍🚀﻿)
 - mutability is ignored. everything is mutable
 - type annotations are ignored. types are inferred (`f32`, `Net`, `Vec<f32>`, `bool`, `NodeId`, `Arc<Wave>`, `Shared`, `Sequencer`, `EventId`, `Source`,)
-- the `.play()` method for graphs allows you to listen to the graph directly. (graph has to have 0 inputs and 1 or 2 outputs)
-- the `input()` node has 2 outputs (left and right) representing the input from mic
 - all number variables are f32, even if you type it as `4` it's still `4.0`
-- for functions that accept floats you can just type `3` and it's parsed as a float.
 - when a function takes an integer or usize, if you type it as a literal integer, then they are parsed to the corresponding type. otherwise (a variable or an expression) they are evaluated as floats then cast to the needed type
-- an expression ending in a semicolon, like `variable;`, `2 + 2;`, `lowpass();`, or `[x, x+1, x+2];` will print that expression's value. for Net, Wave, Sequencer, Shared, NodeId, EventId, it will print info about them.
+- an expression, like `variable`, `2 + 2`, `lowpass()`, or `[x, x+1, x+2]` will print that expression's value. for `Net`, `Wave`, `Sequencer`, `Shared`, `NodeId`, `EventId`, it will print info about them.
 - everything is global. nothing is limited to scope except for the loop variable in for loops
 - [`Meter`](https://docs.rs/fundsp/latest/fundsp/dynamics/enum.Meter.html) modes Peak and Rms are actually passed cast f32 not f64
 
