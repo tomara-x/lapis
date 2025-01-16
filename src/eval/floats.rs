@@ -21,170 +21,164 @@ fn index_float(expr: &ExprIndex, lapis: &Lapis) -> Option<f32> {
 }
 
 fn method_float(expr: &ExprMethodCall, lapis: &Lapis) -> Option<f32> {
-    match expr.method.to_string().as_str() {
-        "value" => {
-            let k = nth_path_ident(&expr.receiver, 0)?;
-            let shared = &mut lapis.smap.get(&k)?;
-            Some(shared.value())
-        }
-        "floor" => Some(eval_float(&expr.receiver, lapis)?.floor()),
-        "ceil" => Some(eval_float(&expr.receiver, lapis)?.ceil()),
-        "round" => Some(eval_float(&expr.receiver, lapis)?.round()),
-        "trunc" => Some(eval_float(&expr.receiver, lapis)?.trunc()),
-        "fract" => Some(eval_float(&expr.receiver, lapis)?.fract()),
-        "abs" => Some(eval_float(&expr.receiver, lapis)?.abs()),
-        "signum" => Some(eval_float(&expr.receiver, lapis)?.signum()),
-        "copysign" => {
-            let sign = eval_float(expr.args.first()?, lapis)?;
-            Some(eval_float(&expr.receiver, lapis)?.copysign(sign))
-        }
-        "div_euclid" => {
-            let rhs = eval_float(expr.args.first()?, lapis)?;
-            Some(eval_float(&expr.receiver, lapis)?.div_euclid(rhs))
-        }
-        "rem_euclid" => {
-            let rhs = eval_float(expr.args.first()?, lapis)?;
-            Some(eval_float(&expr.receiver, lapis)?.rem_euclid(rhs))
-        }
-        "powi" => {
-            let n = eval_i32(expr.args.first()?, lapis)?;
-            Some(eval_float(&expr.receiver, lapis)?.powi(n))
-        }
-        "powf" => {
-            let n = eval_float(expr.args.first()?, lapis)?;
-            Some(eval_float(&expr.receiver, lapis)?.powf(n))
-        }
-        "sqrt" => Some(eval_float(&expr.receiver, lapis)?.sqrt()),
-        "exp" => Some(eval_float(&expr.receiver, lapis)?.exp()),
-        "exp2" => Some(eval_float(&expr.receiver, lapis)?.exp2()),
-        "ln" => Some(eval_float(&expr.receiver, lapis)?.ln()),
-        "log" => {
-            let base = eval_float(expr.args.first()?, lapis)?;
-            Some(eval_float(&expr.receiver, lapis)?.log(base))
-        }
-        "log2" => Some(eval_float(&expr.receiver, lapis)?.log2()),
-        "log10" => Some(eval_float(&expr.receiver, lapis)?.log10()),
-        "cbrt" => Some(eval_float(&expr.receiver, lapis)?.cbrt()),
-        "hypot" => {
-            let other = eval_float(expr.args.first()?, lapis)?;
-            Some(eval_float(&expr.receiver, lapis)?.hypot(other))
-        }
-        "sin" => Some(eval_float(&expr.receiver, lapis)?.sin()),
-        "cos" => Some(eval_float(&expr.receiver, lapis)?.cos()),
-        "tan" => Some(eval_float(&expr.receiver, lapis)?.tan()),
-        "asin" => Some(eval_float(&expr.receiver, lapis)?.asin()),
-        "acos" => Some(eval_float(&expr.receiver, lapis)?.acos()),
-        "atan" => Some(eval_float(&expr.receiver, lapis)?.atan()),
-        "sinh" => Some(eval_float(&expr.receiver, lapis)?.sinh()),
-        "cosh" => Some(eval_float(&expr.receiver, lapis)?.cosh()),
-        "tanh" => Some(eval_float(&expr.receiver, lapis)?.tanh()),
-        "asinh" => Some(eval_float(&expr.receiver, lapis)?.asinh()),
-        "acosh" => Some(eval_float(&expr.receiver, lapis)?.acosh()),
-        "atanh" => Some(eval_float(&expr.receiver, lapis)?.atanh()),
-        "atan2" => {
-            let other = eval_float(expr.args.first()?, lapis)?;
-            Some(eval_float(&expr.receiver, lapis)?.atan2(other))
-        }
-        "recip" => Some(eval_float(&expr.receiver, lapis)?.recip()),
-        "to_degrees" => Some(eval_float(&expr.receiver, lapis)?.to_degrees()),
-        "to_radians" => Some(eval_float(&expr.receiver, lapis)?.to_radians()),
-        "max" => {
-            let other = eval_float(expr.args.first()?, lapis)?;
-            Some(eval_float(&expr.receiver, lapis)?.max(other))
-        }
-        "min" => {
-            let other = eval_float(expr.args.first()?, lapis)?;
-            Some(eval_float(&expr.receiver, lapis)?.min(other))
-        }
-        "at" => {
-            let k = nth_path_ident(&expr.receiver, 0)?;
-            let wave = lapis.wmap.get(&k)?;
-            let arg0 = expr.args.first()?;
-            let arg1 = expr.args.get(1)?;
-            let chan = eval_usize(arg0, lapis)?;
-            let index = eval_usize(arg1, lapis)?;
-            if chan < wave.channels() && index < wave.len() {
-                Some(wave.at(chan, index))
-            } else {
-                None
+    if let Some(f) = eval_float(&expr.receiver, lapis) {
+        match expr.method.to_string().as_str() {
+            "floor" => Some(f.floor()),
+            "ceil" => Some(f.ceil()),
+            "round" => Some(f.round()),
+            "trunc" => Some(f.trunc()),
+            "fract" => Some(f.fract()),
+            "abs" => Some(f.abs()),
+            "signum" => Some(f.signum()),
+            "copysign" => {
+                let sign = eval_float(expr.args.first()?, lapis)?;
+                Some(f.copysign(sign))
             }
-        }
-        "channels" => {
-            let k = nth_path_ident(&expr.receiver, 0)?;
-            let wave = lapis.wmap.get(&k)?;
-            Some(wave.channels() as f32)
-        }
-        "len" | "length" => {
-            let k = nth_path_ident(&expr.receiver, 0)?;
-            if let Some(wave) = lapis.wmap.get(&k) {
-                Some(wave.len() as f32)
-            } else {
-                let vec = lapis.vmap.get(&k)?;
-                Some(vec.len() as f32)
+            "div_euclid" => {
+                let rhs = eval_float(expr.args.first()?, lapis)?;
+                Some(f.div_euclid(rhs))
             }
-        }
-        "duration" => {
-            let k = nth_path_ident(&expr.receiver, 0)?;
-            let wave = lapis.wmap.get(&k)?;
-            Some(wave.duration() as f32)
-        }
-        "amplitude" => {
-            let k = nth_path_ident(&expr.receiver, 0)?;
-            let wave = lapis.wmap.get(&k)?;
-            Some(wave.amplitude())
-        }
-        "size" => {
-            let k = nth_path_ident(&expr.receiver, 0)?;
-            let net = lapis.gmap.get(&k)?;
-            Some(net.size() as f32)
-        }
-        "inputs" => {
-            let k = nth_path_ident(&expr.receiver, 0)?;
-            let net = lapis.gmap.get(&k)?;
-            Some(net.inputs() as f32)
-        }
-        "outputs" => {
-            let k = nth_path_ident(&expr.receiver, 0)?;
-            let net = lapis.gmap.get(&k)?;
-            Some(net.outputs() as f32)
-        }
-        "inputs_in" => {
-            let k = nth_path_ident(&expr.receiver, 0)?;
-            let net = lapis.gmap.get(&k)?;
-            let id = eval_path_nodeid(expr.args.first()?, lapis)?;
-            if net.contains(id) {
-                Some(net.inputs_in(id) as f32)
-            } else {
-                None
+            "rem_euclid" => {
+                let rhs = eval_float(expr.args.first()?, lapis)?;
+                Some(f.rem_euclid(rhs))
             }
-        }
-        "outputs_in" => {
-            let k = nth_path_ident(&expr.receiver, 0)?;
-            let net = lapis.gmap.get(&k)?;
-            let id = eval_path_nodeid(expr.args.first()?, lapis)?;
-            if net.contains(id) {
-                Some(net.outputs_in(id) as f32)
-            } else {
-                None
+            "powi" => {
+                let n = eval_i32(expr.args.first()?, lapis)?;
+                Some(f.powi(n))
             }
+            "powf" => {
+                let n = eval_float(expr.args.first()?, lapis)?;
+                Some(f.powf(n))
+            }
+            "sqrt" => Some(f.sqrt()),
+            "exp" => Some(f.exp()),
+            "exp2" => Some(f.exp2()),
+            "ln" => Some(f.ln()),
+            "log" => {
+                let base = eval_float(expr.args.first()?, lapis)?;
+                Some(f.log(base))
+            }
+            "log2" => Some(f.log2()),
+            "log10" => Some(f.log10()),
+            "cbrt" => Some(f.cbrt()),
+            "hypot" => {
+                let other = eval_float(expr.args.first()?, lapis)?;
+                Some(f.hypot(other))
+            }
+            "sin" => Some(f.sin()),
+            "cos" => Some(f.cos()),
+            "tan" => Some(f.tan()),
+            "asin" => Some(f.asin()),
+            "acos" => Some(f.acos()),
+            "atan" => Some(f.atan()),
+            "sinh" => Some(f.sinh()),
+            "cosh" => Some(f.cosh()),
+            "tanh" => Some(f.tanh()),
+            "asinh" => Some(f.asinh()),
+            "acosh" => Some(f.acosh()),
+            "atanh" => Some(f.atanh()),
+            "atan2" => {
+                let other = eval_float(expr.args.first()?, lapis)?;
+                Some(f.atan2(other))
+            }
+            "recip" => Some(f.recip()),
+            "to_degrees" => Some(f.to_degrees()),
+            "to_radians" => Some(f.to_radians()),
+            "max" => {
+                let other = eval_float(expr.args.first()?, lapis)?;
+                Some(f.max(other))
+            }
+            "min" => {
+                let other = eval_float(expr.args.first()?, lapis)?;
+                Some(f.min(other))
+            }
+            _ => None,
         }
-        "first" => {
-            let k = nth_path_ident(&expr.receiver, 0)?;
-            let vec = &mut lapis.vmap.get(&k)?;
-            vec.first().copied()
+    } else if let Some(k) = nth_path_ident(&expr.receiver, 0) {
+        match expr.method.to_string().as_str() {
+            "value" => {
+                let shared = &mut lapis.smap.get(&k)?;
+                Some(shared.value())
+            }
+            "at" => {
+                let wave = lapis.wmap.get(&k)?;
+                let arg0 = expr.args.first()?;
+                let arg1 = expr.args.get(1)?;
+                let chan = eval_usize(arg0, lapis)?;
+                let index = eval_usize(arg1, lapis)?;
+                if chan < wave.channels() && index < wave.len() {
+                    Some(wave.at(chan, index))
+                } else {
+                    None
+                }
+            }
+            "channels" => {
+                let wave = lapis.wmap.get(&k)?;
+                Some(wave.channels() as f32)
+            }
+            "len" | "length" => {
+                if let Some(wave) = lapis.wmap.get(&k) {
+                    Some(wave.len() as f32)
+                } else {
+                    let vec = lapis.vmap.get(&k)?;
+                    Some(vec.len() as f32)
+                }
+            }
+            "duration" => {
+                let wave = lapis.wmap.get(&k)?;
+                Some(wave.duration() as f32)
+            }
+            "amplitude" => {
+                let wave = lapis.wmap.get(&k)?;
+                Some(wave.amplitude())
+            }
+            "size" => {
+                let net = lapis.gmap.get(&k)?;
+                Some(net.size() as f32)
+            }
+            "inputs" => {
+                let net = lapis.gmap.get(&k)?;
+                Some(net.inputs() as f32)
+            }
+            "outputs" => {
+                let net = lapis.gmap.get(&k)?;
+                Some(net.outputs() as f32)
+            }
+            "inputs_in" => {
+                let net = lapis.gmap.get(&k)?;
+                let id = eval_path_nodeid(expr.args.first()?, lapis)?;
+                if net.contains(id) {
+                    Some(net.inputs_in(id) as f32)
+                } else {
+                    None
+                }
+            }
+            "outputs_in" => {
+                let net = lapis.gmap.get(&k)?;
+                let id = eval_path_nodeid(expr.args.first()?, lapis)?;
+                if net.contains(id) {
+                    Some(net.outputs_in(id) as f32)
+                } else {
+                    None
+                }
+            }
+            "first" => {
+                let vec = &mut lapis.vmap.get(&k)?;
+                vec.first().copied()
+            }
+            "last" => {
+                let vec = &mut lapis.vmap.get(&k)?;
+                vec.last().copied()
+            }
+            "get" => {
+                let index = eval_usize(expr.args.first()?, lapis)?;
+                let vec = &mut lapis.vmap.get(&k)?;
+                vec.get(index).copied()
+            }
+            _ => None,
         }
-        "last" => {
-            let k = nth_path_ident(&expr.receiver, 0)?;
-            let vec = &mut lapis.vmap.get(&k)?;
-            vec.last().copied()
-        }
-        "get" => {
-            let index = eval_usize(expr.args.first()?, lapis)?;
-            let k = nth_path_ident(&expr.receiver, 0)?;
-            let vec = &mut lapis.vmap.get(&k)?;
-            vec.get(index).copied()
-        }
-        _ => None,
+    } else {
+        None
     }
 }
 
