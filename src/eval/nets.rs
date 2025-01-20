@@ -1449,8 +1449,12 @@ fn call_net(expr: &ExprCall, lapis: &mut Lapis) -> Option<Net> {
             let k = nth_path_ident(arg0, 0)?;
             let wave = lapis.wmap.get(&k)?.clone();
             let chan = eval_usize(arg1, lapis)?;
-            let loop_point = if let Some(arg) = arg2 { eval_usize(arg, lapis) } else { None };
-            Some(Net::wrap(Box::new(wavech(&wave, chan, loop_point))))
+            if chan < wave.channels() {
+                let loop_point = if let Some(arg) = arg2 { eval_usize(arg, lapis) } else { None };
+                Some(Net::wrap(Box::new(wavech(&wave, chan, loop_point))))
+            } else {
+                None
+            }
         }
         "wavech_at" => {
             let arg0 = expr.args.first()?;
@@ -1461,10 +1465,14 @@ fn call_net(expr: &ExprCall, lapis: &mut Lapis) -> Option<Net> {
             let k = nth_path_ident(arg0, 0)?;
             let wave = lapis.wmap.get(&k)?.clone();
             let chan = eval_usize(arg1, lapis)?;
-            let start = eval_usize(arg2, lapis)?;
-            let end = eval_usize(arg3, lapis)?;
-            let loop_point = if let Some(arg) = arg4 { eval_usize(arg, lapis) } else { None };
-            Some(Net::wrap(Box::new(wavech_at(&wave, chan, start, end, loop_point))))
+            if chan < wave.channels() {
+                let start = eval_usize(arg2, lapis)?;
+                let end = eval_usize(arg3, lapis)?;
+                let loop_point = if let Some(arg) = arg4 { eval_usize(arg, lapis) } else { None };
+                Some(Net::wrap(Box::new(wavech_at(&wave, chan, start, end, loop_point))))
+            } else {
+                None
+            }
         }
         "white" => Some(Net::wrap(Box::new(white()))),
         "zero" => Some(Net::wrap(Box::new(zero()))),
