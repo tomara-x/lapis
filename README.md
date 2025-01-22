@@ -251,7 +251,8 @@ s.set(s.value() + 42);
 // waves use Arc. they're cloned when mutated while other references exist
 // (Arc::make_mut)
 
-// load a song (keep a system monitor open to watch the memory use)
+// (keep a system monitor open to watch the memory use)
+// load a song
 let wave = Wave::load("song.mp3");
 
 // this doesn't clone the wave, since no other references exist
@@ -268,6 +269,7 @@ wave.set_sample_rate(48000);
 let w1 = wavech(wave, 0);
 let w2 = wavech(wave, 1);
 
+// useless knowledge:
 // if you're using `play()`, it has to be called twice for an old graph to be dropped
 // since it uses a Slot, which keeps the previous graph for morphing
 ```
@@ -278,12 +280,12 @@ let w2 = wavech(wave, 1);
 ```rust
 let w = Wave::load("./guidance.wav");   // load from file
 w;                                      // prints info about the loaded wave
-    //Wave(ch:1, sr:11025, len:1101250, dur:99.88662131519274)
+// Wave(ch:1, sr:11025, len:1101250, dur:99.88662131519274)
 
 let osc = sine_hz(134) | saw_hz(42);
 let s = Wave::render(44100, 1, osc);    // render 1 second of the given graph
 s;                                      // print info
-    //Wave(ch:2, sr:44100, len:44100, dur:1)
+// Wave(ch:2, sr:44100, len:44100, dur:1)
 s.save_wav16("awawawa.wav");            // save the wave as a 16-bit wav file
 ```
 
@@ -292,11 +294,11 @@ s.save_wav16("awawawa.wav");            // save the wave as a 16-bit wav file
 <details><summary>deviations</summary>
 <p>
 
-- backend returns a SequencerBackend wrapped in a net. this way it can be used anywhere were a net can be used
-- Sequencer itself can't be played (or `tick`ed). you can either call `play_backend` on it, or `play` on its backend (or a graph containing the backend)
+- `.backend()` returns a SequencerBackend wrapped in a net. this way it can be used anywhere a net is usable
+- Sequencer itself can't be `play`ed or `tick`ed. do that to its backend (or a graph containing the backend)
 - methods `has_backend`, `replay_events`, and `time` aren't supported
-- times are all f32 cast as f64
-- you can't clone them (and why would you want to?)
+- time arguments are all f32 cast as f64
+- you can't clone them (or their backends) (and why would you want to?)
 
 </p>
 </details>
