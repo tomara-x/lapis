@@ -63,6 +63,10 @@ fn eval_expr(expr: Expr, lapis: &mut Lapis, buffer: &mut String) {
         device_commands(expr, lapis, buffer);
     } else if let Expr::Binary(expr) = expr {
         float_bin_assign(&expr, lapis);
+    } else if let Expr::Break(_) = expr {
+        buffer.push_str("#B");
+    } else if let Expr::Continue(_) = expr {
+        buffer.push_str("#C");
     } else if let Expr::MethodCall(expr) = expr {
         match expr.method.to_string().as_str() {
             "play" => {
@@ -289,19 +293,38 @@ fn eval_for_loop(expr: &ExprForLoop, lapis: &mut Lapis, buffer: &mut String) {
     let arr = eval_vec(&expr.expr, lapis);
     let tmp = lapis.fmap.remove(&ident);
     if let Some((r0, r1)) = bounds {
-        for i in r0..r1 {
+        'main_loop: for i in r0..r1 {
             lapis.fmap.insert(ident.clone(), i as f32);
             for stmt in &expr.body.stmts {
                 let s = eval_stmt(stmt.clone(), lapis);
                 buffer.push_str(&s);
+                // NOTE amy.. you've out lazied yourself (proud of you)
+                if buffer.ends_with("#B") {
+                    buffer.pop();
+                    buffer.pop();
+                    break 'main_loop;
+                } else if buffer.ends_with("#C") {
+                    buffer.pop();
+                    buffer.pop();
+                    continue 'main_loop;
+                }
             }
         }
     } else if let Some(arr) = arr {
-        for i in arr {
+        'main_loop: for i in arr {
             lapis.fmap.insert(ident.clone(), i);
             for stmt in &expr.body.stmts {
                 let s = eval_stmt(stmt.clone(), lapis);
                 buffer.push_str(&s);
+                if buffer.ends_with("#B") {
+                    buffer.pop();
+                    buffer.pop();
+                    break 'main_loop;
+                } else if buffer.ends_with("#C") {
+                    buffer.pop();
+                    buffer.pop();
+                    continue 'main_loop;
+                }
             }
         }
     }

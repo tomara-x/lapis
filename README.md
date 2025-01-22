@@ -14,7 +14,6 @@ execute `set_out_device(0,0);` for audio output to work
 - this isn't rust, you have a very small subset of the syntax
 - for functions that accept [`Shape`](https://docs.rs/fundsp/latest/fundsp/shape/trait.Shape.html) as input, `Adaptive` and `ShapeFn` aren't supported
 - no closures and therefore none of the functions that take closures as input (yet)
-- no `break` or `continue` in loops
 - `input()` and file i/o Wave methods won't work in the wasm version
 
 ## additions
