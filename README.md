@@ -96,7 +96,7 @@ dc(0).play();        // back to silence
 </p>
 </details>
 
-- all the functions in the [sound module] (https://docs.rs/fundsp/latest/fundsp/sound/index.html)
+- all functions in the [sound module](https://docs.rs/fundsp/latest/fundsp/sound/index.html)
 
 **assignment**
 ```rust
