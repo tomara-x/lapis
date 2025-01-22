@@ -17,9 +17,17 @@ execute `set_out_device(0,0);` for audio output to work
 - `input()` and file i/o Wave methods won't work in the wasm version
 
 ## additions
-- the `.play()` method for graphs allows you to listen to the graph directly. (graph has to have 0 inputs and 1 or 2 outputs)
-- the `input()` node has 2 outputs (left and right) representing the input from mic
-
+- the `net.play()` method allows you to listen to an audio net (net must have 0 inputs and 1 or 2 outputs)
+```rust
+sine_hz(110).play(); // you should hear a 110hz tone
+dc(0).play();        // back to silence
+```
+- the `input()` node has 2 output channels (left and right channels of a stereo mic)
+```rust
+(input() >> reverb_stereo(20,3,0.5)).play();
+// you should hear the input from your mic being played back
+// (⚠️ might cause feedback)
+```
 ## deviations
 - every nodes is wrapped in a `Net`, it's all nets (﻿🌍﻿ 🧑‍🚀﻿ 🔫﻿ 🧑‍🚀﻿)
 - mutability is ignored. everything is mutable
