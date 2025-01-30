@@ -1465,9 +1465,9 @@ fn call_net(expr: &ExprCall, lapis: &mut Lapis) -> Option<Net> {
             let k = nth_path_ident(arg0, 0)?;
             let wave = lapis.wmap.get(&k)?.clone();
             let chan = eval_usize(arg1, lapis)?;
-            if chan < wave.channels() {
-                let start = eval_usize(arg2, lapis)?;
-                let end = eval_usize(arg3, lapis)?;
+            let start = eval_usize(arg2, lapis)?;
+            let end = eval_usize(arg3, lapis)?;
+            if chan < wave.channels() && end <= wave.len() {
                 let loop_point = if let Some(arg) = arg4 { eval_usize(arg, lapis) } else { None };
                 Some(Net::wrap(Box::new(wavech_at(&wave, chan, start, end, loop_point))))
             } else {
