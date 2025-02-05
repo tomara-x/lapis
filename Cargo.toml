@@ -9,11 +9,11 @@ license = "MIT OR Apache-2.0"
 [dependencies]
 fundsp = {version = "0.20.0", git = "https://github.com/SamiPerttu/fundsp"} # update the label in main.rs
 cpal = {version = "0.15.3", features = ["jack", "wasm-bindgen"]}
-eframe = "0.30.0"
-egui_extras = { version = "0.30.0", default-features = false, features = ["syntect"] }
-syn = {version = "2.0.96", features = ["full", "extra-traits"]}
+eframe = "0.31.0"
+egui_extras = { version = "0.31.0", default-features = false, features = ["syntect"] }
+syn = {version = "2.0.98", features = ["full", "extra-traits"]}
 crossbeam-channel = "0.5.14"
-log = "0.4.22"
+log = "0.4.25"
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 wasm-bindgen-futures = "0.4.50"
