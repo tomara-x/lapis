@@ -97,6 +97,7 @@ dc(0).play();        // back to silence
 </details>
 
 - all functions in the [sound module](https://docs.rs/fundsp/latest/fundsp/sound/index.html)
+- [std constants](https://doc.rust-lang.org/std/f32/consts/index.html), `inf`, `-inf`, and `nan`
 
 **assignment**
 ```rust
