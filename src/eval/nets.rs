@@ -30,9 +30,14 @@ fn method_net(expr: &ExprMethodCall, lapis: &mut Lapis) -> Option<Net> {
     match expr.method.to_string().as_str() {
         "backend" => {
             let k = nth_path_ident(&expr.receiver, 0)?;
-            let seq = &mut lapis.seqmap.get_mut(&k)?;
-            if !seq.has_backend() {
-                return Some(Net::wrap(Box::new(seq.backend())));
+            if let Some(seq) = &mut lapis.seqmap.get_mut(&k) {
+                if !seq.has_backend() {
+                    return Some(Net::wrap(Box::new(seq.backend())));
+                }
+            } else if let Some(g) = &mut lapis.gmap.get_mut(&k) {
+                if !g.has_backend() {
+                    return Some(Net::wrap(Box::new(g.backend())));
+                }
             }
             None
         }

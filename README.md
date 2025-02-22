@@ -184,8 +184,7 @@ v2;
 <details><summary>deviations</summary>
 <p>
 
-- `node`, `node_mut`, `wrap`, `wrap_id`, `check`, `backend`, `has_backend` aren't supported
-- `.play_backend()` method allows you to play the backend of a net while still being able to edit that same net and commit changes to it. it should only be called once for any given net. the net has to be stored in a variable, have 0 inputs, and 2 outputs
+- `node`, `node_mut`, `wrap`, `wrap_id`, `check`, `has_backend` aren't supported
 - you can't use the `ids` method directly, but you can use `net.ids().nth(n)`
 
 </p>
@@ -193,7 +192,7 @@ v2;
 
 ```rust
 let net = Net::new(0,2);
-net.play_backend();
+net.backend().play();
 let id = net.push(sine_hz(440));
 net.connect_output(id,0,0);
 net.connect_output(id,0,1);

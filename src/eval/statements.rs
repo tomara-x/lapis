@@ -109,18 +109,6 @@ fn eval_expr(expr: Expr, lapis: &mut Lapis, buffer: &mut String) {
                     buffer.push_str(&format!("\n// {:?}", output));
                 }
             }
-            "play_backend" => {
-                if let Some(k) = nth_path_ident(&expr.receiver, 0) {
-                    if let Some(g) = &mut lapis.gmap.get_mut(&k) {
-                        if !g.has_backend() {
-                            let g = g.backend();
-                            if g.inputs() == 0 && g.outputs() == 2 {
-                                lapis.slot.set(Fade::Smooth, 0.01, Box::new(g));
-                            }
-                        }
-                    }
-                }
-            }
             "drop" => {
                 if let Some(k) = nth_path_ident(&expr.receiver, 0) {
                     lapis.drop(&k);
