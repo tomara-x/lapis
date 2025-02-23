@@ -28,6 +28,68 @@ dc(0).play();        // back to silence
 // you should hear the input from your mic being played back
 // (⚠️ might cause feedback)
 ```
+
+- similar to the functionality of `Snoop` and `Ring`, you can use `bounded` to create a ring buffer
+<details><summary>bounded</summary>
+<p>
+
+```rust
+let (i, o) = bounded(4); // channel with capacity 4 (maximum capacity is 1000000)
+// the sender and the receiver are both wrapped in nets
+i
+// Inputs         : 1
+// Outputs        : 1
+// Latency        : 0.0 samples
+// Footprint      : 248 bytes
+// Size           : 1
+o
+// Inputs         : 0
+// Outputs        : 1
+// Latency        : 0.0 samples
+// Footprint      : 248 bytes
+// Size           : 1
+
+// tick the input to send samples
+// it passes its input through, so it can be placed
+// anywhere in an audio graph to monitor the latest n samples
+i.tick([1]);
+// [1.0]
+i.tick([2]);
+// [2.0]
+i.tick([3]);
+// [3.0]
+i.tick([4]);
+// [4.0]
+
+// this won't make it, the channel is full
+i.tick([5]);
+// [5.0]
+
+// tick the output to receive samples
+o.tick([]);
+// [1.0]
+o.tick([]);
+// [2.0]
+o.tick([]);
+// [3.0]
+o.tick([]);
+// [4.0]
+
+// channel is empty
+o.tick([]);
+// [0.0]
+
+i.tick([1729]);
+// [1729.0]
+o.tick([]);
+// [1729.0]
+o.tick([]);
+// [0.0]
+```
+
+</p>
+</details>
+
 ## deviations
 - every nodes is wrapped in a `Net`, it's all nets (﻿🌍﻿ 🧑‍🚀﻿ 🔫﻿ 🧑‍🚀﻿)
 - mutability is ignored. everything is mutable

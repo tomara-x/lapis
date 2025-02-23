@@ -1,9 +1,12 @@
 use crate::eval::*;
+use crossbeam_channel::bounded;
 
 pub fn eval_stmt(s: Stmt, lapis: &mut Lapis) -> String {
     let mut buffer = String::new();
     match s {
-        Stmt::Local(expr) => eval_local(&expr, lapis),
+        Stmt::Local(expr) => {
+            eval_local(&expr, lapis);
+        }
         Stmt::Expr(expr, _) => match expr {
             Expr::Assign(expr) => eval_assign(&expr, lapis),
             Expr::ForLoop(expr) => eval_for_loop(&expr, lapis, &mut buffer),
@@ -152,7 +155,7 @@ fn eval_block(expr: ExprBlock, lapis: &mut Lapis, buffer: &mut String) {
     }
 }
 
-fn eval_local(expr: &Local, lapis: &mut Lapis) {
+fn eval_local(expr: &Local, lapis: &mut Lapis) -> Option<()> {
     if let Some(k) = pat_ident(&expr.pat) {
         if let Some(expr) = &expr.init {
             if let Some(v) = eval_float(&expr.expr, lapis) {
@@ -188,7 +191,25 @@ fn eval_local(expr: &Local, lapis: &mut Lapis) {
                 lapis.eventmap.insert(k, event);
             }
         }
+    } else if let Pat::Tuple(pat) = &expr.pat {
+        if let Some(init) = &expr.init {
+            if let Expr::Call(call) = &*init.expr {
+                if nth_path_ident(&call.func, 0)? == "bounded" {
+                    let p0 = pat_ident(pat.elems.first()?)?;
+                    let p1 = pat_ident(pat.elems.get(1)?)?;
+                    let cap = eval_usize(call.args.first()?, lapis)?;
+                    let (s, r) = bounded(cap.clamp(0, 1000000));
+                    let s = Net::wrap(Box::new(An(BuffIn::new(s))));
+                    let r = Net::wrap(Box::new(An(BuffOut::new(r))));
+                    lapis.drop(&p0);
+                    lapis.gmap.insert(p0, s);
+                    lapis.drop(&p1);
+                    lapis.gmap.insert(p1, r);
+                }
+            }
+        }
     }
+    None
 }
 
 #[allow(clippy::map_entry)]
