@@ -1320,8 +1320,9 @@ dependencies = [
 [[package]]
 name = "fundsp"
 version = "0.20.0"
-source = "git+https://github.com/SamiPerttu/fundsp#a4f126bcbb5c6b93c4cd65662035655913e1e830"
+source = "git+https://github.com/tomara-x/fundsp?branch=crossbeam#a265e47727854c65b43c16b3f9b292bc8d61a772"
 dependencies = [
+ "crossbeam-channel",
  "dyn-clone",
  "funutd",
  "hashbrown 0.15.1",

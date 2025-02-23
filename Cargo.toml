@@ -7,7 +7,7 @@ repository = "https://github.com/tomara-x/lapis"
 license = "MIT OR Apache-2.0"
 
 [dependencies]
-fundsp = {version = "0.20.0", git = "https://github.com/SamiPerttu/fundsp"} # update the label in main.rs
+fundsp = {git = "https://github.com/tomara-x/fundsp", branch = "crossbeam", features = ["crossbeam"]} # update the label in main.rs
 cpal = {version = "0.15.3", features = ["jack", "wasm-bindgen"]}
 eframe = "0.31.0"
 egui_extras = { version = "0.31.0", default-features = false, features = ["syntect"] }

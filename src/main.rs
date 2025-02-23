@@ -154,7 +154,7 @@ impl eframe::App for Lapis {
                     env!("CARGO_PKG_VERSION"),
                     env!("COMMIT_HASH")
                 ));
-                ui.label("FunDSP version: master")
+                ui.label("FunDSP version: tomara-x/fundsp/crossbeam")
             });
             ui.horizontal(|ui| {
                 if ui.button("settings").clicked() {
