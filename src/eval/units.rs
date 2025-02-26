@@ -1,5 +1,5 @@
 use crossbeam_channel::{Receiver, Sender};
-use fundsp::hacker32::*;
+use fundsp::{fft::*, hacker32::*};
 
 /// multijoin, multisplit, and reverse defined in:
 /// https://github.com/SamiPerttu/fundsp/blob/master/src/audionode.rs
@@ -236,5 +236,106 @@ impl AudioNode for BuffOut {
     #[inline]
     fn tick(&mut self, _input: &Frame<f32, Self::Inputs>) -> Frame<f32, Self::Outputs> {
         [self.r.try_recv().unwrap_or_default()].into()
+    }
+}
+
+/// rfft
+/// - input 0: input
+/// - output 0: real
+/// - output 1: imaginary
+#[derive(Default, Clone)]
+pub struct Rfft {
+    n: usize,
+    data: Vec<f32>,
+    count: usize,
+    start: usize,
+}
+impl Rfft {
+    pub fn new(n: usize, offset: usize) -> Self {
+        let n = n.clamp(2, 32768).next_power_of_two();
+        let start = (n - offset) % n;
+        let data = vec![0.; n * 2];
+        Rfft { n, data, count: start, start }
+    }
+}
+impl AudioNode for Rfft {
+    const ID: u64 = 1120;
+    type Inputs = U1;
+    type Outputs = U2;
+
+    #[inline]
+    fn tick(&mut self, input: &Frame<f32, Self::Inputs>) -> Frame<f32, Self::Outputs> {
+        let i = self.count;
+        self.count += 1;
+        if self.count == self.n {
+            self.count = 0;
+        }
+        if i == 0 {
+            real_fft(&mut self.data[..self.n]);
+            fix_nyquist(&mut self.data[..self.n + 2]);
+            // fix negative frequencies
+            let mut i = self.n + 2;
+            let len = self.n * 2;
+            while i < len {
+                self.data[i] = self.data[len - i];
+                self.data[i + 1] = -self.data[len - i + 1];
+                i += 2;
+            }
+        }
+        let j = i * 2;
+        let out = [self.data[j], self.data[j + 1]];
+        self.data[i] = input[0];
+        out.into()
+    }
+
+    fn reset(&mut self) {
+        self.count = self.start;
+        self.data.fill(0.);
+    }
+}
+
+/// ifft
+/// - input 0: real
+/// - input 1: imaginary
+/// - output 0: real
+/// - output 1: imaginary
+#[derive(Default, Clone)]
+pub struct Ifft {
+    n: usize,
+    data: Vec<Complex32>,
+    count: usize,
+    start: usize,
+}
+impl Ifft {
+    pub fn new(n: usize, offset: usize) -> Self {
+        let n = n.clamp(2, 32768).next_power_of_two();
+        let start = (n - offset) % n;
+        let data = vec![Complex32::ZERO; n];
+        Ifft { n, data, count: start, start }
+    }
+}
+impl AudioNode for Ifft {
+    const ID: u64 = 1121;
+    type Inputs = U2;
+    type Outputs = U2;
+
+    #[inline]
+    fn tick(&mut self, input: &Frame<f32, Self::Inputs>) -> Frame<f32, Self::Outputs> {
+        let i = self.count;
+        self.count += 1;
+        if self.count == self.n {
+            self.count = 0;
+        }
+        if i == 0 {
+            inverse_fft(&mut self.data);
+        }
+        let out = [self.data[i].re, self.data[i].im];
+        self.data[i] = Complex32::new(input[0], input[1]);
+        out.into()
+    }
+
+    fn reset(&mut self) {
+        self.count = self.start;
+        self.data.fill(Complex32::ZERO);
     }
 }

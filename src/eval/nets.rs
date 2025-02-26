@@ -761,6 +761,16 @@ fn call_net(expr: &ExprCall, lapis: &mut Lapis) -> Option<Net> {
             Some(Net::wrap(Box::new(FeedbackUnit::new(0., Box::new(net)))))
         }
         "feedback2" => None, //TODO
+        "rfft" => {
+            let n = eval_usize(expr.args.first()?, lapis)?;
+            let offset = eval_usize(expr.args.get(1)?, lapis)?;
+            Some(Net::wrap(Box::new(An(Rfft::new(n, offset)))))
+        }
+        "ifft" => {
+            let n = eval_usize(expr.args.first()?, lapis)?;
+            let offset = eval_usize(expr.args.get(1)?, lapis)?;
+            Some(Net::wrap(Box::new(An(Ifft::new(n, offset)))))
+        }
         "fhighpass" => {
             let arg = expr.args.first()?;
             let shape = call_shape(arg, lapis)?;
