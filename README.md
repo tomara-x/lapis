@@ -90,6 +90,73 @@ o.tick([]);
 </p>
 </details>
 
+- `rfft` and `ifft` nodes (since using the fft functions directly isn't possible here)
+<details><summary>example</summary>
+<p>
+
+```rust
+// generate a hann window
+let win_wave = Wave::new(1, 44100);
+let bins = 512;
+for i in 0..bins {
+    let p = 0.5 + -cos(i * TAU / bins)/2;
+    win_wave.push(p);
+}
+
+// for overlap (note the swap of starting time between 1 and 3)
+let w0 = wavech_at(win_wave, 0, 0, 512, 0);
+let w1 = wavech_at(win_wave, 0, 384, 512, 0);
+let w2 = wavech_at(win_wave, 0, 256, 512, 0);
+let w3 = wavech_at(win_wave, 0, 128, 512, 0);
+let window = w0 | w1 | w2 | w3;
+
+// split the input into 4 copies
+let input = input() >> (pass() | sink()) >> split::<U4>();
+
+let ft = rfft(bins, 0)
+       | rfft(bins, 128)
+       | rfft(bins, 256)
+       | rfft(bins, 384);
+
+let ift = ifft(bins, 0)
+        | ifft(bins, 128)
+        | ifft(bins, 256)
+        | ifft(bins, 384);
+
+let real = pass() | sink()
+         | pass() | sink()
+         | pass() | sink()
+         | pass() | sink();
+
+// we only care about the real output of the inverse fft
+let ift = ift >> real;
+
+// generate delay times wave (for delaying the bins)
+let delay_wave = Wave::new(1, 44100);
+for i in 0..bins/2 {
+    // random numbers from 0 to 500
+    let p = rnd1(i) * 500;
+    // we want an integer multiple of the window duration (so we don't freq shift)
+    let p = p.round() * bins;
+    // push that duration in seconds instead of samples
+    delay_wave.push(p / 44100);
+}
+// delay each bin by the amount of time in delay_wave
+let tmp = (pass() | wavech(delay_wave, 0, 0)) >> tap(0, 15);
+// need 8 cpoies (4 ovelaps, real and imaginary each)
+let process = Net::new(0,0);
+for i in 0..8 {
+    process = process | tmp.clone();
+}
+
+let g = input * window.clone() >> ft >> process >> ift * window >> join::<U4>() >> pan(0);
+
+g.play();
+```
+
+</p>
+</details>
+
 ## deviations
 - every nodes is wrapped in a `Net`, it's all nets (﻿🌍﻿ 🧑‍🚀﻿ 🔫﻿ 🧑‍🚀﻿)
 - mutability is ignored. everything is mutable
