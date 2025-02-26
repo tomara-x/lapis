@@ -103,7 +103,8 @@ for i in 0..bins {
     win_wave.push(p);
 }
 
-// for overlap (note the swap of starting time between 1 and 3)
+// for overlap (note the starting points of 1 and 3)
+// they're staring points, not offsets (unlike the fft nodes)
 let w0 = wavech_at(win_wave, 0, 0, 512, 0);
 let w1 = wavech_at(win_wave, 0, 384, 512, 0);
 let w2 = wavech_at(win_wave, 0, 256, 512, 0);
@@ -143,7 +144,7 @@ for i in 0..bins/2 {
 }
 // delay each bin by the amount of time in delay_wave
 let tmp = (pass() | wavech(delay_wave, 0, 0)) >> tap(0, 15);
-// need 8 cpoies (4 ovelaps, real and imaginary each)
+// need 8 copies (4 overlaps, real and imaginary each)
 let process = Net::new(0,0);
 for i in 0..8 {
     process = process | tmp.clone();
