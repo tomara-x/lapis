@@ -95,34 +95,35 @@ o.tick([]);
 <p>
 
 ```rust
+let len = 512; // window length
+
 // generate a hann window
 let win_wave = Wave::new(1, 44100);
-let bins = 512;
-for i in 0..bins {
-    let p = 0.5 + -cos(i * TAU / bins)/2;
+for i in 0..len {
+    let p = 0.5 + -cos(i/len * TAU)/2;
     win_wave.push(p);
 }
 
 // for overlap (note the starting points of 1 and 3)
 // they're staring points, not offsets (unlike the fft nodes)
-let w0 = wavech_at(win_wave, 0, 0, 512, 0);
-let w1 = wavech_at(win_wave, 0, 384, 512, 0);
-let w2 = wavech_at(win_wave, 0, 256, 512, 0);
-let w3 = wavech_at(win_wave, 0, 128, 512, 0);
+let w0 = wavech_at(win_wave, 0, 0, len, 0);
+let w1 = wavech_at(win_wave, 0, len * 0.75, len, 0);
+let w2 = wavech_at(win_wave, 0, len * 0.50, len, 0);
+let w3 = wavech_at(win_wave, 0, len * 0.25, len, 0);
 let window = w0 | w1 | w2 | w3;
 
 // split the input into 4 copies
 let input = input() >> (pass() | sink()) >> split::<U4>();
 
-let ft = rfft(bins, 0)
-       | rfft(bins, 128)
-       | rfft(bins, 256)
-       | rfft(bins, 384);
+let ft = rfft(len, 0)
+       | rfft(len, len * 0.25)
+       | rfft(len, len * 0.50)
+       | rfft(len, len * 0.75);
 
-let ift = ifft(bins, 0)
-        | ifft(bins, 128)
-        | ifft(bins, 256)
-        | ifft(bins, 384);
+let ift = ifft(len, 0)
+        | ifft(len, len * 0.25)
+        | ifft(len, len * 0.50)
+        | ifft(len, len * 0.75);
 
 let real = pass() | sink()
          | pass() | sink()
@@ -134,11 +135,11 @@ let ift = ift >> real;
 
 // generate delay times wave (for delaying the bins)
 let delay_wave = Wave::new(1, 44100);
-for i in 0..bins/2 {
+for i in 0..len/2 {
     // random numbers from 0 to 500
     let p = rnd1(i) * 500;
     // we want an integer multiple of the window duration (so we don't freq shift)
-    let p = p.round() * bins;
+    let p = p.round() * len;
     // push that duration in seconds instead of samples
     delay_wave.push(p / 44100);
 }
