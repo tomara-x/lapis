@@ -230,7 +230,7 @@ g.play();
 - all functions in the [sound module](https://docs.rs/fundsp/latest/fundsp/sound/index.html)
 - [std constants](https://doc.rust-lang.org/std/f32/consts/index.html), `inf`, `-inf`, and `nan`
 
-**assignment**
+### assignment
 ```rust
 let x = 9;
 let y = 4 + 4 * x - (3 - x * 4);
@@ -238,7 +238,7 @@ let osc3 = sine() & mul(3) >> sine() & mul(0.5) >> sine();
 let f = lowpass_hz(1729, 0.5);
 let out = osc3 >> f;
 ```
-**reassignment**
+### reassignment
 ```rust
 let x = 42;
 x += 1;
@@ -246,7 +246,7 @@ x = 56;         // x is still a number. this works
 x = sine();     // x is a number can't assign an audio node (x is still 56.0)
 let x = sine(); // x is now a sine()
 ```
-**if conditions**
+### if conditions
 ```rust
 let x = true && 2 < 8;
 let y = 3 % 2 == 1;
@@ -258,7 +258,7 @@ if x {
     // get rambunctious
 }
 ```
-**for loops**
+### for loops
 ```rust
 // with ranges
 for i in 0..5 {
@@ -277,7 +277,7 @@ for i in [4,6,8] {
     }
 }
 ```
-**vectors**
+### vectors
 <details><summary>deviations</summary>
 <p>
 
@@ -310,7 +310,7 @@ v1;
 v2;
 // [1.0, 2.0, 4.0, 6.0]
 ```
-[**Net**](https://docs.rs/fundsp/latest/fundsp/net/struct.Net.html)
+### [Net](https://docs.rs/fundsp/latest/fundsp/net/struct.Net.html)
 
 <details><summary>deviations</summary>
 <p>
@@ -343,7 +343,9 @@ net.commit();
 > // x is still usable here
 > ```
 
-**tick**
+### [tick](https://docs.rs/fundsp/latest/fundsp/audiounit/trait.AudioUnit.html#tymethod.tick)
+process one frame of samples of a graph
+
 ```rust
 let net = mul(10);
 net.tick([4]); // prints [40.0]
@@ -351,7 +353,7 @@ let i = [6];
 let o = [];
 net.tick(i, o); // o is now [60.0]
 ```
-**shared/var**
+### [shared/var](https://github.com/SamiPerttu/fundsp#atomic-variables)
 ```rust
 let s = shared(440);
 let g = var(s) >> sine();
@@ -359,7 +361,7 @@ g.play();
 s.set(220);
 s.set(s.value() + 42);
 ```
-[**Wave**](https://docs.rs/fundsp/latest/fundsp/wave/struct.Wave.html)
+### [Wave](https://docs.rs/fundsp/latest/fundsp/wave/struct.Wave.html)
 
 <details><summary>deviations</summary>
 <p>
@@ -420,7 +422,7 @@ s;                                      // print info
 s.save_wav16("awawawa.wav");            // save the wave as a 16-bit wav file
 ```
 
-[**Sequencer**](https://docs.rs/fundsp/latest/fundsp/sequencer/struct.Sequencer.html)
+### [Sequencer](https://docs.rs/fundsp/latest/fundsp/sequencer/struct.Sequencer.html)
 
 <details><summary>deviations</summary>
 <p>
@@ -459,7 +461,7 @@ s.push_relative(0, 2, Fade::Smooth, 0.2, 0.1,
 	sine_hz(124) | sine_hz(323)
 );
 ```
-**drop**
+### drop
 ```rust
 // calling drop on any variable will drop that value
 let f = 40;
@@ -469,7 +471,7 @@ f.drop();
 f; // prints nothing
 ```
 
-**keyboard shortcuts**
+### keyboard shortcuts
 
 you can bind snippets of code to keyboard shortcuts. keys follow the [egui key names](https://docs.rs/egui/0.31.0/src/egui/data/key.rs.html#322), and modifiers `ctrl`, `shift`, `alt`, and `command` are supported
 
@@ -494,7 +496,7 @@ shortcuts can be enabled/disabled using the "keys" toggle at the top of the ui
 
 note: always define the more specific shortcuts (more modifiers) involving the same key before the less specific ones, so `ctrl+shift+a` then `ctrl+a` and `shift+a` then `a`
 
-**device selection**
+### device selection
 
 `list_in_devices` and `list_out_devices` will print an indexed list of hosts and the devices within them. you can use the indexes with `set_in_device` and `set_out_device` to select the devices lapis uses
 ```rust
@@ -520,7 +522,7 @@ set_in_device(1, 2); // selects host 1 (alsa), device 2 (sysdef...) from the inp
 set_out_device(1, 0); // selects host 1 (alsa), device 0 (pipewire) from the output list
 ```
 
-**f**
+### f
 
 i can't support `map`. as a workaround we have `f`. it takes a str argument and outputs that function wrapped in a node. you don't get to define custom functions (at runtime), but at least you get a bunch of basic ones that can then be stitched together like other nodes
 
