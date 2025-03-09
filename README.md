@@ -87,6 +87,12 @@ o.tick([]);
 // [0.0]
 ```
 
+they can also be used for feedback
+```rust
+let (i, o) = bounded(1);
+let f = (o+pass()) >> i;
+```
+
 </p>
 </details>
 
