@@ -1,8 +1,10 @@
+#[cfg(feature = "gui")]
 use cpal::{
     traits::{DeviceTrait, HostTrait, StreamTrait},
     FromSample, SizedSample, Stream,
 };
 use crossbeam_channel::{bounded, Receiver, Sender};
+#[cfg(feature = "gui")]
 use eframe::egui::KeyboardShortcut;
 use fundsp::hacker32::*;
 use std::collections::HashMap;
@@ -26,10 +28,18 @@ use {
     sources::*, statements::*, units::*, waves::*,
 };
 
+// Re-export key functions for library users
+pub use nets::{eval_net, eval_net_cloned};
+pub use statements::eval_stmt;
+
 pub struct Lapis {
+    #[cfg(feature = "gui")]
     pub buffer: String,
+    #[cfg(feature = "gui")]
     pub input: String,
+    #[cfg(feature = "gui")]
     pub settings: bool,
+    #[cfg(feature = "gui")]
     pub about: bool,
     pub fmap: HashMap<String, f32>,
     pub vmap: HashMap<String, Vec<f32>>,
@@ -41,27 +51,41 @@ pub struct Lapis {
     pub seqmap: HashMap<String, Sequencer>,
     pub eventmap: HashMap<String, EventId>,
     pub srcmap: HashMap<String, Source>,
+    #[cfg(feature = "gui")]
     pub slot: Slot,
+    #[cfg(feature = "gui")]
     pub out_stream: Option<cpal::Stream>,
+    #[cfg(feature = "gui")]
     pub in_stream: Option<cpal::Stream>,
     pub receivers: (Receiver<f32>, Receiver<f32>),
+    #[cfg(feature = "gui")]
     pub keys: Vec<(KeyboardShortcut, String)>,
+    #[cfg(feature = "gui")]
     pub keys_active: bool,
+    #[cfg(feature = "gui")]
     pub zoom_factor: f32,
+    #[cfg(feature = "gui")]
     pub quiet: bool,
 }
 
 impl Lapis {
     pub fn new() -> Self {
+        #[cfg(feature = "gui")]
         let (slot, slot_back) = Slot::new(Box::new(dc(0.) | dc(0.)));
+        #[cfg(feature = "gui")]
         let out_stream = default_out_device(slot_back);
         let (ls, lr) = bounded(4096);
         let (rs, rr) = bounded(4096);
-        let in_stream = default_in_device(ls, rs);
+        #[cfg(feature = "gui")]
+        let in_stream = default_in_device(ls, rs.clone());
         Lapis {
+            #[cfg(feature = "gui")]
             buffer: String::new(),
+            #[cfg(feature = "gui")]
             input: String::new(),
+            #[cfg(feature = "gui")]
             settings: false,
+            #[cfg(feature = "gui")]
             about: false,
             fmap: HashMap::new(),
             vmap: HashMap::new(),
@@ -73,16 +97,24 @@ impl Lapis {
             seqmap: HashMap::new(),
             eventmap: HashMap::new(),
             srcmap: HashMap::new(),
+            #[cfg(feature = "gui")]
             slot,
+            #[cfg(feature = "gui")]
             out_stream,
+            #[cfg(feature = "gui")]
             in_stream,
             receivers: (lr, rr),
+            #[cfg(feature = "gui")]
             keys: Vec::new(),
+            #[cfg(feature = "gui")]
             keys_active: false,
+            #[cfg(feature = "gui")]
             zoom_factor: 1.,
+            #[cfg(feature = "gui")]
             quiet: false,
         }
     }
+    #[cfg(feature = "gui")]
     pub fn eval(&mut self, input: &str) {
         if !input.is_empty() {
             self.buffer.push('\n');
@@ -98,6 +130,7 @@ impl Lapis {
             }
         }
     }
+    #[cfg(feature = "gui")]
     pub fn eval_input(&mut self) {
         if !self.input.is_empty() {
             match parse_str::<Stmt>(&format!("{{{}}}", self.input)) {
@@ -118,6 +151,38 @@ impl Lapis {
             eval_stmt(stmt, self);
         }
     }
+
+    /// Library-friendly method to parse and get a Net
+    pub fn parse_net(&mut self, input: &str) -> std::result::Result<Net, String> {
+        // Try to parse as an expression directly
+        match parse_str::<Expr>(input) {
+            Ok(expr) => {
+                if let Some(net) = eval_net(&expr, self) {
+                    Ok(net)
+                } else {
+                    Err("Expression does not evaluate to a Net".to_string())
+                }
+            }
+            Err(_) => {
+                // Fall back to parsing as a statement
+                match parse_str::<Stmt>(&format!("{{{}}}", input)) {
+                    Ok(stmt) => {
+                        match stmt {
+                            Stmt::Expr(expr, _) => {
+                                if let Some(net) = eval_net(&expr, self) {
+                                    Ok(net)
+                                } else {
+                                    Err("Expression does not evaluate to a Net".to_string())
+                                }
+                            }
+                            _ => Err("Not an expression statement".to_string()),
+                        }
+                    }
+                    Err(err) => Err(format!("Parse error: {}", err)),
+                }
+            }
+        }
+    }
     pub fn drop(&mut self, k: &String) {
         self.fmap.remove(k);
         self.vmap.remove(k);
@@ -132,6 +197,7 @@ impl Lapis {
     }
 }
 
+#[cfg(feature = "gui")]
 fn default_out_device(slot: SlotBackend) -> Option<Stream> {
     let host = cpal::default_host();
     if let Some(device) = host.default_output_device() {
@@ -152,6 +218,7 @@ fn default_out_device(slot: SlotBackend) -> Option<Stream> {
     None
 }
 
+#[cfg(feature = "gui")]
 fn run<T>(
     device: &cpal::Device,
     config: &cpal::StreamConfig,
@@ -184,6 +251,7 @@ where
     None
 }
 
+#[cfg(feature = "gui")]
 fn write_data<T>(output: &mut [T], next_sample: &mut dyn FnMut() -> (f32, f32))
 where
     T: SizedSample + FromSample<f32>,
@@ -195,6 +263,7 @@ where
     }
 }
 
+#[cfg(feature = "gui")]
 fn default_in_device(ls: Sender<f32>, rs: Sender<f32>) -> Option<Stream> {
     let host = cpal::default_host();
     if let Some(device) = host.default_input_device() {
@@ -213,6 +282,7 @@ fn default_in_device(ls: Sender<f32>, rs: Sender<f32>) -> Option<Stream> {
     None
 }
 
+#[cfg(feature = "gui")]
 fn run_in<T>(
     device: &cpal::Device,
     config: &cpal::StreamConfig,
@@ -241,6 +311,7 @@ where
     None
 }
 
+#[cfg(feature = "gui")]
 fn read_data<T>(input: &[T], channels: usize, ls: Sender<f32>, rs: Sender<f32>)
 where
     T: SizedSample,

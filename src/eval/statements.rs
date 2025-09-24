@@ -63,6 +63,7 @@ fn eval_expr(expr: Expr, lapis: &mut Lapis, buffer: &mut String) {
     } else if let Some(event) = eval_eventid(&expr, lapis) {
         buffer.push_str(&format!("\n// {:?}", event));
     } else if let Expr::Call(expr) = expr {
+        #[cfg(feature = "gui")]
         device_commands(expr, lapis, buffer);
     } else if let Expr::Binary(expr) = expr {
         float_bin_assign(&expr, lapis);
@@ -73,6 +74,7 @@ fn eval_expr(expr: Expr, lapis: &mut Lapis, buffer: &mut String) {
     } else if let Expr::MethodCall(expr) = expr {
         match expr.method.to_string().as_str() {
             "play" => {
+                #[cfg(feature = "gui")]
                 if let Some(g) = eval_net(&expr.receiver, lapis) {
                     if g.inputs() == 0 && g.outputs() == 1 {
                         lapis.slot.set(Fade::Smooth, 0.01, Box::new(g | dc(0.)));
@@ -268,11 +270,15 @@ fn eval_assign(expr: &ExprAssign, lapis: &mut Lapis) {
             if let Lit::Str(left) = &left.lit {
                 if let Some(b) = eval_bool(&expr.right, lapis) {
                     match left.value().as_str() {
+                        #[cfg(feature = "gui")]
                         "keys" => lapis.keys_active = b,
+                        #[cfg(feature = "gui")]
                         "quiet" => lapis.quiet = b,
                         _ => {}
                     }
-                } else if let Expr::Lit(right) = &*expr.right {
+                }
+                #[cfg(feature = "gui")]
+                if let Expr::Lit(right) = &*expr.right {
                     if let Some(shortcut) = parse_shortcut(left.value()) {
                         lapis.keys.retain(|x| x.0 != shortcut);
                         if let Lit::Str(right) = &right.lit {

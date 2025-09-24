@@ -876,8 +876,13 @@ fn call_net(expr: &ExprCall, lapis: &mut Lapis) -> Option<Net> {
             Some(Net::wrap(Box::new(impulse >> split)))
         }
         "input" => {
-            let (lr, rr) = &lapis.receivers;
-            Some(Net::wrap(Box::new(An(InputNode::new(lr.clone(), rr.clone())))))
+            #[cfg(feature = "gui")]
+            {
+                let (lr, rr) = &lapis.receivers;
+                Some(Net::wrap(Box::new(An(InputNode::new(lr.clone(), rr.clone())))))
+            }
+            #[cfg(not(feature = "gui"))]
+            None
         }
         "join" => {
             let n = nth_path_generic(&expr.func, 0)?.get(1..)?.parse::<usize>().ok()?;

@@ -1,8 +1,11 @@
 use crate::eval::*;
+#[cfg(feature = "gui")]
 use cpal::traits::{DeviceTrait, HostTrait};
+#[cfg(feature = "gui")]
 use eframe::egui::{Key, KeyboardShortcut, Modifiers};
 use syn::punctuated::Punctuated;
 
+#[cfg(feature = "gui")]
 pub fn device_commands(expr: ExprCall, lapis: &mut Lapis, buffer: &mut String) -> Option<()> {
     let func = nth_path_ident(&expr.func, 0)?;
     match func.as_str() {
@@ -45,6 +48,7 @@ pub fn device_commands(expr: ExprCall, lapis: &mut Lapis, buffer: &mut String) -
     None
 }
 
+#[cfg(feature = "gui")]
 fn set_in_device(h: usize, d: usize, lapis: &mut Lapis) {
     if let Some(host_id) = cpal::ALL_HOSTS.get(h) {
         if let Ok(host) = cpal::host_from_id(*host_id) {
@@ -76,6 +80,7 @@ fn set_in_device(h: usize, d: usize, lapis: &mut Lapis) {
     }
 }
 
+#[cfg(feature = "gui")]
 fn set_out_device(h: usize, d: usize, lapis: &mut Lapis) {
     if let Some(host_id) = cpal::ALL_HOSTS.get(h) {
         if let Ok(host) = cpal::host_from_id(*host_id) {
@@ -102,6 +107,7 @@ fn set_out_device(h: usize, d: usize, lapis: &mut Lapis) {
     }
 }
 
+#[cfg(feature = "gui")]
 pub fn parse_shortcut(mut k: String) -> Option<KeyboardShortcut> {
     k = k.replace(char::is_whitespace, "");
     let mut modifiers = Modifiers::NONE;
