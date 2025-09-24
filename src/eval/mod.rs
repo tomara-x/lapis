@@ -3,7 +3,9 @@ use cpal::{
     traits::{DeviceTrait, HostTrait, StreamTrait},
     FromSample, SizedSample, Stream,
 };
-use crossbeam_channel::{bounded, Receiver, Sender};
+use crossbeam_channel::{bounded, Receiver};
+#[cfg(feature = "gui")]
+use crossbeam_channel::Sender;
 #[cfg(feature = "gui")]
 use eframe::egui::KeyboardShortcut;
 use fundsp::hacker32::*;
@@ -25,7 +27,7 @@ mod units;
 mod waves;
 use {
     arrays::*, atomics::*, bools::*, floats::*, helpers::*, ints::*, nets::*, sequencers::*,
-    sources::*, statements::*, units::*, waves::*,
+    sources::*, units::*, waves::*,
 };
 
 // Re-export key functions for library users
