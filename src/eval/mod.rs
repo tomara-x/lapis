@@ -76,10 +76,10 @@ impl Lapis {
         let (slot, slot_back) = Slot::new(Box::new(dc(0.) | dc(0.)));
         #[cfg(feature = "gui")]
         let out_stream = default_out_device(slot_back);
-        let (ls, lr) = bounded(4096);
-        let (rs, rr) = bounded(4096);
+        let (_ls, lr) = bounded(4096);
+        let (_rs, rr) = bounded(4096);
         #[cfg(feature = "gui")]
-        let in_stream = default_in_device(ls, rs.clone());
+        let in_stream = default_in_device(_ls, _rs.clone());
         Lapis {
             #[cfg(feature = "gui")]
             buffer: String::new(),

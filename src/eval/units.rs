@@ -170,16 +170,19 @@ impl AudioUnit for ReverseUnit {
 /// mic input node
 /// - output 0: left
 /// - output 1: right
+#[cfg(feature = "gui")]
 #[derive(Clone)]
 pub struct InputNode {
     lr: Receiver<f32>,
     rr: Receiver<f32>,
 }
+#[cfg(feature = "gui")]
 impl InputNode {
     pub fn new(lr: Receiver<f32>, rr: Receiver<f32>) -> Self {
         InputNode { lr, rr }
     }
 }
+#[cfg(feature = "gui")]
 impl AudioNode for InputNode {
     const ID: u64 = 1117;
     type Inputs = U0;

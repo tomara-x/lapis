@@ -62,9 +62,9 @@ fn eval_expr(expr: Expr, lapis: &mut Lapis, buffer: &mut String) {
         buffer.push_str(&format!("\n// {:?}", source));
     } else if let Some(event) = eval_eventid(&expr, lapis) {
         buffer.push_str(&format!("\n// {:?}", event));
-    } else if let Expr::Call(expr) = expr {
+    } else if let Expr::Call(_expr) = expr {
         #[cfg(feature = "gui")]
-        device_commands(expr, lapis, buffer);
+        device_commands(_expr, lapis, buffer);
     } else if let Expr::Binary(expr) = expr {
         float_bin_assign(&expr, lapis);
     } else if let Expr::Break(_) = expr {
@@ -266,18 +266,16 @@ fn eval_assign(expr: &ExprAssign, lapis: &mut Lapis) {
                 }
             }
         }
-        Expr::Lit(left) => {
-            if let Lit::Str(left) = &left.lit {
+        Expr::Lit(_left) => {
+            #[cfg(feature = "gui")]
+            if let Lit::Str(left) = &_left.lit {
                 if let Some(b) = eval_bool(&expr.right, lapis) {
                     match left.value().as_str() {
-                        #[cfg(feature = "gui")]
                         "keys" => lapis.keys_active = b,
-                        #[cfg(feature = "gui")]
                         "quiet" => lapis.quiet = b,
                         _ => {}
                     }
                 }
-                #[cfg(feature = "gui")]
                 if let Expr::Lit(right) = &*expr.right {
                     if let Some(shortcut) = parse_shortcut(left.value()) {
                         lapis.keys.retain(|x| x.0 != shortcut);
