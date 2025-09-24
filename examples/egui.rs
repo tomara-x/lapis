@@ -4,6 +4,19 @@
 use eframe::egui::*;
 use lapis::eval::Lapis;
 
+// Wrapper struct for the GUI application
+struct LapisApp {
+    lapis: Lapis,
+}
+
+impl LapisApp {
+    fn new() -> Self {
+        Self {
+            lapis: Lapis::new(),
+        }
+    }
+}
+
 #[cfg(not(target_arch = "wasm32"))]
 fn main() -> eframe::Result {
     let options = eframe::NativeOptions {
@@ -20,7 +33,7 @@ fn main() -> eframe::Result {
         centered: true,
         ..Default::default()
     };
-    eframe::run_native("awawawa", options, Box::new(|_| Ok(Box::new(Lapis::new()))))
+    eframe::run_native("awawawa", options, Box::new(|_| Ok(Box::new(LapisApp::new()))))
 }
 
 #[cfg(target_arch = "wasm32")]
@@ -42,7 +55,7 @@ fn main() {
             .expect("the_canvas_id was not a HtmlCanvasElement");
 
         let start_result = eframe::WebRunner::new()
-            .start(canvas, web_options, Box::new(|_| Ok(Box::new(Lapis::new()))))
+            .start(canvas, web_options, Box::new(|_| Ok(Box::new(LapisApp::new()))))
             .await;
 
         // Remove the loading text and spinner:
@@ -62,7 +75,7 @@ fn main() {
     });
 }
 
-impl eframe::App for Lapis {
+impl eframe::App for LapisApp {
     fn update(&mut self, ctx: &Context, _frame: &mut eframe::Frame) {
         let center = Align2::CENTER_CENTER;
         let mut theme = egui_extras::syntax_highlighting::CodeTheme::from_memory(ctx, &ctx.style());
@@ -78,17 +91,17 @@ impl eframe::App for Lapis {
             layout_job.wrap.max_width = wrap_width;
             ui.fonts(|f| f.layout_job(layout_job))
         };
-        if self.keys_active {
-            if self.quiet {
-                for (shortcut, code) in self.keys.clone() {
+        if self.lapis.keys_active {
+            if self.lapis.quiet {
+                for (shortcut, code) in self.lapis.keys.clone() {
                     if ctx.input_mut(|i| i.consume_shortcut(&shortcut)) {
-                        self.quiet_eval(&code);
+                        self.lapis.quiet_eval(&code);
                     }
                 }
             } else {
-                for (shortcut, code) in self.keys.clone() {
+                for (shortcut, code) in self.lapis.keys.clone() {
                     if ctx.input_mut(|i| i.consume_shortcut(&shortcut)) {
-                        self.eval(&code);
+                        self.lapis.eval(&code);
                     }
                 }
             }
@@ -104,7 +117,7 @@ impl eframe::App for Lapis {
                             let execute = ui.button("e");
                             let input_focused = ui
                                 .add(
-                                    TextEdit::multiline(&mut self.input)
+                                    TextEdit::multiline(&mut self.lapis.input)
                                         .hint_text("type code then press ctrl+enter")
                                         .font(TextStyle::Monospace)
                                         .code_editor()
@@ -118,14 +131,14 @@ impl eframe::App for Lapis {
                             if input_focused && ctx.input_mut(|i| i.consume_shortcut(&shortcut))
                                 || execute.clicked()
                             {
-                                self.eval_input();
+                                self.lapis.eval_input();
                             }
                         });
                     });
                 });
             });
         TopBottomPanel::top("top_panel").show_separator_line(false).show(ctx, |ui| {
-            Window::new("about").open(&mut self.about).pivot(center).show(ctx, |ui| {
+            Window::new("about").open(&mut self.lapis.about).pivot(center).show(ctx, |ui| {
                 ui.horizontal(|ui| {
                     ui.label("lapis is a");
                     ui.hyperlink_to("FunDSP", "https://github.com/SamiPerttu/fundsp/");
@@ -156,20 +169,20 @@ impl eframe::App for Lapis {
             });
             ui.horizontal(|ui| {
                 if ui.button("settings").clicked() {
-                    self.settings = !self.settings;
+                    self.lapis.settings = !self.lapis.settings;
                 }
                 if ui.button("about").clicked() {
-                    self.about = !self.about;
+                    self.lapis.about = !self.lapis.about;
                 }
                 ui.with_layout(Layout::right_to_left(Align::TOP), |ui| {
-                    ui.toggle_value(&mut self.keys_active, "keys");
-                    ui.toggle_value(&mut self.quiet, "quiet")
+                    ui.toggle_value(&mut self.lapis.keys_active, "keys");
+                    ui.toggle_value(&mut self.lapis.quiet, "quiet")
                         .on_hover_text("don't log keybinding evaluation");
                 });
             });
         });
         CentralPanel::default().show(ctx, |ui| {
-            Window::new("settings").open(&mut self.settings).pivot(center).show(ctx, |ui| {
+            Window::new("settings").open(&mut self.lapis.settings).pivot(center).show(ctx, |ui| {
                 ui.vertical(|ui| {
                     ui.group(|ui| {
                         theme.ui(ui);
@@ -177,14 +190,14 @@ impl eframe::App for Lapis {
                     });
                     ui.horizontal(|ui| {
                         ui.label("zoom factor");
-                        ui.add(DragValue::new(&mut self.zoom_factor).range(0.5..=4.).speed(0.1));
-                        ctx.set_zoom_factor(self.zoom_factor);
+                        ui.add(DragValue::new(&mut self.lapis.zoom_factor).range(0.5..=4.).speed(0.1));
+                        ctx.set_zoom_factor(self.lapis.zoom_factor);
                     });
                 });
             });
             ScrollArea::vertical().stick_to_bottom(true).show(ui, |ui| {
                 ui.add(
-                    TextEdit::multiline(&mut self.buffer)
+                    TextEdit::multiline(&mut self.lapis.buffer)
                         .font(TextStyle::Monospace)
                         .code_editor()
                         .desired_rows(1)
