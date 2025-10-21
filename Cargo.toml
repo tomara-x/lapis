@@ -1,23 +1,23 @@
 [package]
 name = "lapis"
 version = "0.1.0"
-edition = "2021"
+edition = "2024"
 authors = ["amy universe <414d59@gmail.com>"]
 repository = "https://github.com/tomara-x/lapis"
 license = "MIT OR Apache-2.0"
 
 [dependencies]
-fundsp = {git = "https://github.com/tomara-x/fundsp", branch = "crossbeam", features = ["crossbeam"]} # update the label in main.rs
-cpal = {version = "0.15.3", features = ["jack", "wasm-bindgen"]}
-eframe = "0.31.0"
-egui_extras = { version = "0.31.0", default-features = false, features = ["syntect"] }
-syn = {version = "2.0.98", features = ["full", "extra-traits"]}
-crossbeam-channel = "0.5.14"
-log = "0.4.26"
+fundsp = {git = "https://github.com/tomara-x/fundsp", features = ["crossbeam"]} #update label in main.rs
+cpal = {version = "0.16.0", features = ["jack", "wasm-bindgen"]}
+eframe = "0.33.0"
+egui_extras = {version = "0.33.0", default-features = false, features = ["syntect"]}
+syn = {version = "2.0.107", features = ["full", "extra-traits"]}
+crossbeam-channel = "0.5.15"
+log = "0.4.28"
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
-wasm-bindgen-futures = "0.4.50"
-web-sys = "0.3.77"
+wasm-bindgen-futures = "0.4.54"
+web-sys = "0.3.81"
 
 # smol amount of optimization for our stuff
 [profile.dev]

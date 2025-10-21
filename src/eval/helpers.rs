@@ -1,7 +1,16 @@
 use crate::eval::*;
 use cpal::traits::{DeviceTrait, HostTrait};
-use eframe::egui::{Key, KeyboardShortcut, Modifiers};
+use eframe::egui::{Key, Modifiers};
 use syn::punctuated::Punctuated;
+
+pub fn eval_str_lit(expr: &Expr) -> Option<String> {
+    if let Expr::Lit(expr) = expr {
+        if let Lit::Str(expr) = &expr.lit {
+            return Some(expr.value());
+        }
+    }
+    None
+}
 
 pub fn device_commands(expr: ExprCall, lapis: &mut Lapis, buffer: &mut String) -> Option<()> {
     let func = nth_path_ident(&expr.func, 0)?;
@@ -31,78 +40,29 @@ pub fn device_commands(expr: ExprCall, lapis: &mut Lapis, buffer: &mut String) -
             }
         }
         "set_in_device" => {
-            let h = eval_usize(expr.args.first()?, lapis)?;
-            let d = eval_usize(expr.args.get(1)?, lapis)?;
-            set_in_device(h, d, lapis);
+            let h = eval_usize(expr.args.first()?, lapis);
+            let d = eval_usize(expr.args.get(1)?, lapis);
+            let channels = eval_usize(expr.args.get(2)?, lapis).map(|x| x as u16);
+            let sr = eval_usize(expr.args.get(3)?, lapis).map(|x| x as u32);
+            let buffer = eval_usize(expr.args.get(4)?, lapis).map(|x| x as u32);
+            lapis.set_in_device(h, d, channels, sr, buffer);
         }
         "set_out_device" => {
-            let h = eval_usize(expr.args.first()?, lapis)?;
-            let d = eval_usize(expr.args.get(1)?, lapis)?;
-            set_out_device(h, d, lapis);
+            let h = eval_usize(expr.args.first()?, lapis);
+            let d = eval_usize(expr.args.get(1)?, lapis);
+            let channels = eval_usize(expr.args.get(2)?, lapis).map(|x| x as u16);
+            let sr = eval_usize(expr.args.get(3)?, lapis).map(|x| x as u32);
+            let buffer = eval_usize(expr.args.get(4)?, lapis).map(|x| x as u32);
+            lapis.set_out_device(h, d, channels, sr, buffer);
         }
         _ => {}
     }
     None
 }
 
-fn set_in_device(h: usize, d: usize, lapis: &mut Lapis) {
-    if let Some(host_id) = cpal::ALL_HOSTS.get(h) {
-        if let Ok(host) = cpal::host_from_id(*host_id) {
-            if let Ok(mut devices) = host.input_devices() {
-                if let Some(device) = devices.nth(d) {
-                    if let Ok(config) = device.default_input_config() {
-                        let (ls, lr) = bounded(4096);
-                        let (rs, rr) = bounded(4096);
-                        lapis.receivers = (lr, rr);
-                        lapis.in_stream = match config.sample_format() {
-                            cpal::SampleFormat::F32 => {
-                                run_in::<f32>(&device, &config.into(), ls, rs)
-                            }
-                            cpal::SampleFormat::I16 => {
-                                run_in::<i16>(&device, &config.into(), ls, rs)
-                            }
-                            cpal::SampleFormat::U16 => {
-                                run_in::<u16>(&device, &config.into(), ls, rs)
-                            }
-                            format => {
-                                eprintln!("unsupported sample format: {}", format);
-                                None
-                            }
-                        };
-                    }
-                }
-            }
-        }
-    }
-}
-
-fn set_out_device(h: usize, d: usize, lapis: &mut Lapis) {
-    if let Some(host_id) = cpal::ALL_HOSTS.get(h) {
-        if let Ok(host) = cpal::host_from_id(*host_id) {
-            if let Ok(mut devices) = host.output_devices() {
-                if let Some(device) = devices.nth(d) {
-                    if let Ok(default_config) = device.default_output_config() {
-                        let mut config = default_config.config();
-                        config.channels = 2;
-                        let (slot, slot_back) = Slot::new(Box::new(dc(0.) | dc(0.)));
-                        lapis.slot = slot;
-                        lapis.out_stream = match default_config.sample_format() {
-                            cpal::SampleFormat::F32 => run::<f32>(&device, &config, slot_back),
-                            cpal::SampleFormat::I16 => run::<i16>(&device, &config, slot_back),
-                            cpal::SampleFormat::U16 => run::<u16>(&device, &config, slot_back),
-                            format => {
-                                eprintln!("unsupported sample format: {}", format);
-                                None
-                            }
-                        };
-                    }
-                }
-            }
-        }
-    }
-}
-
-pub fn parse_shortcut(mut k: String) -> Option<KeyboardShortcut> {
+// starting with `!` means on the release of the shortcut
+pub fn parse_shortcut(mut k: String) -> Option<(Modifiers, Key, bool)> {
+    let release = k.starts_with('!');
     k = k.replace(char::is_whitespace, "");
     let mut modifiers = Modifiers::NONE;
     if k.contains("Ctrl") || k.contains("ctrl") {
@@ -125,9 +85,10 @@ pub fn parse_shortcut(mut k: String) -> Option<KeyboardShortcut> {
         .replace("Shift+", "")
         .replace("shift+", "")
         .replace("Command+", "")
-        .replace("command+", "");
+        .replace("command+", "")
+        .replacen("!", "", 1);
     let key = Key::from_name(&k)?;
-    Some(KeyboardShortcut::new(modifiers, key))
+    Some((modifiers, key, !release))
 }
 
 pub fn path_fade(expr: &Expr) -> Option<Fade> {
@@ -163,11 +124,7 @@ pub fn eval_meter(expr: &Expr, lapis: &Lapis) -> Option<Meter> {
         Expr::Path(expr) => {
             let seg0 = &expr.path.segments.first()?.ident;
             let seg1 = &expr.path.segments.get(1)?.ident;
-            if seg0 == "Meter" && seg1 == "Sample" {
-                Some(Meter::Sample)
-            } else {
-                None
-            }
+            if seg0 == "Meter" && seg1 == "Sample" { Some(Meter::Sample) } else { None }
         }
         _ => None,
     }

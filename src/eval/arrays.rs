@@ -1,6 +1,6 @@
 use crate::eval::*;
 
-pub fn eval_vec(expr: &Expr, lapis: &mut Lapis) -> Option<Vec<f32>> {
+pub fn eval_vec(expr: &Expr, lapis: &Lapis) -> Option<Vec<f32>> {
     match expr {
         Expr::Array(expr) => array_lit(expr, lapis),
         Expr::Path(_) => {
@@ -29,11 +29,7 @@ fn method_vec(expr: &ExprMethodCall, lapis: &Lapis) -> Option<Vec<f32>> {
             let chan = eval_usize(arg, lapis)?;
             let k = nth_path_ident(&expr.receiver, 0)?;
             let wave = lapis.wmap.get(&k)?;
-            if chan < wave.channels() {
-                Some(wave.channel(chan).clone())
-            } else {
-                None
-            }
+            if chan < wave.channels() { Some(wave.channel(chan).clone()) } else { None }
         }
         "clone" => {
             let k = nth_path_ident(&expr.receiver, 0)?;

@@ -17,20 +17,21 @@ execute `set_out_device(0,0);` for audio output to work
 - `input()` and file i/o Wave methods won't work in the wasm version
 
 ## additions
-- the `net.play()` method allows you to listen to an audio net (net must have 0 inputs and 1 or 2 outputs)
+- the `net.play()` method allows you to listen to an audio net (net must have 0 inputs and outputs equal to output stream channels)
 ```rust
-sine_hz(110).play(); // you should hear a 110hz tone
-dc(0).play();        // back to silence
+let g = sine_hz(110) >> pan(0);
+g.play();                   // you should hear a 110hz tone
+(dc(0) | dc(0)).play();     // back to silence
 ```
-- the `input()` node has 2 output channels (left and right channels of a stereo mic)
+- the `input()` node outputs mic input. `input(0, 1)` is the right and left channels of a stereo mic. while `input(0)` outputs just the first channel
 ```rust
-(input() >> reverb_stereo(20,3,0.5)).play();
+(input(0, 1) >> reverb_stereo(20,3,0.5)).play();
 // you should hear the input from your mic being played back
 // (⚠️ might cause feedback)
 ```
 
 - similar to the functionality of `Snoop` and `Ring`, you can use `bounded` to create a ring buffer
-<details><summary>bounded</summary>
+<details><summary>bounded examples</summary>
 <p>
 
 ```rust
@@ -87,7 +88,7 @@ o.tick([]);
 // [0.0]
 ```
 
-they can also be used for feedback
+they can also be used for feedback (but buffer() (see below) is better for that)
 ```rust
 let (i, o) = bounded(1);
 let f = (o+pass()) >> i;
@@ -96,8 +97,25 @@ let f = (o+pass()) >> i;
 </p>
 </details>
 
+- buffer() works similarly to bounded() but it's for situations where you want both ends to be in the audio graph (like a portal)
+
+<details><summary>buffer example</summary>
+<p>
+
+```rust
+// capacity should be the number of samples that get processed at a time
+// (for a playing graph, that's 64 because we use the BlockRateAdapter)
+// (for ticking maually, that's 1)
+// always use 64 unless you know what you're doing
+let (i, o) = buffer(64);
+let f = (o+pass()) >> i;
+```
+
+</p>
+</details>
+
 - `rfft` and `ifft` nodes (since using the fft functions directly isn't possible here)
-<details><summary>example</summary>
+<details><summary>fft example</summary>
 <p>
 
 ```rust
@@ -119,7 +137,7 @@ let w3 = wavech_at(win_wave, 0, len * 0.25, len, 0);
 let window = w0 | w1 | w2 | w3;
 
 // split the input into 4 copies
-let input = input() >> (pass() | sink()) >> split::<U4>();
+let input = input(0) >> split::<U4>();
 
 let ft = rfft(len, 0)
        | rfft(len, len * 0.25)
@@ -165,6 +183,10 @@ g.play();
 </p>
 </details>
 
+- most of the nodes defined in [misc_nodes](https://codeberg.org/tomara-x/fundsp/src/branch/main/src/misc_nodes.rs) are available, but they have slightly different syntax here (to be documented)
+- `bitcrush()` a bit crusher node
+- `ahr(a, h, r)` an attack-hold-release node
+
 ## deviations
 - every nodes is wrapped in a `Net`, it's all nets (﻿🌍﻿ 🧑‍🚀﻿ 🔫﻿ 🧑‍🚀﻿)
 - mutability is ignored. everything is mutable
@@ -181,8 +203,9 @@ g.play();
     - except for:
         branchi, busi, pipei, stacki, sumi, (and f versions), biquad_bank,
         envelope, envelope2, envelope3, envelope_in (and lfo), fdn, fdn2,
-        multitap, multitap_linear, feedback2, flanger, map, oversample,
-        phaser, resample, resynth, shape_fn, snoop, unit, update, var_fn
+        multitap, multitap_linear, feedback2, map, oversample,
+        resample, resynth, shape_fn, snoop, unit, update, var_fn
+    - `flanger` and `phaser` are edited to accept modulation as a second input channel rather than a modulation function
 
 - all functions in the [math module](https://docs.rs/fundsp/latest/fundsp/math/index.html)
     - except for: ease_noise, fractal_ease_noise, hash1, hash2, identity
@@ -321,7 +344,7 @@ v2;
 <details><summary>deviations</summary>
 <p>
 
-- `node`, `node_mut`, `wrap`, `wrap_id`, `check`, `has_backend` aren't supported
+- `node`, `node_mut`, `wrap`, `check`, `has_backend` aren't supported
 - you can't use the `ids` method directly, but you can use `net.ids().nth(n)`
 
 </p>
@@ -437,7 +460,12 @@ s.save_wav16("awawawa.wav");            // save the wave as a 16-bit wav file
 - Sequencer itself can't be `play`ed or `tick`ed. do that to its backend (or a graph containing the backend)
 - methods `has_backend`, `replay_events`, and `time` aren't supported
 - time arguments are all f32 cast as f64
-- you can't clone them (or their backends) (and why would you want to?)
+- you can't clone frontends (and why would you want to?)
+- `.set_loop(start, end)` lets you set loop times in seconds. (0, inf) by default
+- `.set_time(t)` jumps to time
+- `.set_replay_events(bool)` change whether this sequencer retains past events
+- `.clear()` clear all events
+- `Sequencer::io(inputs, outputs)` creates a sequencer with specified number of ins and outs (effect sequencer)
 
 </p>
 </details>
@@ -467,6 +495,53 @@ s.push_relative(0, 2, Fade::Smooth, 0.2, 0.1,
 	sine_hz(124) | sine_hz(323)
 );
 ```
+
+### [AtomicTable](https://docs.rs/fundsp/latest/fundsp/shared/struct.AtomicTable.html)
+```rust
+// create atomic table
+let table = atomic_table([1,3,1,2]); // anything that evaluates to an array
+                                     // (like wave.channel()) is valid here
+                                     // but the array must be a power of 2
+table.at(0); // index reading
+// 1.0
+table.set(0,13121); // index writing
+table.at(0)
+// 13121.0
+
+// you can play them using atomic synth
+let table = atomic_table([-0.1, 0, 0.1, 0]);
+let frequency = 110;
+let g = dc(frequency) >> atomic_synth(table) >> pan(0);
+g.play();
+table.set(0, 0.); // change the table while it's playing
+table.set(1, 0.);
+table.set(2, 0.);
+table.set(3, 0.);
+
+// atomic_synth can take an extra argument specifying the interpolation type ("nearest" by default)
+atomic_synth(table, "linear");
+atomic_synth(table, "cubic");
+```
+
+### [phase synth](https://docs.rs/fundsp/latest/fundsp/wavetable/struct.PhaseSynth.html)
+phase_synth takes a str argument specifying the wave
+
+(`hammond`, `organ`, `saw`, `soft_saw`, `square`, `triangle`, `sine`)
+
+```rust
+// 2 operator phase modulation example
+let depth = shared(0);
+let modulator = ramp() >> phase_synth("sine");
+let carrier = (ramp() + modulator * var(depth)) >> phase_synth("sine");
+let g = dc(55) >> split::<U2>() >> (pass() | mul(0.5)) >> carrier >> pan(0);
+g.play();
+// change modulation depth
+depth.set(0.4);
+depth.set(1);
+depth.set(0);
+```
+
+
 ### drop
 ```rust
 // calling drop on any variable will drop that value
@@ -479,7 +554,7 @@ f; // prints nothing
 
 ### keyboard shortcuts
 
-you can bind snippets of code to keyboard shortcuts. keys follow the [egui key names](https://docs.rs/egui/0.31.0/src/egui/data/key.rs.html#322), and modifiers `ctrl`, `shift`, `alt`, and `command` are supported
+you can bind snippets of code to keyboard shortcuts. keys follow the [egui key names](https://docs.rs/egui/0.33.0/src/egui/data/key.rs.html#328), and modifiers `ctrl`, `shift`, `alt`, and `command` are supported
 
 ```rust
 "ctrl+shift+a" = "
@@ -496,6 +571,15 @@ you can bind snippets of code to keyboard shortcuts. keys follow the [egui key n
 
 // reassign to an empty string to remove the key binding
 "shift+a" = "";
+
+// starting a shortcut with `!` means this block is evaluated on the release of that shortcut
+"!a" = "
+    // statements evaluated when `a` is released
+"
+
+"!shift+a" = "
+    // statements evaluated when `a` is released while shift is held
+"
 ```
 
 shortcuts can be enabled/disabled using the "keys" toggle at the top of the ui
@@ -505,6 +589,11 @@ note: always define the more specific shortcuts (more modifiers) involving the s
 ### device selection
 
 `list_in_devices` and `list_out_devices` will print an indexed list of hosts and the devices within them. you can use the indexes with `set_in_device` and `set_out_device` to select the devices lapis uses
+
+set_in/out_device also accept arguments for specifying the channel count, sample rate, and buffer size of the stream.
+
+default host/device/configs will be used for any argument that evaluates to none (use _ for example)
+
 ```rust
 list_in_devices();
 // input devices:
@@ -524,8 +613,10 @@ list_out_devices();
 //     0: Ok("pipewire")
 //     1: Ok("default")
 
-set_in_device(1, 2); // selects host 1 (alsa), device 2 (sysdef...) from the input devices list
-set_out_device(1, 0); // selects host 1 (alsa), device 0 (pipewire) from the output list
+// set_in_device(host_index, device_index, channel_count, sample_rate, buffer_size);
+
+set_in_device(1, 2, _, _, _); // selects host 1 (alsa), device 2 (sysdef...) from the input devices list
+set_out_device(1, 0, _, _, _); // selects host 1 (alsa), device 0 (pipewire) from the output list
 ```
 
 ### f
@@ -556,7 +647,9 @@ x;
 - min
 - max
 - pow
-- mod (or `rem` or `rem_euclid`)
+- rem
+- rem_euclid
+- rem2 (x % 2)
 - log
 - bitand (those 5 bitwise functions cast their inputs to integer)
 - bitor
@@ -624,17 +717,18 @@ x;
 - cos_hz
 - sqr_hz
 - tri_hz
-- semitone_ratio
 - rnd1
 - rnd2
 - spline_noise
 - fractal_noise
-- pol (takes cartesian, outputs polar)
-- car (takes polar, outputs cartesian)
-- deg (takes radians, outputs degrees)
-- rad (takes degrees, outputs radians)
-- recip
+- to_pol (takes cartesian, outputs polar)
+- to_car (takes polar, outputs cartesian)
+- to_deg (takes radians, outputs degrees)
+- to_rad (takes degrees, outputs radians)
+- recip (1 / x)
 - normal (filters inf/-inf/nan)
+- wrap (in 0..1 range)
+- mirror (in 0..1 range)
 
 </p>
 </details>
@@ -645,7 +739,7 @@ x;
 - on linux you need `libjack-dev` and `libasound2-dev` (`jack-devel` and `alsa-lib-devel` on void)
 - clone lapis
 ```
-git clone https://github.com/tomara-x/lapis.git
+git clone https://codeberg.org/tomara-x/lapis.git
 ```
 - build it
 ```

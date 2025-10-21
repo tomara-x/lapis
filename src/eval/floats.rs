@@ -101,16 +101,25 @@ fn method_float(expr: &ExprMethodCall, lapis: &Lapis) -> Option<f32> {
                 Some(shared.value())
             }
             "at" => {
-                let wave = lapis.wmap.get(&k)?;
-                let arg0 = expr.args.first()?;
-                let arg1 = expr.args.get(1)?;
-                let chan = eval_usize(arg0, lapis)?;
-                let index = eval_usize(arg1, lapis)?;
-                if chan < wave.channels() && index < wave.len() {
-                    Some(wave.at(chan, index))
-                } else {
-                    None
+                if let Some(wave) = lapis.wmap.get(&k) {
+                    let arg0 = expr.args.first()?;
+                    let arg1 = expr.args.get(1)?;
+                    let chan = eval_usize(arg0, lapis)?;
+                    let index = eval_usize(arg1, lapis)?;
+                    if chan < wave.channels() && index < wave.len() {
+                        return Some(wave.at(chan, index));
+                    }
+                } else if let Some(table) = lapis.atomic_table_map.get(&k) {
+                    let i = eval_usize(expr.args.first()?, lapis)?;
+                    if i < table.len() {
+                        return Some(table.at(i));
+                    }
                 }
+                None
+            }
+            "sample_rate" => {
+                let wave = lapis.wmap.get(&k)?;
+                Some(wave.sample_rate() as f32)
             }
             "channels" => {
                 let wave = lapis.wmap.get(&k)?;
@@ -119,6 +128,8 @@ fn method_float(expr: &ExprMethodCall, lapis: &Lapis) -> Option<f32> {
             "len" | "length" => {
                 if let Some(wave) = lapis.wmap.get(&k) {
                     Some(wave.len() as f32)
+                } else if let Some(table) = lapis.atomic_table_map.get(&k) {
+                    Some(table.len() as f32)
                 } else {
                     let vec = lapis.vmap.get(&k)?;
                     Some(vec.len() as f32)
@@ -147,20 +158,12 @@ fn method_float(expr: &ExprMethodCall, lapis: &Lapis) -> Option<f32> {
             "inputs_in" => {
                 let net = lapis.gmap.get(&k)?;
                 let id = eval_path_nodeid(expr.args.first()?, lapis)?;
-                if net.contains(id) {
-                    Some(net.inputs_in(id) as f32)
-                } else {
-                    None
-                }
+                if net.contains(id) { Some(net.inputs_in(id) as f32) } else { None }
             }
             "outputs_in" => {
                 let net = lapis.gmap.get(&k)?;
                 let id = eval_path_nodeid(expr.args.first()?, lapis)?;
-                if net.contains(id) {
-                    Some(net.outputs_in(id) as f32)
-                } else {
-                    None
-                }
+                if net.contains(id) { Some(net.outputs_in(id) as f32) } else { None }
             }
             "first" => {
                 let vec = &mut lapis.vmap.get(&k)?;
@@ -310,16 +313,6 @@ fn call_float(expr: &ExprCall, lapis: &Lapis) -> Option<f32> {
         "mirror" => Some(mirror(*args.first()?)),
         _ => None,
     }
-}
-
-pub fn wrap(x: f32) -> f32 {
-    x - x.floor()
-}
-
-pub fn mirror(x: f32) -> f32 {
-    let x = x / 2. - 0.5;
-    let x = x - x.floor();
-    abs(x - 0.5) * 2.
 }
 
 fn constant_float(s: &str) -> Option<f32> {

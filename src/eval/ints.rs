@@ -7,11 +7,7 @@ pub fn eval_i32(expr: &Expr, lapis: &Lapis) -> Option<i32> {
         Expr::Unary(expr) => unary_i32(expr, lapis),
         _ => None,
     };
-    if i.is_some() {
-        i
-    } else {
-        Some(eval_float(expr, lapis)? as i32)
-    }
+    if i.is_some() { i } else { Some(eval_float(expr, lapis)? as i32) }
 }
 
 fn lit_i32(expr: &Lit) -> Option<i32> {
@@ -35,11 +31,7 @@ pub fn eval_i64(expr: &Expr, lapis: &Lapis) -> Option<i64> {
         Expr::Unary(expr) => unary_i64(expr, lapis),
         _ => None,
     };
-    if i.is_some() {
-        i
-    } else {
-        Some(eval_float(expr, lapis)? as i64)
-    }
+    if i.is_some() { i } else { Some(eval_float(expr, lapis)? as i64) }
 }
 
 fn lit_i64(expr: &Lit) -> Option<i64> {
@@ -64,11 +56,7 @@ pub fn eval_u64(expr: &Expr, lapis: &Lapis) -> Option<u64> {
         },
         _ => None,
     };
-    if i.is_some() {
-        i
-    } else {
-        Some(eval_float(expr, lapis)? as u64)
-    }
+    if i.is_some() { i } else { Some(eval_float(expr, lapis)? as u64) }
 }
 
 pub fn eval_usize(expr: &Expr, lapis: &Lapis) -> Option<usize> {
@@ -79,11 +67,7 @@ pub fn eval_usize(expr: &Expr, lapis: &Lapis) -> Option<usize> {
         },
         _ => None,
     };
-    if i.is_some() {
-        i
-    } else {
-        Some(eval_float(expr, lapis)? as usize)
-    }
+    if i.is_some() { i } else { Some(eval_float(expr, lapis)? as usize) }
 }
 
 pub fn eval_isize(expr: &Expr, lapis: &Lapis) -> Option<isize> {
@@ -94,9 +78,5 @@ pub fn eval_isize(expr: &Expr, lapis: &Lapis) -> Option<isize> {
         },
         _ => None,
     };
-    if i.is_some() {
-        i
-    } else {
-        Some(eval_float(expr, lapis)? as isize)
-    }
+    if i.is_some() { i } else { Some(eval_float(expr, lapis)? as isize) }
 }

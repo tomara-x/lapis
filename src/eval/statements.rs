@@ -52,10 +52,13 @@ fn eval_expr(expr: Expr, lapis: &mut Lapis, buffer: &mut String) {
         ));
     } else if let Some(seq) = path_seq(&expr, lapis).or(call_seq(&expr, lapis).as_ref()) {
         let info = format!(
-            "\n// Sequencer(outs: {}, has_backend: {}, replay: {})",
+            "\n// Sequencer(outs: {}, ins: {}, has_backend: {}, replay: {}, loop: ({}, {}))",
             seq.outputs(),
+            seq.inputs(),
             seq.has_backend(),
-            seq.replay_events()
+            seq.replay_events(),
+            seq.loop_start(),
+            seq.loop_end(),
         );
         buffer.push_str(&info);
     } else if let Some(source) = eval_source(&expr, lapis) {
@@ -73,13 +76,12 @@ fn eval_expr(expr: Expr, lapis: &mut Lapis, buffer: &mut String) {
     } else if let Expr::MethodCall(expr) = expr {
         match expr.method.to_string().as_str() {
             "play" => {
-                if let Some(g) = eval_net(&expr.receiver, lapis) {
-                    if g.inputs() == 0 && g.outputs() == 1 {
-                        lapis.slot.set(Fade::Smooth, 0.01, Box::new(g | dc(0.)));
-                    } else if g.inputs() == 0 && g.outputs() == 2 {
+                if let Some(mut g) = eval_net(&expr.receiver, lapis) {
+                    let slot_outputs = lapis.slot.outputs();
+                    if g.inputs() == 0 && g.outputs() == slot_outputs {
+                        g.allocate();
+                        g.set_sample_rate(lapis.sample_rate);
                         lapis.slot.set(Fade::Smooth, 0.01, Box::new(g));
-                    } else {
-                        lapis.slot.set(Fade::Smooth, 0.01, Box::new(dc(0.) | dc(0.)));
                     }
                 }
             }
@@ -167,6 +169,9 @@ fn eval_local(expr: &Local, lapis: &mut Lapis) -> Option<()> {
             } else if let Some(arr) = eval_vec(&expr.expr, lapis) {
                 lapis.drop(&k);
                 lapis.vmap.insert(k, arr);
+            } else if let Some(table) = eval_atomic_table(&expr.expr, lapis) {
+                lapis.drop(&k);
+                lapis.atomic_table_map.insert(k, Arc::new(table));
             } else if let Some(id) = eval_nodeid(&expr.expr, lapis) {
                 lapis.drop(&k);
                 lapis.idmap.insert(k, id);
@@ -194,7 +199,8 @@ fn eval_local(expr: &Local, lapis: &mut Lapis) -> Option<()> {
     } else if let Pat::Tuple(pat) = &expr.pat {
         if let Some(init) = &expr.init {
             if let Expr::Call(call) = &*init.expr {
-                if nth_path_ident(&call.func, 0)? == "bounded" {
+                let f = nth_path_ident(&call.func, 0)?;
+                if f == "bounded" {
                     let p0 = pat_ident(pat.elems.first()?)?;
                     let p1 = pat_ident(pat.elems.get(1)?)?;
                     let cap = eval_usize(call.args.first()?, lapis)?;
@@ -205,6 +211,30 @@ fn eval_local(expr: &Local, lapis: &mut Lapis) -> Option<()> {
                     lapis.gmap.insert(p0, s);
                     lapis.drop(&p1);
                     lapis.gmap.insert(p1, r);
+                } else if f == "buffer" {
+                    let p0 = pat_ident(pat.elems.first()?)?;
+                    let p1 = pat_ident(pat.elems.get(1)?)?;
+                    let cap = eval_usize(call.args.first()?, lapis)?;
+                    // unlike bounded, you never need more than 64 here. like ever.. right?
+                    let (s, r) = fundsp::misc_nodes::buffer(cap.clamp(0, 1000000));
+                    let s = Net::wrap(Box::new(s));
+                    let r = Net::wrap(Box::new(r));
+                    lapis.drop(&p0);
+                    lapis.gmap.insert(p0, s);
+                    lapis.drop(&p1);
+                    lapis.gmap.insert(p1, r);
+                } else if f == "Net" {
+                    let f = nth_path_ident(&call.func, 1)?;
+                    if f == "wrap_id" {
+                        let p0 = pat_ident(pat.elems.first()?)?;
+                        let p1 = pat_ident(pat.elems.get(1)?)?;
+                        let initial = eval_net(call.args.first()?, lapis)?;
+                        let (net, id) = Net::wrap_id(Box::new(initial));
+                        lapis.drop(&p0);
+                        lapis.gmap.insert(p0, net);
+                        lapis.drop(&p1);
+                        lapis.idmap.insert(p1, id);
+                    }
                 }
             }
         }
@@ -274,11 +304,12 @@ fn eval_assign(expr: &ExprAssign, lapis: &mut Lapis) {
                     }
                 } else if let Expr::Lit(right) = &*expr.right {
                     if let Some(shortcut) = parse_shortcut(left.value()) {
-                        lapis.keys.retain(|x| x.0 != shortcut);
+                        lapis.keys.remove(&shortcut);
                         if let Lit::Str(right) = &right.lit {
-                            let code = right.value();
+                            let key = shortcut.1.name();
+                            let code = right.value().replace("$key", key);
                             if !code.is_empty() {
-                                lapis.keys.push((shortcut, code));
+                                lapis.keys.insert(shortcut, code);
                             }
                         }
                     }

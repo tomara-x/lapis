@@ -1,9 +1,9 @@
 use cpal::{
-    traits::{DeviceTrait, HostTrait, StreamTrait},
     FromSample, SizedSample, Stream,
+    traits::{DeviceTrait, HostTrait, StreamTrait},
 };
-use crossbeam_channel::{bounded, Receiver, Sender};
-use eframe::egui::KeyboardShortcut;
+use crossbeam_channel::{Receiver, Sender, bounded};
+use eframe::egui::{Key, Modifiers};
 use fundsp::hacker32::*;
 use std::collections::HashMap;
 use std::sync::Arc;
@@ -19,11 +19,10 @@ mod nets;
 mod sequencers;
 mod sources;
 mod statements;
-mod units;
 mod waves;
 use {
     arrays::*, atomics::*, bools::*, floats::*, helpers::*, ints::*, nets::*, sequencers::*,
-    sources::*, statements::*, units::*, waves::*,
+    sources::*, statements::*, waves::*,
 };
 
 pub struct Lapis {
@@ -41,24 +40,27 @@ pub struct Lapis {
     pub seqmap: HashMap<String, Sequencer>,
     pub eventmap: HashMap<String, EventId>,
     pub srcmap: HashMap<String, Source>,
+    pub atomic_table_map: HashMap<String, Arc<AtomicTable>>,
     pub slot: Slot,
     pub out_stream: Option<cpal::Stream>,
     pub in_stream: Option<cpal::Stream>,
-    pub receivers: (Receiver<f32>, Receiver<f32>),
-    pub keys: Vec<(KeyboardShortcut, String)>,
+    pub input_channel_count: usize,
+    pub sample_rate: f64,
+    pub receiver: Receiver<(usize, f32)>,
+    // (modifiers, key, pressed)
+    pub keys: HashMap<(Modifiers, Key, bool), String>,
     pub keys_active: bool,
+    pub keys_repeat: bool,
     pub zoom_factor: f32,
     pub quiet: bool,
 }
 
 impl Lapis {
     pub fn new() -> Self {
-        let (slot, slot_back) = Slot::new(Box::new(dc(0.) | dc(0.)));
-        let out_stream = default_out_device(slot_back);
-        let (ls, lr) = bounded(4096);
-        let (rs, rr) = bounded(4096);
-        let in_stream = default_in_device(ls, rs);
-        Lapis {
+        // dummy things
+        let (slot, _) = Slot::new(Box::new(dc(0.)));
+        let (_, receiver) = bounded(1);
+        let mut lapis = Lapis {
             buffer: String::new(),
             input: String::new(),
             settings: false,
@@ -73,15 +75,22 @@ impl Lapis {
             seqmap: HashMap::new(),
             eventmap: HashMap::new(),
             srcmap: HashMap::new(),
+            atomic_table_map: HashMap::new(),
             slot,
-            out_stream,
-            in_stream,
-            receivers: (lr, rr),
-            keys: Vec::new(),
+            out_stream: None,
+            in_stream: None,
+            input_channel_count: 0,
+            sample_rate: 44100.,
+            receiver,
+            keys: HashMap::new(),
             keys_active: false,
+            keys_repeat: false,
             zoom_factor: 1.,
             quiet: false,
-        }
+        };
+        lapis.set_out_device(None, None, None, None, None);
+        lapis.set_in_device(None, None, None, None, None);
+        lapis
     }
     pub fn eval(&mut self, input: &str) {
         if !input.is_empty() {
@@ -118,7 +127,7 @@ impl Lapis {
             eval_stmt(stmt, self);
         }
     }
-    pub fn drop(&mut self, k: &String) {
+    pub fn drop(&mut self, k: &str) {
         self.fmap.remove(k);
         self.vmap.remove(k);
         self.gmap.remove(k);
@@ -129,106 +138,139 @@ impl Lapis {
         self.seqmap.remove(k);
         self.eventmap.remove(k);
         self.srcmap.remove(k);
+        self.atomic_table_map.remove(k);
     }
-}
+    pub fn set_out_device(
+        &mut self,
+        host: Option<usize>,
+        device: Option<usize>,
+        channels: Option<u16>,
+        sr: Option<u32>,
+        buffer: Option<u32>,
+    ) -> Option<()> {
+        let host = if let Some(h) = host {
+            let host_id = cpal::ALL_HOSTS.get(h)?;
+            cpal::host_from_id(*host_id).ok()?
+        } else {
+            cpal::default_host()
+        };
+        let device = if let Some(d) = device {
+            let mut devices = host.output_devices().ok()?;
+            devices.nth(d)?
+        } else {
+            host.default_output_device()?
+        };
+        let default_config = device.default_output_config().ok()?;
+        let sample_format = default_config.sample_format();
+        let mut config = default_config.config();
 
-fn default_out_device(slot: SlotBackend) -> Option<Stream> {
-    let host = cpal::default_host();
-    if let Some(device) = host.default_output_device() {
-        if let Ok(default_config) = device.default_output_config() {
-            let mut config = default_config.config();
-            config.channels = 2;
-            return match default_config.sample_format() {
-                cpal::SampleFormat::F32 => run::<f32>(&device, &config, slot),
-                cpal::SampleFormat::I16 => run::<i16>(&device, &config, slot),
-                cpal::SampleFormat::U16 => run::<u16>(&device, &config, slot),
-                format => {
-                    eprintln!("unsupported sample format: {}", format);
-                    None
-                }
-            };
+        if let Some(sr) = sr {
+            config.sample_rate = cpal::SampleRate(sr);
         }
+        if let Some(size) = buffer {
+            config.buffer_size = cpal::BufferSize::Fixed(size);
+        }
+        if let Some(channels) = channels {
+            config.channels = channels;
+        }
+        let mut net = Net::scalar(config.channels as usize, 0.);
+        net.allocate();
+        let (slot, slot_back) = Slot::new(Box::new(net));
+
+        self.slot = slot;
+        let s = match sample_format {
+            cpal::SampleFormat::F32 => run_out::<f32>(&device, &config, slot_back),
+            cpal::SampleFormat::I16 => run_out::<i16>(&device, &config, slot_back),
+            cpal::SampleFormat::U16 => run_out::<u16>(&device, &config, slot_back),
+            format => {
+                println!("unsupported sample format: {format}");
+                None
+            }
+        };
+        if s.is_some() {
+            self.out_stream = s;
+            self.sample_rate = config.sample_rate.0 as f64;
+        }
+        None
     }
-    None
+    pub fn set_in_device(
+        &mut self,
+        host: Option<usize>,
+        device: Option<usize>,
+        channels: Option<u16>,
+        sr: Option<u32>,
+        buffer: Option<u32>,
+    ) -> Option<()> {
+        let host = if let Some(h) = host {
+            let host_id = cpal::ALL_HOSTS.get(h)?;
+            cpal::host_from_id(*host_id).ok()?
+        } else {
+            cpal::default_host()
+        };
+        let device = if let Some(d) = device {
+            let mut devices = host.input_devices().ok()?;
+            devices.nth(d)?
+        } else {
+            host.default_input_device()?
+        };
+        let default_config = device.default_input_config().ok()?;
+        let sample_format = default_config.sample_format();
+        let mut config = default_config.config();
+
+        if let Some(sr) = sr {
+            config.sample_rate = cpal::SampleRate(sr);
+        }
+        if let Some(size) = buffer {
+            config.buffer_size = cpal::BufferSize::Fixed(size);
+        }
+        if let Some(channels) = channels {
+            config.channels = channels;
+        }
+
+        let c = config.channels as usize;
+        let (s1, r1) = bounded(4096 * c);
+
+        let s = match sample_format {
+            cpal::SampleFormat::F32 => run_in::<f32>(&device, &config, s1),
+            cpal::SampleFormat::I16 => run_in::<i16>(&device, &config, s1),
+            cpal::SampleFormat::U16 => run_in::<u16>(&device, &config, s1),
+            format => {
+                println!("unsupported sample format: {format}");
+                None
+            }
+        };
+        if s.is_some() {
+            self.in_stream = s;
+            self.receiver = r1;
+            self.input_channel_count = c;
+        }
+        None
+    }
 }
 
-fn run<T>(
+fn run_out<T>(
     device: &cpal::Device,
     config: &cpal::StreamConfig,
     slot: SlotBackend,
-) -> Option<cpal::Stream>
+) -> Option<Stream>
 where
     T: SizedSample + FromSample<f32>,
 {
     let mut slot = BlockRateAdapter::new(Box::new(slot));
+    let channels = config.channels as usize;
+    let mut out = vec![0.; channels];
 
-    let mut next_value = move || {
-        let (l, r) = slot.get_stereo();
-        (
-            if l.is_normal() { l.clamp(-1., 1.) } else { 0. },
-            if r.is_normal() { r.clamp(-1., 1.) } else { 0. },
-        )
-    };
-    let err_fn = |err| eprintln!("an error occurred on stream: {}", err);
+    let err_fn = |err| eprintln!("an error occurred on stream: {err}");
     let stream = device.build_output_stream(
         config,
-        move |data: &mut [T], _: &cpal::OutputCallbackInfo| write_data(data, &mut next_value),
-        err_fn,
-        None,
-    );
-    if let Ok(stream) = stream {
-        if let Ok(()) = stream.play() {
-            return Some(stream);
-        }
-    }
-    None
-}
-
-fn write_data<T>(output: &mut [T], next_sample: &mut dyn FnMut() -> (f32, f32))
-where
-    T: SizedSample + FromSample<f32>,
-{
-    for frame in output.chunks_mut(2) {
-        let sample = next_sample();
-        frame[0] = T::from_sample(sample.0);
-        frame[1] = T::from_sample(sample.1);
-    }
-}
-
-fn default_in_device(ls: Sender<f32>, rs: Sender<f32>) -> Option<Stream> {
-    let host = cpal::default_host();
-    if let Some(device) = host.default_input_device() {
-        if let Ok(config) = device.default_input_config() {
-            return match config.sample_format() {
-                cpal::SampleFormat::F32 => run_in::<f32>(&device, &config.into(), ls, rs),
-                cpal::SampleFormat::I16 => run_in::<i16>(&device, &config.into(), ls, rs),
-                cpal::SampleFormat::U16 => run_in::<u16>(&device, &config.into(), ls, rs),
-                format => {
-                    eprintln!("unsupported sample format: {}", format);
-                    None
+        move |data: &mut [T], _| {
+            for frame in data.chunks_mut(channels) {
+                slot.tick(&[], &mut out);
+                for i in 0..channels {
+                    let tmp = if out[i].is_normal() { out[i].clamp(-1., 1.) } else { 0. };
+                    frame[i] = T::from_sample(tmp);
                 }
-            };
-        }
-    }
-    None
-}
-
-fn run_in<T>(
-    device: &cpal::Device,
-    config: &cpal::StreamConfig,
-    ls: Sender<f32>,
-    rs: Sender<f32>,
-) -> Option<cpal::Stream>
-where
-    T: SizedSample,
-    f32: FromSample<T>,
-{
-    let channels = config.channels as usize;
-    let err_fn = |err| eprintln!("an error occurred on stream: {}", err);
-    let stream = device.build_input_stream(
-        config,
-        move |data: &[T], _: &cpal::InputCallbackInfo| {
-            read_data(data, channels, ls.clone(), rs.clone())
+            }
         },
         err_fn,
         None,
@@ -241,18 +283,33 @@ where
     None
 }
 
-fn read_data<T>(input: &[T], channels: usize, ls: Sender<f32>, rs: Sender<f32>)
+fn run_in<T>(
+    device: &cpal::Device,
+    config: &cpal::StreamConfig,
+    s: Sender<(usize, f32)>,
+) -> Option<Stream>
 where
     T: SizedSample,
     f32: FromSample<T>,
 {
-    for frame in input.chunks(channels) {
-        for (channel, sample) in frame.iter().enumerate() {
-            if channel & 1 == 0 {
-                let _ = ls.try_send(sample.to_sample::<f32>());
-            } else {
-                let _ = rs.try_send(sample.to_sample::<f32>());
+    let channels = config.channels as usize;
+    let err_fn = |err| eprintln!("an error occurred on stream: {err}");
+    let stream = device.build_input_stream(
+        config,
+        move |data: &[T], _| {
+            for frame in data.chunks(channels) {
+                for (channel, sample) in frame.iter().enumerate() {
+                    let _ = s.try_send((channel, sample.to_sample::<f32>()));
+                }
             }
+        },
+        err_fn,
+        None,
+    );
+    if let Ok(stream) = stream {
+        if let Ok(()) = stream.play() {
+            return Some(stream);
         }
     }
+    None
 }

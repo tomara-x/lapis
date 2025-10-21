@@ -69,31 +69,34 @@ impl eframe::App for Lapis {
         let center = Align2::CENTER_CENTER;
         let mut theme = egui_extras::syntax_highlighting::CodeTheme::from_memory(ctx, &ctx.style());
         let theme_copy = theme.clone();
-        let mut layouter = |ui: &Ui, string: &str, wrap_width: f32| {
+        let mut layouter = |ui: &Ui, buf: &dyn TextBuffer, wrap_width: f32| {
             let mut layout_job = egui_extras::syntax_highlighting::highlight(
                 ui.ctx(),
                 ui.style(),
                 &theme_copy,
-                string,
+                buf.as_str(),
                 "rs",
             );
             layout_job.wrap.max_width = wrap_width;
-            ui.fonts(|f| f.layout_job(layout_job))
+            ui.fonts_mut(|f| f.layout_job(layout_job))
         };
         if self.keys_active {
-            if self.quiet {
-                for (shortcut, code) in self.keys.clone() {
-                    if ctx.input_mut(|i| i.consume_shortcut(&shortcut)) {
-                        self.quiet_eval(&code);
+            ctx.input(|i| {
+                for event in &i.events {
+                    if let Event::Key { key, modifiers, pressed, repeat, .. } = event {
+                        if *repeat && !self.keys_repeat {
+                            continue;
+                        }
+                        if let Some(code) = self.keys.get(&(*modifiers, *key, *pressed)) {
+                            if self.quiet {
+                                self.quiet_eval(&code.clone());
+                            } else {
+                                self.eval(&code.clone());
+                            }
+                        }
                     }
                 }
-            } else {
-                for (shortcut, code) in self.keys.clone() {
-                    if ctx.input_mut(|i| i.consume_shortcut(&shortcut)) {
-                        self.eval(&code);
-                    }
-                }
-            }
+            });
         }
         TopBottomPanel::bottom("input")
             .resizable(true)
@@ -134,19 +137,18 @@ impl eframe::App for Lapis {
                     ui.label("interpreter");
                 });
                 ui.label("an amy universe piece");
-                ui.label("courtesy of the alphabet mafia");
                 ui.horizontal(|ui| {
                     ui.label("repo:");
                     ui.hyperlink_to(
                         "github.com/tomara-x/lapis",
-                        "https://github.com/tomara-x/lapis/",
+                        "https://codeberg.org/tomara-x/lapis/",
                     );
                 });
                 ui.horizontal(|ui| {
                     ui.label("mirror:");
                     ui.hyperlink_to(
                         "codeberg.org/tomara-x/lapis",
-                        "https://codeberg.org/tomara-x/lapis/",
+                        "https://github.com/tomara-x/lapis/",
                     );
                 });
                 ui.label(format!(
@@ -154,7 +156,11 @@ impl eframe::App for Lapis {
                     env!("CARGO_PKG_VERSION"),
                     env!("COMMIT_HASH")
                 ));
-                ui.label("FunDSP version: tomara-x/fundsp/crossbeam")
+                ui.horizontal(|ui| {
+                    ui.label("FunDSP version:");
+                    ui.hyperlink_to("tomara-x/fundsp", "https://codeberg.org/tomara-x/fundsp/");
+                });
+                ui.small("this machine kills fascists");
             });
             ui.horizontal(|ui| {
                 if ui.button("settings").clicked() {
@@ -164,8 +170,11 @@ impl eframe::App for Lapis {
                     self.about = !self.about;
                 }
                 ui.with_layout(Layout::right_to_left(Align::TOP), |ui| {
-                    ui.toggle_value(&mut self.keys_active, "keys");
-                    ui.toggle_value(&mut self.quiet, "quiet")
+                    ui.toggle_value(&mut self.keys_repeat, "keys repeat?")
+                        .on_hover_text("enable key repeat events");
+                    ui.toggle_value(&mut self.keys_active, "keys?")
+                        .on_hover_text("enable key bindings");
+                    ui.toggle_value(&mut self.quiet, "quiet?")
                         .on_hover_text("don't log keybinding evaluation");
                 });
             });
