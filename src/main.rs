@@ -101,7 +101,7 @@ impl eframe::App for Lapis {
         TopBottomPanel::bottom("input")
             .resizable(true)
             .show_separator_line(false)
-            .min_height(80.)
+            .min_height(90.)
             .show(ctx, |ui| {
                 ScrollArea::vertical().auto_shrink(false).show(ui, |ui| {
                     ui.horizontal(|ui| {
