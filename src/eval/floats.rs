@@ -208,10 +208,13 @@ fn bin_expr_float(expr: &ExprBinary, lapis: &Lapis) -> Option<f32> {
 
 fn path_float(expr: &Path, lapis: &Lapis) -> Option<f32> {
     let k = expr.segments.first()?.ident.to_string();
-    if let Some(c) = constant_float(&k) {
-        return Some(c);
+    if k == "SR" {
+        Some(lapis.sample_rate as f32)
+    } else if let Some(c) = constant_float(&k) {
+        Some(c)
+    } else {
+        lapis.fmap.get(&k).copied()
     }
-    lapis.fmap.get(&k).copied()
 }
 
 fn unary_float(expr: &ExprUnary, lapis: &Lapis) -> Option<f32> {
