@@ -206,6 +206,7 @@ g.play();
         multitap, multitap_linear, feedback2, map, oversample,
         resample, resynth, shape_fn, snoop, unit, update, var_fn
     - `flanger` and `phaser` are edited to accept modulation as a second input channel rather than a modulation function
+    - instead of generic resample, `resample1` accepts a node with 0 inputs and 1 output
 
 - all functions in the [math module](https://docs.rs/fundsp/latest/fundsp/math/index.html)
     - except for: ease_noise, fractal_ease_noise, hash1, hash2, identity

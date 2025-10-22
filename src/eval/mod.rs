@@ -177,7 +177,6 @@ impl Lapis {
         net.allocate();
         let (slot, slot_back) = Slot::new(Box::new(net));
 
-        self.slot = slot;
         let s = match sample_format {
             cpal::SampleFormat::F32 => run_out::<f32>(&device, &config, slot_back),
             cpal::SampleFormat::I16 => run_out::<i16>(&device, &config, slot_back),
@@ -188,6 +187,7 @@ impl Lapis {
             }
         };
         if s.is_some() {
+            self.slot = slot;
             self.out_stream = s;
             self.sample_rate = config.sample_rate.0 as f64;
         }
