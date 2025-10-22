@@ -271,9 +271,9 @@ let out = osc3 >> f;
 ### reassignment
 ```rust
 let x = 42;
-x += 1;
 x = 56;         // x is still a number. this works
-x = sine();     // x is a number can't assign an audio node (x is still 56.0)
+x += 1;         // binary assignment works. (+=, -=, *=, /=, and %=)
+x = sine();     // x is a number. can't assign an audio node (x is still 56.0)
 let x = sine(); // x is now a sine()
 ```
 ### if conditions
@@ -339,6 +339,10 @@ v1;
 // [42.0, 2.0, 4.0, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1]
 v2;
 // [1.0, 2.0, 4.0, 6.0]
+
+// binary assignment isn't supported for indexes
+// so you can't do vec[0] += 1;
+// you have to do vec[0] = vec[0] + 1;
 ```
 ### [Net](https://docs.rs/fundsp/latest/fundsp/net/struct.Net.html)
 
@@ -374,14 +378,21 @@ net.commit();
 > ```
 
 ### [tick](https://docs.rs/fundsp/latest/fundsp/audiounit/trait.AudioUnit.html#tymethod.tick)
-process one frame of samples of a graph
+process one frame of samples through a graph
 
 ```rust
-let net = mul(10);
-net.tick([4]); // prints [40.0]
-let i = [6];
+let net = pass() | mul(10);
+// input vector must have same number of elements as the graph's inputs
+net.tick([5, 2]);
+// [5.0, 20.0]
+
+// tick can store the outputs in an array instead of printing
+// output vector will be resized to the number of output channels
+let i = [13, 1.2];
 let o = [];
-net.tick(i, o); // o is now [60.0]
+net.tick(i, o);
+o
+// [13.0, 12.0]
 ```
 ### [shared/var](https://github.com/SamiPerttu/fundsp#atomic-variables)
 ```rust
