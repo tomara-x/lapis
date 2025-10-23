@@ -78,9 +78,12 @@ fn eval_expr(expr: Expr, lapis: &mut Lapis, buffer: &mut String) {
             "play" => {
                 if let Some(mut g) = eval_net(&expr.receiver, lapis) {
                     let slot_outputs = lapis.slot.outputs();
-                    if g.inputs() == 0 && g.outputs() == slot_outputs {
+                    if g.inputs() == 0
+                        && g.outputs() == slot_outputs
+                        && let Some((config, _)) = &lapis.out_stream
+                    {
                         g.allocate();
-                        g.set_sample_rate(lapis.sample_rate);
+                        g.set_sample_rate(config.sample_rate.0 as f64);
                         lapis.slot.set(Fade::Smooth, 0.01, Box::new(g));
                     }
                 }

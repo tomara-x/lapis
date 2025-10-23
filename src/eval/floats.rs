@@ -10,8 +10,45 @@ pub fn eval_float(expr: &Expr, lapis: &Lapis) -> Option<f32> {
         Expr::Unary(expr) => unary_float(expr, lapis),
         Expr::MethodCall(expr) => method_float(expr, lapis),
         Expr::Index(expr) => index_float(expr, lapis),
+        Expr::Field(expr) => field_float(expr, lapis),
         _ => None,
     }
+}
+
+fn field_float(expr: &ExprField, lapis: &Lapis) -> Option<f32> {
+    let base = nth_path_ident(&expr.base, 0)?;
+    if let Member::Named(ident) = &expr.member {
+        if base == "out_stream"
+            && let Some((config, _)) = &lapis.out_stream
+        {
+            return match ident.to_string().as_str() {
+                "sr" => Some(config.sample_rate.0 as f32),
+                "chan" => Some(config.channels as f32),
+                "buffer" => {
+                    if let cpal::BufferSize::Fixed(size) = config.buffer_size {
+                        return Some(size as f32);
+                    }
+                    None
+                }
+                _ => None,
+            };
+        } else if base == "in_stream"
+            && let Some((config, _)) = &lapis.in_stream
+        {
+            return match ident.to_string().as_str() {
+                "sr" => Some(config.sample_rate.0 as f32),
+                "chan" => Some(config.channels as f32),
+                "buffer" => {
+                    if let cpal::BufferSize::Fixed(size) = config.buffer_size {
+                        return Some(size as f32);
+                    }
+                    None
+                }
+                _ => None,
+            };
+        }
+    }
+    None
 }
 
 fn index_float(expr: &ExprIndex, lapis: &Lapis) -> Option<f32> {
@@ -208,13 +245,7 @@ fn bin_expr_float(expr: &ExprBinary, lapis: &Lapis) -> Option<f32> {
 
 fn path_float(expr: &Path, lapis: &Lapis) -> Option<f32> {
     let k = expr.segments.first()?.ident.to_string();
-    if k == "SR" {
-        Some(lapis.sample_rate as f32)
-    } else if let Some(c) = constant_float(&k) {
-        Some(c)
-    } else {
-        lapis.fmap.get(&k).copied()
-    }
+    if let Some(c) = constant_float(&k) { Some(c) } else { lapis.fmap.get(&k).copied() }
 }
 
 fn unary_float(expr: &ExprUnary, lapis: &Lapis) -> Option<f32> {

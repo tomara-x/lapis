@@ -27,7 +27,6 @@ g.play();                   // you should hear a 110hz tone
 ```rust
 (input(0, 1) >> reverb_stereo(20,3,0.5)).play();
 // you should hear the input from your mic being played back
-// (⚠️ might cause feedback)
 ```
 
 - similar to the functionality of `Snoop` and `Ring`, you can use `bounded` to create a ring buffer
@@ -188,7 +187,7 @@ g.play();
 - `ahr(a, h, r)` an attack-hold-release node
 
 ## deviations
-- every nodes is wrapped in a `Net`, it's all nets (﻿🌍﻿ 🧑‍🚀﻿ 🔫﻿ 🧑‍🚀﻿)
+- every nodes is wrapped in a `Net`
 - mutability is ignored. everything is mutable
 - type annotations are ignored. types are inferred (`f32`, `Net`, `Vec<f32>`, `bool`, `NodeId`, `Arc<Wave>`, `Shared`, `Sequencer`, `EventId`, `Source`,)
 - all number variables are f32, even if you type it as `4` it's still `4.0`
@@ -258,7 +257,7 @@ g.play();
 </details>
 
 - all functions in the [sound module](https://docs.rs/fundsp/latest/fundsp/sound/index.html)
-- [std constants](https://doc.rust-lang.org/std/f32/consts/index.html), `inf`, `-inf`, and `nan`, `SR` (the current sample rate)
+- [std constants](https://doc.rust-lang.org/std/f32/consts/index.html), `inf`, `-inf`, and `nan`
 
 ### assignment
 ```rust
@@ -627,6 +626,20 @@ list_out_devices();
 
 set_in_device(1, 2, _, _, _); // selects host 1 (alsa), device 2 (sysdef...) from the input devices list
 set_out_device(1, 0, _, _, _); // selects host 1 (alsa), device 0 (pipewire) from the output list
+```
+
+### stream info
+
+```rust
+// channel count, sample rate, and buffer size of the output stream
+out_stream.chan;
+out_stream.sr;
+out_stream.buffer;    // these are none if the buffer size is set to default
+
+// .. and the input stream
+in_stream.chan;
+in_stream.sr;
+in_stream.buffer;
 ```
 
 ### f

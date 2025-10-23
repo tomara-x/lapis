@@ -1,5 +1,5 @@
 use cpal::{
-    FromSample, SizedSample, Stream,
+    FromSample, SizedSample, Stream, StreamConfig,
     traits::{DeviceTrait, HostTrait, StreamTrait},
 };
 use crossbeam_channel::{Receiver, Sender, bounded};
@@ -42,10 +42,8 @@ pub struct Lapis {
     pub srcmap: HashMap<String, Source>,
     pub atomic_table_map: HashMap<String, Arc<AtomicTable>>,
     pub slot: Slot,
-    pub out_stream: Option<cpal::Stream>,
-    pub in_stream: Option<cpal::Stream>,
-    pub input_channel_count: usize,
-    pub sample_rate: f64,
+    pub out_stream: Option<(StreamConfig, Stream)>,
+    pub in_stream: Option<(StreamConfig, Stream)>,
     pub receiver: Receiver<(usize, f32)>,
     // (modifiers, key, pressed)
     pub keys: HashMap<(Modifiers, Key, bool), String>,
@@ -79,8 +77,6 @@ impl Lapis {
             slot,
             out_stream: None,
             in_stream: None,
-            input_channel_count: 0,
-            sample_rate: 44100.,
             receiver,
             keys: HashMap::new(),
             keys_active: false,
@@ -177,7 +173,7 @@ impl Lapis {
         net.allocate();
         let (slot, slot_back) = Slot::new(Box::new(net));
 
-        let s = match sample_format {
+        let stream = match sample_format {
             cpal::SampleFormat::F32 => run_out::<f32>(&device, &config, slot_back),
             cpal::SampleFormat::I16 => run_out::<i16>(&device, &config, slot_back),
             cpal::SampleFormat::U16 => run_out::<u16>(&device, &config, slot_back),
@@ -186,10 +182,9 @@ impl Lapis {
                 None
             }
         };
-        if s.is_some() {
+        if let Some(stream) = stream {
             self.slot = slot;
-            self.out_stream = s;
-            self.sample_rate = config.sample_rate.0 as f64;
+            self.out_stream = Some((config, stream));
         }
         None
     }
@@ -230,7 +225,7 @@ impl Lapis {
         let c = config.channels as usize;
         let (s1, r1) = bounded(4096 * c);
 
-        let s = match sample_format {
+        let stream = match sample_format {
             cpal::SampleFormat::F32 => run_in::<f32>(&device, &config, s1),
             cpal::SampleFormat::I16 => run_in::<i16>(&device, &config, s1),
             cpal::SampleFormat::U16 => run_in::<u16>(&device, &config, s1),
@@ -239,20 +234,15 @@ impl Lapis {
                 None
             }
         };
-        if s.is_some() {
-            self.in_stream = s;
+        if let Some(stream) = stream {
+            self.in_stream = Some((config, stream));
             self.receiver = r1;
-            self.input_channel_count = c;
         }
         None
     }
 }
 
-fn run_out<T>(
-    device: &cpal::Device,
-    config: &cpal::StreamConfig,
-    slot: SlotBackend,
-) -> Option<Stream>
+fn run_out<T>(device: &cpal::Device, config: &StreamConfig, slot: SlotBackend) -> Option<Stream>
 where
     T: SizedSample + FromSample<f32>,
 {
@@ -285,7 +275,7 @@ where
 
 fn run_in<T>(
     device: &cpal::Device,
-    config: &cpal::StreamConfig,
+    config: &StreamConfig,
     s: Sender<(usize, f32)>,
 ) -> Option<Stream>
 where
