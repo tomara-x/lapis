@@ -3,32 +3,33 @@ use crate::eval::*;
 fn method_source(expr: &ExprMethodCall, lapis: &Lapis) -> Option<Source> {
     match expr.method.to_string().as_str() {
         "source" => {
-            if let Some(k) = nth_path_ident(&expr.receiver, 0) {
-                if let Some(g) = &mut lapis.gmap.get(&k) {
-                    let arg0 = expr.args.first();
-                    let arg1 = expr.args.get(1);
-                    if let (Some(arg0), Some(arg1)) = (arg0, arg1) {
-                        let id = eval_path_nodeid(arg0, lapis);
-                        let chan = eval_usize(arg1, lapis);
-                        if let (Some(id), Some(chan)) = (id, chan) {
-                            if g.contains(id) && chan < g.inputs_in(id) {
-                                return Some(g.source(id, chan));
-                            }
-                        }
+            if let Some(k) = nth_path_ident(&expr.receiver, 0)
+                && let Some(g) = &mut lapis.gmap.get(&k)
+            {
+                let arg0 = expr.args.first();
+                let arg1 = expr.args.get(1);
+                if let (Some(arg0), Some(arg1)) = (arg0, arg1) {
+                    let id = eval_path_nodeid(arg0, lapis);
+                    let chan = eval_usize(arg1, lapis);
+                    if let (Some(id), Some(chan)) = (id, chan)
+                        && g.contains(id)
+                        && chan < g.inputs_in(id)
+                    {
+                        return Some(g.source(id, chan));
                     }
                 }
             }
             None
         }
         "output_source" => {
-            if let Some(k) = nth_path_ident(&expr.receiver, 0) {
-                if let Some(g) = &mut lapis.gmap.get(&k) {
-                    let arg0 = expr.args.first();
-                    if let Some(arg0) = arg0 {
-                        let chan = eval_usize(arg0, lapis);
-                        if let Some(chan) = chan {
-                            return Some(g.output_source(chan));
-                        }
+            if let Some(k) = nth_path_ident(&expr.receiver, 0)
+                && let Some(g) = &mut lapis.gmap.get(&k)
+            {
+                let arg0 = expr.args.first();
+                if let Some(arg0) = arg0 {
+                    let chan = eval_usize(arg0, lapis);
+                    if let Some(chan) = chan {
+                        return Some(g.output_source(chan));
                     }
                 }
             }

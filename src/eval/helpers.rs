@@ -4,10 +4,10 @@ use eframe::egui::{Key, Modifiers};
 use syn::punctuated::Punctuated;
 
 pub fn eval_str_lit(expr: &Expr) -> Option<String> {
-    if let Expr::Lit(expr) = expr {
-        if let Lit::Str(expr) = &expr.lit {
-            return Some(expr.value());
-        }
+    if let Expr::Lit(expr) = expr
+        && let Lit::Str(expr) = &expr.lit
+    {
+        return Some(expr.value());
     }
     None
 }
@@ -156,24 +156,23 @@ pub fn range_bounds(expr: &Expr, lapis: &Lapis) -> Option<(i32, i32)> {
 }
 
 pub fn nth_path_ident(expr: &Expr, n: usize) -> Option<String> {
-    if let Expr::Path(expr) = expr {
-        if let Some(expr) = expr.path.segments.get(n) {
-            return Some(expr.ident.to_string());
-        }
+    if let Expr::Path(expr) = expr
+        && let Some(expr) = expr.path.segments.get(n)
+    {
+        return Some(expr.ident.to_string());
     }
     None
 }
 
 pub fn nth_path_generic(expr: &Expr, n: usize) -> Option<String> {
-    if let Expr::Path(expr) = expr {
-        if let Some(expr) = expr.path.segments.first() {
-            if let PathArguments::AngleBracketed(expr) = &expr.arguments {
-                let args = expr.args.get(n)?;
-                if let GenericArgument::Type(Type::Path(expr)) = args {
-                    let expr = expr.path.segments.first()?;
-                    return Some(expr.ident.to_string());
-                }
-            }
+    if let Expr::Path(expr) = expr
+        && let Some(expr) = expr.path.segments.first()
+        && let PathArguments::AngleBracketed(expr) = &expr.arguments
+    {
+        let args = expr.args.get(n)?;
+        if let GenericArgument::Type(Type::Path(expr)) = args {
+            let expr = expr.path.segments.first()?;
+            return Some(expr.ident.to_string());
         }
     }
     None

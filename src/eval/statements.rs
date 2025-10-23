@@ -91,10 +91,10 @@ fn eval_expr(expr: Expr, lapis: &mut Lapis, buffer: &mut String) {
                 }
             }
             "error" => {
-                if let Some(k) = nth_path_ident(&expr.receiver, 0) {
-                    if let Some(g) = &mut lapis.gmap.get_mut(&k) {
-                        buffer.push_str(&format!("\n// {:?}", g.error()));
-                    }
+                if let Some(k) = nth_path_ident(&expr.receiver, 0)
+                    && let Some(g) = &mut lapis.gmap.get_mut(&k)
+                {
+                    buffer.push_str(&format!("\n// {:?}", g.error()));
                 }
             }
             _ => {
@@ -167,46 +167,45 @@ fn eval_local(expr: &Local, lapis: &mut Lapis) -> Option<()> {
                 lapis.eventmap.insert(k, event);
             }
         }
-    } else if let Pat::Tuple(pat) = &expr.pat {
-        if let Some(init) = &expr.init {
-            if let Expr::Call(call) = &*init.expr {
-                let f = nth_path_ident(&call.func, 0)?;
-                if f == "bounded" {
-                    let p0 = pat_ident(pat.elems.first()?)?;
-                    let p1 = pat_ident(pat.elems.get(1)?)?;
-                    let cap = eval_usize(call.args.first()?, lapis)?;
-                    let (s, r) = bounded(cap.clamp(0, 1000000));
-                    let s = Net::wrap(Box::new(An(BuffIn::new(s))));
-                    let r = Net::wrap(Box::new(An(BuffOut::new(r))));
-                    lapis.drop(&p0);
-                    lapis.gmap.insert(p0, s);
-                    lapis.drop(&p1);
-                    lapis.gmap.insert(p1, r);
-                } else if f == "buffer" {
-                    let p0 = pat_ident(pat.elems.first()?)?;
-                    let p1 = pat_ident(pat.elems.get(1)?)?;
-                    let cap = eval_usize(call.args.first()?, lapis)?;
-                    // unlike bounded, you never need more than 64 here. like ever.. right?
-                    let (s, r) = fundsp::misc_nodes::buffer(cap.clamp(0, 1000000));
-                    let s = Net::wrap(Box::new(s));
-                    let r = Net::wrap(Box::new(r));
-                    lapis.drop(&p0);
-                    lapis.gmap.insert(p0, s);
-                    lapis.drop(&p1);
-                    lapis.gmap.insert(p1, r);
-                } else if f == "Net" {
-                    let f = nth_path_ident(&call.func, 1)?;
-                    if f == "wrap_id" {
-                        let p0 = pat_ident(pat.elems.first()?)?;
-                        let p1 = pat_ident(pat.elems.get(1)?)?;
-                        let initial = eval_net(call.args.first()?, lapis)?;
-                        let (net, id) = Net::wrap_id(Box::new(initial));
-                        lapis.drop(&p0);
-                        lapis.gmap.insert(p0, net);
-                        lapis.drop(&p1);
-                        lapis.idmap.insert(p1, id);
-                    }
-                }
+    } else if let Pat::Tuple(pat) = &expr.pat
+        && let Some(init) = &expr.init
+        && let Expr::Call(call) = &*init.expr
+    {
+        let f = nth_path_ident(&call.func, 0)?;
+        if f == "bounded" {
+            let p0 = pat_ident(pat.elems.first()?)?;
+            let p1 = pat_ident(pat.elems.get(1)?)?;
+            let cap = eval_usize(call.args.first()?, lapis)?;
+            let (s, r) = bounded(cap.clamp(0, 1000000));
+            let s = Net::wrap(Box::new(An(BuffIn::new(s))));
+            let r = Net::wrap(Box::new(An(BuffOut::new(r))));
+            lapis.drop(&p0);
+            lapis.gmap.insert(p0, s);
+            lapis.drop(&p1);
+            lapis.gmap.insert(p1, r);
+        } else if f == "buffer" {
+            let p0 = pat_ident(pat.elems.first()?)?;
+            let p1 = pat_ident(pat.elems.get(1)?)?;
+            let cap = eval_usize(call.args.first()?, lapis)?;
+            // unlike bounded, you never need more than 64 here. like ever.. right?
+            let (s, r) = fundsp::misc_nodes::buffer(cap.clamp(0, 1000000));
+            let s = Net::wrap(Box::new(s));
+            let r = Net::wrap(Box::new(r));
+            lapis.drop(&p0);
+            lapis.gmap.insert(p0, s);
+            lapis.drop(&p1);
+            lapis.gmap.insert(p1, r);
+        } else if f == "Net" {
+            let f = nth_path_ident(&call.func, 1)?;
+            if f == "wrap_id" {
+                let p0 = pat_ident(pat.elems.first()?)?;
+                let p1 = pat_ident(pat.elems.get(1)?)?;
+                let initial = eval_net(call.args.first()?, lapis)?;
+                let (net, id) = Net::wrap_id(Box::new(initial));
+                lapis.drop(&p0);
+                lapis.gmap.insert(p0, net);
+                lapis.drop(&p1);
+                lapis.idmap.insert(p1, id);
             }
         }
     }
@@ -246,23 +245,20 @@ fn eval_assign(expr: &ExprAssign, lapis: &mut Lapis) {
                 if let Some(var) = lapis.srcmap.get_mut(&ident) {
                     *var = s;
                 }
-            } else if let Some(event) = eval_eventid(&expr.right, lapis) {
-                if let Some(var) = lapis.eventmap.get_mut(&ident) {
-                    *var = event;
-                }
+            } else if let Some(event) = eval_eventid(&expr.right, lapis)
+                && let Some(var) = lapis.eventmap.get_mut(&ident)
+            {
+                *var = event;
             }
         }
         Expr::Index(left) => {
-            if let Some(k) = nth_path_ident(&left.expr, 0) {
-                if let Some(index) = eval_usize(&left.index, lapis) {
-                    if let Some(right) = eval_float(&expr.right, lapis) {
-                        if let Some(vec) = lapis.vmap.get_mut(&k) {
-                            if let Some(v) = vec.get_mut(index) {
-                                *v = right;
-                            }
-                        }
-                    }
-                }
+            if let Some(k) = nth_path_ident(&left.expr, 0)
+                && let Some(index) = eval_usize(&left.index, lapis)
+                && let Some(right) = eval_float(&expr.right, lapis)
+                && let Some(vec) = lapis.vmap.get_mut(&k)
+                && let Some(v) = vec.get_mut(index)
+            {
+                *v = right;
             }
         }
         Expr::Lit(left) => {
@@ -273,15 +269,15 @@ fn eval_assign(expr: &ExprAssign, lapis: &mut Lapis) {
                         "quiet" => lapis.quiet = b,
                         _ => {}
                     }
-                } else if let Expr::Lit(right) = &*expr.right {
-                    if let Some(shortcut) = parse_shortcut(left.value()) {
-                        lapis.keys.remove(&shortcut);
-                        if let Lit::Str(right) = &right.lit {
-                            let key = shortcut.1.name();
-                            let code = right.value().replace("$key", key);
-                            if !code.is_empty() {
-                                lapis.keys.insert(shortcut, code);
-                            }
+                } else if let Expr::Lit(right) = &*expr.right
+                    && let Some(shortcut) = parse_shortcut(left.value())
+                {
+                    lapis.keys.remove(&shortcut);
+                    if let Lit::Str(right) = &right.lit {
+                        let key = shortcut.1.name();
+                        let code = right.value().replace("$key", key);
+                        if !code.is_empty() {
+                            lapis.keys.insert(shortcut, code);
                         }
                     }
                 }

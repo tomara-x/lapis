@@ -33,10 +33,10 @@ fn method_net(expr: &ExprMethodCall, lapis: &mut Lapis) -> Option<Net> {
                 if !seq.has_backend() {
                     return Some(Net::wrap(Box::new(seq.backend())));
                 }
-            } else if let Some(g) = &mut lapis.gmap.get_mut(&k) {
-                if !g.has_backend() {
-                    return Some(Net::wrap(Box::new(g.backend())));
-                }
+            } else if let Some(g) = &mut lapis.gmap.get_mut(&k)
+                && !g.has_backend()
+            {
+                return Some(Net::wrap(Box::new(g.backend())));
             }
             None
         }
@@ -413,12 +413,12 @@ fn method_nodeid(expr: &ExprMethodCall, lapis: &mut Lapis) -> Option<NodeId> {
         }
         "nth" => {
             let index = eval_usize(expr.args.first()?, lapis)?;
-            if let Expr::MethodCall(ref expr) = *expr.receiver {
-                if expr.method == "ids" {
-                    let k = nth_path_ident(&expr.receiver, 0)?;
-                    let g = &lapis.gmap.get(&k)?;
-                    return g.ids().nth(index).copied();
-                }
+            if let Expr::MethodCall(ref expr) = *expr.receiver
+                && expr.method == "ids"
+            {
+                let k = nth_path_ident(&expr.receiver, 0)?;
+                let g = &lapis.gmap.get(&k)?;
+                return g.ids().nth(index).copied();
             }
             None
         }
@@ -896,10 +896,10 @@ fn call_net(expr: &ExprCall, lapis: &mut Lapis) -> Option<Net> {
                 let node = map(move |_: &Frame<f32, U0>| {
                     let mut out = 0.;
                     for _ in 0..channels {
-                        if let Ok((channel, s)) = r.try_recv() {
-                            if channel == i {
-                                out = s;
-                            }
+                        if let Ok((channel, s)) = r.try_recv()
+                            && channel == i
+                        {
+                            out = s;
                         }
                     }
                     out
@@ -1445,10 +1445,11 @@ fn call_net(expr: &ExprCall, lapis: &mut Lapis) -> Option<Net> {
         "select" => {
             let mut units: Vec<Box<dyn AudioUnit>> = Vec::new();
             for arg in &expr.args {
-                if let Some(unit) = eval_net(arg, lapis) {
-                    if unit.inputs() == 0 && unit.outputs() == 1 {
-                        units.push(Box::new(unit));
-                    }
+                if let Some(unit) = eval_net(arg, lapis)
+                    && unit.inputs() == 0
+                    && unit.outputs() == 1
+                {
+                    units.push(Box::new(unit));
                 }
             }
             Some(Net::wrap(Box::new(An(Select::new(units)))))
@@ -1456,10 +1457,11 @@ fn call_net(expr: &ExprCall, lapis: &mut Lapis) -> Option<Net> {
         "fade_select" => {
             let mut units: Vec<Box<dyn AudioUnit>> = Vec::new();
             for arg in &expr.args {
-                if let Some(unit) = eval_net(arg, lapis) {
-                    if unit.inputs() == 0 && unit.outputs() == 1 {
-                        units.push(Box::new(unit));
-                    }
+                if let Some(unit) = eval_net(arg, lapis)
+                    && unit.inputs() == 0
+                    && unit.outputs() == 1
+                {
+                    units.push(Box::new(unit));
                 }
             }
             Some(Net::wrap(Box::new(An(FadeSelect::new(units)))))
@@ -1467,10 +1469,11 @@ fn call_net(expr: &ExprCall, lapis: &mut Lapis) -> Option<Net> {
         "seq" => {
             let mut units: Vec<Box<dyn AudioUnit>> = Vec::new();
             for arg in &expr.args {
-                if let Some(unit) = eval_net(arg, lapis) {
-                    if unit.inputs() == 0 && unit.outputs() == 1 {
-                        units.push(Box::new(unit));
-                    }
+                if let Some(unit) = eval_net(arg, lapis)
+                    && unit.inputs() == 0
+                    && unit.outputs() == 1
+                {
+                    units.push(Box::new(unit));
                 }
             }
             Some(Net::wrap(Box::new(An(Seq::new(units)))))
@@ -1554,13 +1557,13 @@ fn call_net(expr: &ExprCall, lapis: &mut Lapis) -> Option<Net> {
             let k = nth_path_ident(expr.args.first()?, 0)?;
             if let Some(table) = lapis.atomic_table_map.get(&k) {
                 let mut synth = AtomicSynth::<f32>::new(table.clone());
-                if let Some(arg1) = expr.args.get(1) {
-                    if let Some(interp) = eval_str_lit(arg1) {
-                        if interp == "linear" {
-                            synth.set_interpolation(Interpolation::Linear);
-                        } else if interp == "cubic" {
-                            synth.set_interpolation(Interpolation::Cubic);
-                        }
+                if let Some(arg1) = expr.args.get(1)
+                    && let Some(interp) = eval_str_lit(arg1)
+                {
+                    if interp == "linear" {
+                        synth.set_interpolation(Interpolation::Linear);
+                    } else if interp == "cubic" {
+                        synth.set_interpolation(Interpolation::Cubic);
                     }
                 }
                 return Some(Net::wrap(Box::new(An(synth))));
@@ -1576,10 +1579,11 @@ fn call_net(expr: &ExprCall, lapis: &mut Lapis) -> Option<Net> {
         "step" => {
             let mut units: Vec<Box<dyn AudioUnit>> = Vec::new();
             for arg in &expr.args {
-                if let Some(unit) = eval_net(arg, lapis) {
-                    if unit.inputs() == 0 && unit.outputs() == 1 {
-                        units.push(Box::new(unit));
-                    }
+                if let Some(unit) = eval_net(arg, lapis)
+                    && unit.inputs() == 0
+                    && unit.outputs() == 1
+                {
+                    units.push(Box::new(unit));
                 }
             }
             Some(Net::wrap(Box::new(An(Step::new(units)))))
@@ -1587,10 +1591,11 @@ fn call_net(expr: &ExprCall, lapis: &mut Lapis) -> Option<Net> {
         "filter_step" => {
             let mut units: Vec<Box<dyn AudioUnit>> = Vec::new();
             for arg in &expr.args {
-                if let Some(unit) = eval_net(arg, lapis) {
-                    if unit.inputs() == 1 && unit.outputs() == 1 {
-                        units.push(Box::new(unit));
-                    }
+                if let Some(unit) = eval_net(arg, lapis)
+                    && unit.inputs() == 1
+                    && unit.outputs() == 1
+                {
+                    units.push(Box::new(unit));
                 }
             }
             Some(Net::wrap(Box::new(An(FilterStep::new(units)))))

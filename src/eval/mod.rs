@@ -275,10 +275,10 @@ where
         err_fn,
         None,
     );
-    if let Ok(stream) = stream {
-        if let Ok(()) = stream.play() {
-            return Some(stream);
-        }
+    if let Ok(stream) = stream
+        && let Ok(()) = stream.play()
+    {
+        return Some(stream);
     }
     None
 }
@@ -306,10 +306,10 @@ where
         err_fn,
         None,
     );
-    if let Ok(stream) = stream {
-        if let Ok(()) = stream.play() {
-            return Some(stream);
-        }
+    if let Ok(stream) = stream
+        && let Ok(()) = stream.play()
+    {
+        return Some(stream);
     }
     None
 }

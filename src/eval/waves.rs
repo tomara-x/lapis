@@ -76,10 +76,10 @@ fn call_wave(expr: &ExprCall, lapis: &mut Lapis) -> Option<Wave> {
         }
         "load" => {
             let arg0 = expr.args.first()?;
-            if let Expr::Lit(expr) = arg0 {
-                if let Lit::Str(expr) = &expr.lit {
-                    return Wave::load(expr.value()).ok();
-                }
+            if let Expr::Lit(expr) = arg0
+                && let Lit::Str(expr) = &expr.lit
+            {
+                return Wave::load(expr.value()).ok();
             }
             None
         }
@@ -258,24 +258,22 @@ pub fn wave_methods(expr: &ExprMethodCall, lapis: &mut Lapis) -> Option<()> {
             let arg = expr.args.first()?;
             let k = nth_path_ident(&expr.receiver, 0)?;
             let wave = lapis.wmap.get(&k)?;
-            if wave.channels() > 0 {
-                if let Expr::Lit(expr) = arg {
-                    if let Lit::Str(expr) = &expr.lit {
-                        let _ = wave.save_wav16(expr.value());
-                    }
-                }
+            if wave.channels() > 0
+                && let Expr::Lit(expr) = arg
+                && let Lit::Str(expr) = &expr.lit
+            {
+                let _ = wave.save_wav16(expr.value());
             }
         }
         "save_wav32" => {
             let arg = expr.args.first()?;
             let k = nth_path_ident(&expr.receiver, 0)?;
             let wave = lapis.wmap.get(&k)?;
-            if wave.channels() > 0 {
-                if let Expr::Lit(expr) = arg {
-                    if let Lit::Str(expr) = &expr.lit {
-                        let _ = wave.save_wav32(expr.value());
-                    }
-                }
+            if wave.channels() > 0
+                && let Expr::Lit(expr) = arg
+                && let Lit::Str(expr) = &expr.lit
+            {
+                let _ = wave.save_wav32(expr.value());
             }
         }
         "remove_channel" => {
