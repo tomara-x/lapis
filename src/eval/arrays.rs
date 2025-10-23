@@ -40,7 +40,7 @@ fn method_vec(expr: &ExprMethodCall, lapis: &mut Lapis) -> Option<Vec<f32>> {
             let in_arr = eval_vec(input, lapis)?;
             let mut output = Vec::new();
             if let Some(k) = nth_path_ident(&expr.receiver, 0) {
-                if let Some(g) = &mut lapis.gmap.get_mut(&k) {
+                if let Some(g) = lapis.gmap.get_mut(&k) {
                     if g.inputs() != in_arr.len() {
                         return None;
                     }
@@ -68,19 +68,19 @@ pub fn vec_methods(expr: &ExprMethodCall, lapis: &mut Lapis) -> Option<()> {
             let arg = expr.args.first()?;
             let v = eval_float(arg, lapis)?;
             let k = nth_path_ident(&expr.receiver, 0)?;
-            let vec = &mut lapis.vmap.get_mut(&k)?;
+            let vec = lapis.vmap.get_mut(&k)?;
             vec.push(v);
         }
         "pop" => {
             let k = nth_path_ident(&expr.receiver, 0)?;
-            let vec = &mut lapis.vmap.get_mut(&k)?;
+            let vec = lapis.vmap.get_mut(&k)?;
             vec.pop();
         }
         "insert" => {
             let index = eval_usize(expr.args.first()?, lapis)?;
             let val = eval_float(expr.args.get(1)?, lapis)?;
             let k = nth_path_ident(&expr.receiver, 0)?;
-            let vec = &mut lapis.vmap.get_mut(&k)?;
+            let vec = lapis.vmap.get_mut(&k)?;
             if index < vec.len() {
                 vec.insert(index, val);
             }
@@ -88,7 +88,7 @@ pub fn vec_methods(expr: &ExprMethodCall, lapis: &mut Lapis) -> Option<()> {
         "remove" => {
             let index = eval_usize(expr.args.first()?, lapis)?;
             let k = nth_path_ident(&expr.receiver, 0)?;
-            let vec = &mut lapis.vmap.get_mut(&k)?;
+            let vec = lapis.vmap.get_mut(&k)?;
             if index < vec.len() {
                 vec.remove(index);
             }
@@ -97,12 +97,12 @@ pub fn vec_methods(expr: &ExprMethodCall, lapis: &mut Lapis) -> Option<()> {
             let new_len = eval_usize(expr.args.first()?, lapis)?;
             let val = eval_float(expr.args.get(1)?, lapis)?;
             let k = nth_path_ident(&expr.receiver, 0)?;
-            let vec = &mut lapis.vmap.get_mut(&k)?;
+            let vec = lapis.vmap.get_mut(&k)?;
             vec.resize(new_len, val);
         }
         "clear" => {
             let k = nth_path_ident(&expr.receiver, 0)?;
-            let vec = &mut lapis.vmap.get_mut(&k)?;
+            let vec = lapis.vmap.get_mut(&k)?;
             vec.clear();
         }
         _ => {}
