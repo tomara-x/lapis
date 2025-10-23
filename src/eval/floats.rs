@@ -18,9 +18,8 @@ pub fn eval_float(expr: &Expr, lapis: &Lapis) -> Option<f32> {
 fn field_float(expr: &ExprField, lapis: &Lapis) -> Option<f32> {
     let base = nth_path_ident(&expr.base, 0)?;
     if let Member::Named(ident) = &expr.member {
-        if base == "out_stream"
-            && let Some((config, _)) = &lapis.out_stream
-        {
+        if base == "out_stream" {
+            let config = &lapis.out_stream.as_ref()?.0;
             return match ident.to_string().as_str() {
                 "sr" => Some(config.sample_rate.0 as f32),
                 "chan" => Some(config.channels as f32),
@@ -32,9 +31,8 @@ fn field_float(expr: &ExprField, lapis: &Lapis) -> Option<f32> {
                 }
                 _ => None,
             };
-        } else if base == "in_stream"
-            && let Some((config, _)) = &lapis.in_stream
-        {
+        } else if base == "in_stream" {
+            let config = &lapis.in_stream.as_ref()?.0;
             return match ident.to_string().as_str() {
                 "sr" => Some(config.sample_rate.0 as f32),
                 "chan" => Some(config.channels as f32),
