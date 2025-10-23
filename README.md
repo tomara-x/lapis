@@ -7,7 +7,7 @@ if you notice something incorrect, missing, or confusing, please open an issue t
 ## wasm
 there's a wasm version here: https://tomara-x.github.io/lapis/
 
-execute `set_out_device(0,0,_,_,_);` for audio output to work
+execute `set_out_device(_,_,_,_,_);` for audio output to work
 
 ## limitations
 - you don't have the rust compiler looking over your shoulder
