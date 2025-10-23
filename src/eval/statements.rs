@@ -92,7 +92,7 @@ fn eval_expr(expr: Expr, lapis: &mut Lapis, buffer: &mut String) {
             }
             "error" => {
                 if let Some(k) = nth_path_ident(&expr.receiver, 0)
-                    && let Some(g) = &mut lapis.gmap.get_mut(&k)
+                    && let Some(g) = lapis.gmap.get_mut(&k)
                 {
                     buffer.push_str(&format!("\n// {:?}", g.error()));
                 }
