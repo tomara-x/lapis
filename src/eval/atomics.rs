@@ -40,7 +40,7 @@ pub fn shared_methods(expr: &ExprMethodCall, lapis: &Lapis) -> Option<()> {
     None
 }
 
-pub fn eval_atomic_table(expr: &Expr, lapis: &Lapis) -> Option<AtomicTable> {
+pub fn eval_atomic_table(expr: &Expr, lapis: &mut Lapis) -> Option<AtomicTable> {
     if let Expr::Call(expr) = expr {
         let func = nth_path_ident(&expr.func, 0)?;
         if func == "atomic_table" {

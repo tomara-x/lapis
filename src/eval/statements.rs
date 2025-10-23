@@ -85,35 +85,6 @@ fn eval_expr(expr: Expr, lapis: &mut Lapis, buffer: &mut String) {
                     }
                 }
             }
-            "tick" => {
-                let Some(input) = expr.args.first() else { return };
-                let Some(in_arr) = eval_vec(input, lapis) else { return };
-                let mut output = Vec::new();
-                if let Some(k) = nth_path_ident(&expr.receiver, 0) {
-                    if let Some(g) = &mut lapis.gmap.get_mut(&k) {
-                        if g.inputs() != in_arr.len() {
-                            return;
-                        }
-                        output.resize(g.outputs(), 0.);
-                        g.tick(&in_arr, &mut output);
-                    }
-                } else if let Some(mut g) = eval_net(&expr.receiver, lapis) {
-                    if g.inputs() != in_arr.len() {
-                        return;
-                    }
-                    output.resize(g.outputs(), 0.);
-                    g.tick(&in_arr, &mut output);
-                }
-                if let Some(out) = expr.args.get(1) {
-                    if let Some(k) = nth_path_ident(out, 0) {
-                        if let Some(var) = lapis.vmap.get_mut(&k) {
-                            *var = output;
-                        }
-                    }
-                } else {
-                    buffer.push_str(&format!("\n// {:?}", output));
-                }
-            }
             "drop" => {
                 if let Some(k) = nth_path_ident(&expr.receiver, 0) {
                     lapis.drop(&k);

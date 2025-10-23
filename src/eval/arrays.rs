@@ -1,6 +1,6 @@
 use crate::eval::*;
 
-pub fn eval_vec(expr: &Expr, lapis: &Lapis) -> Option<Vec<f32>> {
+pub fn eval_vec(expr: &Expr, lapis: &mut Lapis) -> Option<Vec<f32>> {
     match expr {
         Expr::Array(expr) => array_lit(expr, lapis),
         Expr::Path(_) => {
@@ -22,7 +22,7 @@ fn array_lit(expr: &ExprArray, lapis: &Lapis) -> Option<Vec<f32>> {
     Some(arr)
 }
 
-fn method_vec(expr: &ExprMethodCall, lapis: &Lapis) -> Option<Vec<f32>> {
+fn method_vec(expr: &ExprMethodCall, lapis: &mut Lapis) -> Option<Vec<f32>> {
     match expr.method.to_string().as_str() {
         "channel" => {
             let arg = expr.args.first()?;
@@ -34,6 +34,29 @@ fn method_vec(expr: &ExprMethodCall, lapis: &Lapis) -> Option<Vec<f32>> {
         "clone" => {
             let k = nth_path_ident(&expr.receiver, 0)?;
             lapis.vmap.get(&k).cloned()
+        }
+        "tick" => {
+            let input = expr.args.first()?;
+            let in_arr = eval_vec(input, lapis)?;
+            let mut output = Vec::new();
+            if let Some(k) = nth_path_ident(&expr.receiver, 0) {
+                if let Some(g) = &mut lapis.gmap.get_mut(&k) {
+                    if g.inputs() != in_arr.len() {
+                        return None;
+                    }
+                    output.resize(g.outputs(), 0.);
+                    g.tick(&in_arr, &mut output);
+                    return Some(output);
+                }
+            } else if let Some(mut g) = eval_net(&expr.receiver, lapis) {
+                if g.inputs() != in_arr.len() {
+                    return None;
+                }
+                output.resize(g.outputs(), 0.);
+                g.tick(&in_arr, &mut output);
+                return Some(output);
+            }
+            None
         }
         _ => None,
     }

@@ -386,12 +386,10 @@ let net = pass() | mul(10);
 net.tick([5, 2]);
 // [5.0, 20.0]
 
-// tick can store the outputs in an array instead of printing
-// output vector will be resized to the number of output channels
+// tick returns an array, you can use it normally
 let i = [13, 1.2];
-let o = [];
-net.tick(i, o);
-o
+let o = net.tick(i);
+o;
 // [13.0, 12.0]
 ```
 ### [shared/var](https://github.com/SamiPerttu/fundsp#atomic-variables)
