@@ -4,7 +4,7 @@
 use eframe::egui::*;
 
 mod eval;
-use eval::Lapis;
+use eval::*;
 
 #[cfg(not(target_arch = "wasm32"))]
 fn main() -> eframe::Result {
@@ -166,6 +166,9 @@ impl eframe::App for Lapis {
                 if ui.button("settings").clicked() {
                     self.settings = !self.settings;
                 }
+                if ui.button("sliders").clicked() {
+                    self.sliders_window = !self.sliders_window;
+                }
                 if ui.button("about").clicked() {
                     self.about = !self.about;
                 }
@@ -191,6 +194,53 @@ impl eframe::App for Lapis {
                         ui.add(DragValue::new(&mut self.zoom_factor).range(0.5..=4.).speed(0.1));
                         ctx.set_zoom_factor(self.zoom_factor);
                     });
+                });
+            });
+            Window::new("sliders").open(&mut self.sliders_window).pivot(center).show(ctx, |ui| {
+                if ui.button("+").clicked() {
+                    self.sliders.push(SliderSettings {
+                        min: -1.,
+                        max: 1.,
+                        speed: 0.1,
+                        step_by: 0.,
+                        var: "".to_string(),
+                    });
+                }
+                ScrollArea::vertical().show(ui, |ui| {
+                    for s in &mut self.sliders {
+                        ui.horizontal(|ui| {
+                            ui.add(
+                                TextEdit::singleline(&mut s.var)
+                                    .hint_text("variable")
+                                    .desired_width(80.),
+                            )
+                            .on_hover_text("the variable linked to this slider (float or shared)");
+                            let mut tmp = 0.;
+                            if let Some(v) = self.fmap.get(&s.var) {
+                                tmp = *v;
+                            } else if let Some(v) = self.smap.get(&s.var) {
+                                tmp = v.value();
+                            }
+                            ui.add(
+                                Slider::new(&mut tmp, s.min..=s.max)
+                                    .step_by(s.step_by)
+                                    .drag_value_speed(s.speed),
+                            );
+                            ui.add(DragValue::new(&mut s.min).range(-1e6..=1e6))
+                                .on_hover_text("min");
+                            ui.add(DragValue::new(&mut s.max).range(-1e6..=1e6))
+                                .on_hover_text("max");
+                            ui.add(DragValue::new(&mut s.speed).range(0.0000001..=1.))
+                                .on_hover_text("speed when dragging the number");
+                            ui.add(DragValue::new(&mut s.step_by).range(0. ..=1.))
+                                .on_hover_text("step size when dragging the slider (0 to disable)");
+                            if let Some(v) = self.fmap.get_mut(&s.var) {
+                                *v = tmp;
+                            } else if let Some(v) = self.smap.get(&s.var) {
+                                v.set(tmp);
+                            }
+                        });
+                    }
                 });
             });
             ScrollArea::vertical().stick_to_bottom(true).show(ui, |ui| {

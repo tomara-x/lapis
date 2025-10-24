@@ -25,10 +25,20 @@ use {
     sources::*, statements::*, waves::*,
 };
 
+pub struct SliderSettings {
+    pub min: f32,
+    pub max: f32,
+    pub step_by: f64,
+    pub speed: f64,
+    pub var: String,
+}
+
 pub struct Lapis {
     pub buffer: String,
     pub input: String,
     pub settings: bool,
+    pub sliders_window: bool,
+    pub sliders: Vec<SliderSettings>,
     pub about: bool,
     pub fmap: HashMap<String, f32>,
     pub vmap: HashMap<String, Vec<f32>>,
@@ -62,6 +72,8 @@ impl Lapis {
             buffer: String::new(),
             input: String::new(),
             settings: false,
+            sliders_window: false,
+            sliders: Vec::new(),
             about: false,
             fmap: HashMap::new(),
             vmap: HashMap::new(),
