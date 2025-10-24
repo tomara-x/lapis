@@ -1,5 +1,4 @@
 use crate::eval::*;
-use cpal::traits::{DeviceTrait, HostTrait};
 use eframe::egui::{Key, Modifiers};
 use syn::punctuated::Punctuated;
 
@@ -8,54 +7,6 @@ pub fn eval_str_lit(expr: &Expr) -> Option<String> {
         && let Lit::Str(expr) = &expr.lit
     {
         return Some(expr.value());
-    }
-    None
-}
-
-pub fn device_commands(expr: ExprCall, lapis: &mut Lapis, buffer: &mut String) -> Option<()> {
-    let func = nth_path_ident(&expr.func, 0)?;
-    match func.as_str() {
-        "list_in_devices" => {
-            let hosts = cpal::platform::ALL_HOSTS;
-            buffer.push_str("\n// input devices:\n");
-            for (i, host) in hosts.iter().enumerate() {
-                buffer.push_str(&format!("// {}: {:?}:\n", i, host));
-                if let Ok(devices) = cpal::platform::host_from_id(*host).unwrap().input_devices() {
-                    for (j, device) in devices.enumerate() {
-                        buffer.push_str(&format!("//     {}: {:?}\n", j, device.name()));
-                    }
-                }
-            }
-        }
-        "list_out_devices" => {
-            let hosts = cpal::platform::ALL_HOSTS;
-            buffer.push_str("\n// output devices:\n");
-            for (i, host) in hosts.iter().enumerate() {
-                buffer.push_str(&format!("// {}: {:?}:\n", i, host));
-                if let Ok(devices) = cpal::platform::host_from_id(*host).unwrap().output_devices() {
-                    for (j, device) in devices.enumerate() {
-                        buffer.push_str(&format!("//     {}: {:?}\n", j, device.name()));
-                    }
-                }
-            }
-        }
-        "set_in_device" => {
-            let h = eval_usize(expr.args.first()?, lapis);
-            let d = eval_usize(expr.args.get(1)?, lapis);
-            let channels = eval_usize(expr.args.get(2)?, lapis).map(|x| x as u16);
-            let sr = eval_usize(expr.args.get(3)?, lapis).map(|x| x as u32);
-            let buffer = eval_usize(expr.args.get(4)?, lapis).map(|x| x as u32);
-            lapis.set_in_device(h, d, channels, sr, buffer);
-        }
-        "set_out_device" => {
-            let h = eval_usize(expr.args.first()?, lapis);
-            let d = eval_usize(expr.args.get(1)?, lapis);
-            let channels = eval_usize(expr.args.get(2)?, lapis).map(|x| x as u16);
-            let sr = eval_usize(expr.args.get(3)?, lapis).map(|x| x as u32);
-            let buffer = eval_usize(expr.args.get(4)?, lapis).map(|x| x as u32);
-            lapis.set_out_device(h, d, channels, sr, buffer);
-        }
-        _ => {}
     }
     None
 }

@@ -656,6 +656,22 @@ x;
 // Size           : 1
 ```
 
+### sliders
+you can add sliders in the sliders window and link them to variables (floats and shared variables will work).
+
+you can also create them using lapis code (for saving a setup)
+```rust
+let min = 0;
+let max = 10;
+let speed = 0.1;
+let step_by = 0;
+
+let x = 0;
+let y = shared(1);
+add_slider("x", min, max, speed, step_by);
+add_slider("y", min, max, speed, step_by);
+```
+
 <details><summary>function list</summary>
 <p>
 

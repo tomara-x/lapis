@@ -1,4 +1,5 @@
 use crate::eval::*;
+use cpal::traits::{DeviceTrait, HostTrait};
 use crossbeam_channel::bounded;
 
 pub fn eval_stmt(s: Stmt, lapis: &mut Lapis) -> String {
@@ -66,7 +67,7 @@ fn eval_expr(expr: Expr, lapis: &mut Lapis, buffer: &mut String) {
     } else if let Some(event) = eval_eventid(&expr, lapis) {
         buffer.push_str(&format!("\n// {:?}", event));
     } else if let Expr::Call(expr) = expr {
-        device_commands(expr, lapis, buffer);
+        function_calls(expr, lapis, buffer);
     } else if let Expr::Binary(expr) = expr {
         float_bin_assign(&expr, lapis);
     } else if let Expr::Break(_) = expr {
@@ -336,4 +337,60 @@ fn eval_for_loop(expr: &ExprForLoop, lapis: &mut Lapis, buffer: &mut String) {
     } else {
         lapis.fmap.remove(&ident);
     }
+}
+
+fn function_calls(expr: ExprCall, lapis: &mut Lapis, buffer: &mut String) -> Option<()> {
+    let func = nth_path_ident(&expr.func, 0)?;
+    match func.as_str() {
+        "list_in_devices" => {
+            let hosts = cpal::platform::ALL_HOSTS;
+            buffer.push_str("\n// input devices:\n");
+            for (i, host) in hosts.iter().enumerate() {
+                buffer.push_str(&format!("// {}: {:?}:\n", i, host));
+                if let Ok(devices) = cpal::platform::host_from_id(*host).unwrap().input_devices() {
+                    for (j, device) in devices.enumerate() {
+                        buffer.push_str(&format!("//     {}: {:?}\n", j, device.name()));
+                    }
+                }
+            }
+        }
+        "list_out_devices" => {
+            let hosts = cpal::platform::ALL_HOSTS;
+            buffer.push_str("\n// output devices:\n");
+            for (i, host) in hosts.iter().enumerate() {
+                buffer.push_str(&format!("// {}: {:?}:\n", i, host));
+                if let Ok(devices) = cpal::platform::host_from_id(*host).unwrap().output_devices() {
+                    for (j, device) in devices.enumerate() {
+                        buffer.push_str(&format!("//     {}: {:?}\n", j, device.name()));
+                    }
+                }
+            }
+        }
+        "set_in_device" => {
+            let h = eval_usize(expr.args.first()?, lapis);
+            let d = eval_usize(expr.args.get(1)?, lapis);
+            let channels = eval_usize(expr.args.get(2)?, lapis).map(|x| x as u16);
+            let sr = eval_usize(expr.args.get(3)?, lapis).map(|x| x as u32);
+            let buffer = eval_usize(expr.args.get(4)?, lapis).map(|x| x as u32);
+            lapis.set_in_device(h, d, channels, sr, buffer);
+        }
+        "set_out_device" => {
+            let h = eval_usize(expr.args.first()?, lapis);
+            let d = eval_usize(expr.args.get(1)?, lapis);
+            let channels = eval_usize(expr.args.get(2)?, lapis).map(|x| x as u16);
+            let sr = eval_usize(expr.args.get(3)?, lapis).map(|x| x as u32);
+            let buffer = eval_usize(expr.args.get(4)?, lapis).map(|x| x as u32);
+            lapis.set_out_device(h, d, channels, sr, buffer);
+        }
+        "add_slider" => {
+            let var = eval_str_lit(expr.args.first()?)?;
+            let min = eval_float(expr.args.get(1)?, lapis)?;
+            let max = eval_float(expr.args.get(2)?, lapis)?;
+            let speed = eval_float(expr.args.get(3)?, lapis)? as f64;
+            let step_by = eval_float(expr.args.get(4)?, lapis)? as f64;
+            lapis.sliders.push(SliderSettings { min, max, speed, step_by, var });
+        }
+        _ => {}
+    }
+    None
 }
