@@ -140,14 +140,14 @@ impl eframe::App for Lapis {
                 ui.horizontal(|ui| {
                     ui.label("repo:");
                     ui.hyperlink_to(
-                        "github.com/tomara-x/lapis",
+                        "codeberg.org/tomara-x/lapis",
                         "https://codeberg.org/tomara-x/lapis/",
                     );
                 });
                 ui.horizontal(|ui| {
                     ui.label("mirror:");
                     ui.hyperlink_to(
-                        "codeberg.org/tomara-x/lapis",
+                        "github.com/tomara-x/lapis",
                         "https://github.com/tomara-x/lapis/",
                     );
                 });
