@@ -1,10 +1,12 @@
 // hide console window on Windows in release
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+use crossbeam_channel::{Receiver, Sender, bounded};
 use eframe::egui::*;
+use std::{collections::HashMap, thread, time::Duration};
 
 mod eval;
-use eval::*;
+use eval::Lapis;
 
 #[cfg(not(target_arch = "wasm32"))]
 fn main() -> eframe::Result {
@@ -22,7 +24,7 @@ fn main() -> eframe::Result {
         centered: true,
         ..Default::default()
     };
-    eframe::run_native("awawawa", options, Box::new(|_| Ok(Box::new(Lapis::new()))))
+    eframe::run_native("awawawa", options, Box::new(|_| Ok(Box::new(LapisApp::new()))))
 }
 
 #[cfg(target_arch = "wasm32")]
@@ -44,7 +46,7 @@ fn main() {
             .expect("the_canvas_id was not a HtmlCanvasElement");
 
         let start_result = eframe::WebRunner::new()
-            .start(canvas, web_options, Box::new(|_| Ok(Box::new(Lapis::new()))))
+            .start(canvas, web_options, Box::new(|_| Ok(Box::new(LapisApp::new()))))
             .await;
 
         // Remove the loading text and spinner:
@@ -64,8 +66,104 @@ fn main() {
     });
 }
 
-impl eframe::App for Lapis {
+struct SliderSettings {
+    min: f32,
+    max: f32,
+    step_by: f64,
+    speed: f64,
+    var: String,
+}
+
+enum EvalInput {
+    Code(String),
+    Quiet(String),
+}
+
+enum EvalResult {
+    String(String),
+    SetKeys(bool),
+    SetKeysRepeat(bool),
+    SetQuiet(bool),
+    AddKey(Modifiers, Key, bool, String),
+    AddSlider(SliderSettings),
+}
+
+struct LapisApp {
+    s: Sender<EvalInput>,
+    r: Receiver<EvalResult>,
+    buffer: String,
+    input: String,
+    settings: bool,
+    sliders_window: bool,
+    sliders: Vec<SliderSettings>,
+    about: bool,
+    // (modifiers, key, pressed)
+    keys: HashMap<(Modifiers, Key, bool), String>,
+    keys_active: bool,
+    keys_repeat: bool,
+    zoom_factor: f32,
+    quiet: bool,
+}
+
+impl LapisApp {
+    fn new() -> Self {
+        let (code_sender, code_receiver) = bounded(4);
+        let (output_sender, output_receiver) = bounded(4);
+        let mut lapis = Lapis::new(code_receiver, output_sender);
+        thread::spawn(move || {
+            loop {
+                lapis.eval();
+                thread::sleep(Duration::from_millis(1));
+            }
+        });
+        Self {
+            s: code_sender,
+            r: output_receiver,
+            buffer: String::new(),
+            input: String::new(),
+            settings: false,
+            sliders_window: false,
+            sliders: Vec::new(),
+            about: false,
+            keys: HashMap::new(),
+            keys_active: false,
+            keys_repeat: false,
+            zoom_factor: 1.,
+            quiet: false,
+        }
+    }
+    fn eval(&self, input: &str) {
+        if !input.is_empty() {
+            let _ = self.s.try_send(EvalInput::Code(format!("{{{}}}", input)));
+        }
+    }
+    fn quiet_eval(&self, input: &str) {
+        if !input.is_empty() {
+            let _ = self.s.try_send(EvalInput::Quiet(format!("{{{}}}", input)));
+        }
+    }
+    fn handle_results(&mut self) {
+        while let Ok(result) = self.r.try_recv() {
+            match result {
+                EvalResult::String(s) => self.buffer.push_str(&s),
+                EvalResult::SetKeys(b) => self.keys_active = b,
+                EvalResult::SetKeysRepeat(b) => self.keys_repeat = b,
+                EvalResult::SetQuiet(b) => self.quiet = b,
+                EvalResult::AddKey(modifiers, key, pressed, code) => {
+                    self.keys.remove(&(modifiers, key, pressed));
+                    if !code.is_empty() {
+                        self.keys.insert((modifiers, key, pressed), code);
+                    }
+                }
+                EvalResult::AddSlider(slider) => self.sliders.push(slider),
+            }
+        }
+    }
+}
+
+impl eframe::App for LapisApp {
     fn update(&mut self, ctx: &Context, _frame: &mut eframe::Frame) {
+        self.handle_results();
         let center = Align2::CENTER_CENTER;
         let mut theme = egui_extras::syntax_highlighting::CodeTheme::from_memory(ctx, &ctx.style());
         let theme_copy = theme.clone();
@@ -91,6 +189,8 @@ impl eframe::App for Lapis {
                             if self.quiet {
                                 self.quiet_eval(&code.clone());
                             } else {
+                                self.buffer.push('\n');
+                                self.buffer.push_str(code);
                                 self.eval(&code.clone());
                             }
                         }
@@ -123,7 +223,10 @@ impl eframe::App for Lapis {
                             if input_focused && ctx.input_mut(|i| i.consume_shortcut(&shortcut))
                                 || execute.clicked()
                             {
-                                self.eval_input();
+                                self.eval(&self.input);
+                                self.buffer.push('\n');
+                                self.buffer.push_str(&self.input);
+                                self.input.clear();
                             }
                         });
                     });
@@ -216,11 +319,12 @@ impl eframe::App for Lapis {
                             )
                             .on_hover_text("the variable linked to this slider (float or shared)");
                             let mut tmp = 0.;
-                            if let Some(v) = self.fmap.get(&s.var) {
-                                tmp = *v;
-                            } else if let Some(v) = self.smap.get(&s.var) {
-                                tmp = v.value();
-                            }
+                            // FIXME
+                            //if let Some(v) = self.lapis.fmap.get(&s.var) {
+                            //    tmp = *v;
+                            //} else if let Some(v) = self.lapis.smap.get(&s.var) {
+                            //    tmp = v.value();
+                            //}
                             ui.add(
                                 Slider::new(&mut tmp, s.min..=s.max)
                                     .step_by(s.step_by)
@@ -234,11 +338,11 @@ impl eframe::App for Lapis {
                                 .on_hover_text("speed when dragging the number");
                             ui.add(DragValue::new(&mut s.step_by).range(0. ..=1.))
                                 .on_hover_text("step size when dragging the slider (0 to disable)");
-                            if let Some(v) = self.fmap.get_mut(&s.var) {
-                                *v = tmp;
-                            } else if let Some(v) = self.smap.get(&s.var) {
-                                v.set(tmp);
-                            }
+                            //if let Some(v) = self.lapis.fmap.get_mut(&s.var) {
+                            //    *v = tmp;
+                            //} else if let Some(v) = self.lapis.smap.get(&s.var) {
+                            //    v.set(tmp);
+                            //}
                         });
                     }
                 });

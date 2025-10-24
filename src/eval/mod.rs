@@ -1,9 +1,9 @@
+use crate::{EvalInput, EvalResult};
 use cpal::{
     FromSample, SizedSample, Stream, StreamConfig,
     traits::{DeviceTrait, HostTrait, StreamTrait},
 };
 use crossbeam_channel::{Receiver, Sender, bounded};
-use eframe::egui::{Key, Modifiers};
 use fundsp::hacker32::*;
 use std::collections::HashMap;
 use std::sync::Arc;
@@ -25,21 +25,9 @@ use {
     sources::*, statements::*, waves::*,
 };
 
-pub struct SliderSettings {
-    pub min: f32,
-    pub max: f32,
-    pub step_by: f64,
-    pub speed: f64,
-    pub var: String,
-}
-
 pub struct Lapis {
-    pub buffer: String,
-    pub input: String,
-    pub settings: bool,
-    pub sliders_window: bool,
-    pub sliders: Vec<SliderSettings>,
-    pub about: bool,
+    pub r: Receiver<EvalInput>,
+    pub s: Sender<EvalResult>,
     pub fmap: HashMap<String, f32>,
     pub vmap: HashMap<String, Vec<f32>>,
     pub gmap: HashMap<String, Net>,
@@ -55,26 +43,16 @@ pub struct Lapis {
     pub out_stream: Option<(StreamConfig, Stream)>,
     pub in_stream: Option<(StreamConfig, Stream)>,
     pub receiver: Receiver<(usize, f32)>,
-    // (modifiers, key, pressed)
-    pub keys: HashMap<(Modifiers, Key, bool), String>,
-    pub keys_active: bool,
-    pub keys_repeat: bool,
-    pub zoom_factor: f32,
-    pub quiet: bool,
 }
 
 impl Lapis {
-    pub fn new() -> Self {
+    pub fn new(r: Receiver<EvalInput>, s: Sender<EvalResult>) -> Self {
         // dummy things
         let (slot, _) = Slot::new(Box::new(dc(0.)));
         let (_, receiver) = bounded(1);
         let mut lapis = Lapis {
-            buffer: String::new(),
-            input: String::new(),
-            settings: false,
-            sliders_window: false,
-            sliders: Vec::new(),
-            about: false,
+            s,
+            r,
             fmap: HashMap::new(),
             vmap: HashMap::new(),
             gmap: HashMap::new(),
@@ -90,49 +68,29 @@ impl Lapis {
             out_stream: None,
             in_stream: None,
             receiver,
-            keys: HashMap::new(),
-            keys_active: false,
-            keys_repeat: false,
-            zoom_factor: 1.,
-            quiet: false,
         };
         lapis.set_out_device(None, None, None, None, None);
         lapis.set_in_device(None, None, None, None, None);
         lapis
     }
-    pub fn eval(&mut self, input: &str) {
-        if !input.is_empty() {
-            self.buffer.push('\n');
-            self.buffer.push_str(input);
-            match parse_str::<Stmt>(&format!("{{{}}}", input)) {
-                Ok(stmt) => {
-                    let out = eval_stmt(stmt, self);
-                    self.buffer.push_str(&out);
+    pub fn eval(&mut self) {
+        while let Ok(input) = self.r.try_recv() {
+            match input {
+                EvalInput::Code(input) => {
+                    if !input.is_empty() {
+                        let out = match parse_str::<Stmt>(&input) {
+                            Ok(stmt) => eval_stmt(stmt, self),
+                            Err(err) => format!("\n// error: {}", err),
+                        };
+                        let _ = self.s.try_send(EvalResult::String(out));
+                    }
                 }
-                Err(err) => {
-                    self.buffer.push_str(&format!("\n// error: {}", err));
-                }
-            }
-        }
-    }
-    pub fn eval_input(&mut self) {
-        if !self.input.is_empty() {
-            match parse_str::<Stmt>(&format!("{{{}}}", self.input)) {
-                Ok(stmt) => {
-                    self.buffer.push('\n');
-                    self.buffer.push_str(&std::mem::take(&mut self.input));
-                    let out = eval_stmt(stmt, self);
-                    self.buffer.push_str(&out);
-                }
-                Err(err) => {
-                    self.buffer.push_str(&format!("\n// error: {}", err));
+                EvalInput::Quiet(input) => {
+                    if let Ok(stmt) = parse_str::<Stmt>(&input) {
+                        eval_stmt(stmt, self);
+                    }
                 }
             }
-        }
-    }
-    pub fn quiet_eval(&mut self, input: &str) {
-        if let Ok(stmt) = parse_str::<Stmt>(&format!("{{{}}}", input)) {
-            eval_stmt(stmt, self);
         }
     }
     pub fn drop(&mut self, k: &str) {

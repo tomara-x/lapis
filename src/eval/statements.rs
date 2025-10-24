@@ -1,6 +1,7 @@
-use crate::eval::*;
+use crate::{SliderSettings, eval::*};
 use cpal::traits::{DeviceTrait, HostTrait};
 use crossbeam_channel::bounded;
+use std::{thread, time::Duration};
 
 pub fn eval_stmt(s: Stmt, lapis: &mut Lapis) -> String {
     let mut buffer = String::new();
@@ -269,21 +270,24 @@ fn eval_assign(expr: &ExprAssign, lapis: &mut Lapis) {
             if let Lit::Str(left) = &left.lit {
                 if let Some(b) = eval_bool(&expr.right, lapis) {
                     match left.value().as_str() {
-                        "keys" => lapis.keys_active = b,
-                        "quiet" => lapis.quiet = b,
+                        "keys" => {
+                            let _ = lapis.s.try_send(EvalResult::SetKeys(b));
+                        }
+                        "quiet" => {
+                            let _ = lapis.s.try_send(EvalResult::SetQuiet(b));
+                        }
+                        "keys_repeat" => {
+                            let _ = lapis.s.try_send(EvalResult::SetKeysRepeat(b));
+                        }
                         _ => {}
                     }
                 } else if let Expr::Lit(right) = &*expr.right
-                    && let Some(shortcut) = parse_shortcut(left.value())
+                    && let Some((modifiers, key, pressed)) = parse_shortcut(left.value())
+                    && let Lit::Str(right) = &right.lit
                 {
-                    lapis.keys.remove(&shortcut);
-                    if let Lit::Str(right) = &right.lit {
-                        let key = shortcut.1.name();
-                        let code = right.value().replace("$key", key);
-                        if !code.is_empty() {
-                            lapis.keys.insert(shortcut, code);
-                        }
-                    }
+                    let key_name = key.name();
+                    let code = right.value().replace("$key", key_name);
+                    let _ = lapis.s.try_send(EvalResult::AddKey(modifiers, key, pressed, code));
                 }
             }
         }
@@ -388,7 +392,12 @@ fn function_calls(expr: ExprCall, lapis: &mut Lapis, buffer: &mut String) -> Opt
             let max = eval_float(expr.args.get(2)?, lapis)?;
             let speed = eval_float(expr.args.get(3)?, lapis)? as f64;
             let step_by = eval_float(expr.args.get(4)?, lapis)? as f64;
-            lapis.sliders.push(SliderSettings { min, max, speed, step_by, var });
+            let res = EvalResult::AddSlider(SliderSettings { min, max, speed, step_by, var });
+            let _ = lapis.s.try_send(res);
+        }
+        "sleep" => {
+            let d = eval_float(expr.args.first()?, lapis)?;
+            thread::sleep(Duration::from_secs_f32(d));
         }
         _ => {}
     }
