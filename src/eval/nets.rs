@@ -77,7 +77,7 @@ fn method_net(expr: &ExprMethodCall, lapis: &mut Lapis) -> Option<Net> {
             None
         }
         "phase" => {
-            let p = eval_float(expr.args.first()?, lapis)?;
+            let p = eval_float_f32(expr.args.first()?, lapis)?;
             let mut net = eval_net(&expr.receiver, lapis)?;
             // bad amy
             for i in 0..net.ids().len() {
@@ -103,8 +103,8 @@ fn method_net(expr: &ExprMethodCall, lapis: &mut Lapis) -> Option<Net> {
 fn bin_expr_net(expr: &ExprBinary, lapis: &mut Lapis) -> Option<Net> {
     let left_net = eval_net(&expr.left, lapis);
     let right_net = eval_net(&expr.right, lapis);
-    let left_float = eval_float(&expr.left, lapis);
-    let right_float = eval_float(&expr.right, lapis);
+    let left_float = eval_float_f32(&expr.left, lapis);
+    let right_float = eval_float_f32(&expr.right, lapis);
     if left_net.is_some() && right_net.is_some() {
         let (left, right) = (left_net.unwrap(), right_net.unwrap());
         let (li, lo) = (left.inputs(), left.outputs());
@@ -196,7 +196,7 @@ pub fn net_methods(expr: &ExprMethodCall, lapis: &mut Lapis) -> Option<()> {
             let arg1 = expr.args.get(1)?;
             let fade = path_fade(arg1)?;
             let arg2 = expr.args.get(2)?;
-            let time = eval_float(arg2, lapis)?;
+            let time = eval_float_f32(arg2, lapis)?;
             let arg3 = expr.args.get(3)?;
             let unit = eval_net(arg3, lapis)?;
             let k = nth_path_ident(&expr.receiver, 0)?;
@@ -364,7 +364,7 @@ pub fn net_methods(expr: &ExprMethodCall, lapis: &mut Lapis) -> Option<()> {
         }
         "set_sample_rate" => {
             let arg = expr.args.first()?;
-            let sr = eval_float(arg, lapis)? as f64;
+            let sr = eval_float(arg, lapis)?;
             let k = nth_path_ident(&expr.receiver, 0)?;
             let net = lapis.gmap.get_mut(&k)?;
             net.set_sample_rate(sr);
@@ -405,7 +405,7 @@ fn method_nodeid(expr: &ExprMethodCall, lapis: &mut Lapis) -> Option<NodeId> {
         }
         "fade_in" => {
             let fade = path_fade(expr.args.first()?)?;
-            let fade_time = eval_float(expr.args.get(1)?, lapis)?;
+            let fade_time = eval_float_f32(expr.args.get(1)?, lapis)?;
             let unit = Box::new(eval_net(expr.args.get(2)?, lapis)?);
             let k = nth_path_ident(&expr.receiver, 0)?;
             let g = lapis.gmap.get_mut(&k)?;
@@ -477,7 +477,7 @@ fn call_net(expr: &ExprCall, lapis: &mut Lapis) -> Option<Net> {
                     let arg0 = expr.args.first()?;
                     let arg1 = expr.args.get(1)?;
                     let chans = eval_usize(arg0, lapis)?;
-                    let val = eval_float(arg1, lapis)?;
+                    let val = eval_float_f32(arg1, lapis)?;
                     Some(Net::scalar(chans, val))
                 }
                 _ => None,
@@ -783,9 +783,9 @@ fn call_net(expr: &ExprCall, lapis: &mut Lapis) -> Option<Net> {
             Some(Net::wrap(Box::new(fir3(*gain))))
         }
         "flanger" => {
-            let feedback_amount = eval_float(expr.args.first()?, lapis)?;
-            let min_delay = eval_float(expr.args.get(1)?, lapis)?;
-            let max_delay = eval_float(expr.args.get(2)?, lapis)?;
+            let feedback_amount = eval_float_f32(expr.args.first()?, lapis)?;
+            let min_delay = eval_float_f32(expr.args.get(1)?, lapis)?;
+            let max_delay = eval_float_f32(expr.args.get(2)?, lapis)?;
             let node = (pass() | pass())
                 & feedback2(
                     tap(min_delay, max_delay) | zero(),
@@ -1184,12 +1184,12 @@ fn call_net(expr: &ExprCall, lapis: &mut Lapis) -> Option<Net> {
             Some(Net::wrap(Box::new(peak_q(*q))))
         }
         "pebbles" => {
-            let speed = eval_float(expr.args.first()?, lapis)?;
+            let speed = eval_float_f32(expr.args.first()?, lapis)?;
             let seed = eval_u64(expr.args.get(1)?, lapis)?;
             Some(Net::wrap(Box::new(pebbles(speed, seed))))
         }
         "phaser" => {
-            let feedback_amount = eval_float(expr.args.first()?, lapis)?;
+            let feedback_amount = eval_float_f32(expr.args.first()?, lapis)?;
             let node = (pass() | pass())
                 & feedback(
                     pipei::<U10, _, _>(|_i| add((0.0, 0.1)) >> !allpole())
@@ -1327,7 +1327,7 @@ fn call_net(expr: &ExprCall, lapis: &mut Lapis) -> Option<Net> {
         "sink" => Some(Net::wrap(Box::new(sink()))),
         "snaredrum" => {
             let seed = eval_i64(expr.args.first()?, lapis)?;
-            let sharpness = eval_float(expr.args.get(1)?, lapis)?;
+            let sharpness = eval_float_f32(expr.args.get(1)?, lapis)?;
             Some(Net::wrap(Box::new(snaredrum(seed, sharpness))))
         }
         "snoop" => None, // TODO you shouldn't be here..
@@ -1495,7 +1495,7 @@ fn call_net(expr: &ExprCall, lapis: &mut Lapis) -> Option<Net> {
             if unit.inputs() != 0 || unit.outputs() != 1 {
                 return None;
             }
-            let dur = eval_float(expr.args.get(1)?, lapis)?;
+            let dur = eval_float_f32(expr.args.get(1)?, lapis)?;
             Some(Net::wrap(Box::new(An(Reset::new(unit, dur)))))
         }
         "trig_reset" => {
@@ -1571,9 +1571,9 @@ fn call_net(expr: &ExprCall, lapis: &mut Lapis) -> Option<Net> {
             None
         }
         "ahr" => {
-            let a = eval_float(expr.args.first()?, lapis)?;
-            let h = eval_float(expr.args.get(1)?, lapis)?;
-            let r = eval_float(expr.args.get(2)?, lapis)?;
+            let a = eval_float_f32(expr.args.first()?, lapis)?;
+            let h = eval_float_f32(expr.args.get(1)?, lapis)?;
+            let r = eval_float_f32(expr.args.get(2)?, lapis)?;
             Some(Net::wrap(Box::new(ahr(a, h, r))))
         }
         "step" => {

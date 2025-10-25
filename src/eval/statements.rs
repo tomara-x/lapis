@@ -259,7 +259,7 @@ fn eval_assign(expr: &ExprAssign, lapis: &mut Lapis) {
         Expr::Index(left) => {
             if let Some(k) = nth_path_ident(&left.expr, 0)
                 && let Some(index) = eval_usize(&left.index, lapis)
-                && let Some(right) = eval_float(&expr.right, lapis)
+                && let Some(right) = eval_float_f32(&expr.right, lapis)
                 && let Some(vec) = lapis.vmap.get_mut(&k)
                 && let Some(v) = vec.get_mut(index)
             {
@@ -299,7 +299,7 @@ fn eval_for_loop(expr: &ExprForLoop, lapis: &mut Lapis, buffer: &mut String) {
     let tmp = lapis.fmap.remove(&ident);
     if let Some((r0, r1)) = bounds {
         'main_loop: for i in r0..r1 {
-            lapis.fmap.insert(ident.clone(), i as f32);
+            lapis.fmap.insert(ident.clone(), i as f64);
             for stmt in &expr.body.stmts {
                 let s = eval_stmt(stmt.clone(), lapis);
                 buffer.push_str(&s);
@@ -317,7 +317,7 @@ fn eval_for_loop(expr: &ExprForLoop, lapis: &mut Lapis, buffer: &mut String) {
         }
     } else if let Some(arr) = arr {
         'main_loop: for i in arr {
-            lapis.fmap.insert(ident.clone(), i);
+            lapis.fmap.insert(ident.clone(), i as f64);
             for stmt in &expr.body.stmts {
                 let s = eval_stmt(stmt.clone(), lapis);
                 buffer.push_str(&s);
@@ -385,17 +385,17 @@ fn function_calls(expr: ExprCall, lapis: &mut Lapis, buffer: &mut String) -> Opt
         }
         "add_slider" => {
             let var = eval_str_lit(expr.args.first()?)?;
-            let min = eval_float(expr.args.get(1)?, lapis)?;
-            let max = eval_float(expr.args.get(2)?, lapis)?;
-            let speed = eval_float(expr.args.get(3)?, lapis)? as f64;
-            let step_by = eval_float(expr.args.get(4)?, lapis)? as f64;
+            let min = eval_float_f32(expr.args.get(1)?, lapis)?;
+            let max = eval_float_f32(expr.args.get(2)?, lapis)?;
+            let speed = eval_float(expr.args.get(3)?, lapis)?;
+            let step_by = eval_float(expr.args.get(4)?, lapis)?;
             lapis.sliders.push(SliderSettings { min, max, speed, step_by, var });
         }
         "drop_in_stream" => lapis.in_stream = None,
         "drop_out_stream" => lapis.out_stream = None,
         "sleep" => {
             let d = eval_float(expr.args.first()?, lapis)?;
-            let d = Duration::try_from_secs_f32(d).ok()?;
+            let d = Duration::try_from_secs_f64(d).ok()?;
             thread::sleep(d);
         }
         "panic" => panic!(),

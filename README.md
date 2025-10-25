@@ -189,12 +189,10 @@ g.play();
 ## deviations
 - every nodes is wrapped in a `Net`
 - mutability is ignored. everything is mutable
-- type annotations are ignored. types are inferred (`f32`, `Net`, `Vec<f32>`, `bool`, `NodeId`, `Arc<Wave>`, `Shared`, `Sequencer`, `EventId`, `Source`, AtomicTable,)
-- all number variables are f32, even if you type it as `4` it's still `4.0`
-- when a function takes an integer or usize, if you type it as a literal integer, then they are parsed to the corresponding type. otherwise (a variable or an expression) they are evaluated as floats then cast to the needed type
+- type annotations are ignored. types are inferred (`f64`, `Net`, `Vec<f32>`, `bool`, `NodeId`, `Arc<Wave>`, `Shared`, `Sequencer`, `EventId`, `Source`, AtomicTable,)
+- when a function takes an integer or usize, if you type it as a literal integer, then they are parsed to the corresponding type. otherwise (a variable or an expression) they are evaluated as f64 then cast to the needed type
 - an expression, like `variable`, `2 + 2`, `lowpass()`, or `[x, x+1, x+2]` will print that expression's value. for `Net`, `Wave`, `Sequencer`, `Shared`, `NodeId`, `EventId`, it will print info about them.
 - everything is global. nothing is limited to scope except for the loop variable in for loops
-- [`Meter`](https://docs.rs/fundsp/latest/fundsp/dynamics/enum.Meter.html) modes Peak and Rms are actually passed cast f32 not f64
 
 ## what's supported
 
@@ -210,7 +208,7 @@ g.play();
 - all functions in the [math module](https://docs.rs/fundsp/latest/fundsp/math/index.html)
     - except for: ease_noise, fractal_ease_noise, hash1, hash2, identity
 
-<details><summary>some f32 methods</summary>
+<details><summary>some f64 methods</summary>
 <p>
 
 - floor
@@ -257,7 +255,7 @@ g.play();
 </details>
 
 - all functions in the [sound module](https://docs.rs/fundsp/latest/fundsp/sound/index.html)
-- [std constants](https://doc.rust-lang.org/std/f32/consts/index.html), `inf`, `-inf`, and `nan`
+- [std constants](https://doc.rust-lang.org/std/f64/consts/index.html), `inf`, `-inf`, and `nan`
 
 ### assignment
 ```rust
@@ -406,7 +404,7 @@ s.set(s.value() + 42);
 
 - the `remove` method removes the channel but doesn't return a vec
 - the `channel` method returns a cloned vec
-- output from methods `channels`, `len`, and `duration` is cast as f32
+- output from methods `channels` and `len` is cast as f64
 - `is_empty`, `channel_mut`, `write_wav16`, `write_wav32`, `load_slice`, `load_slice_track` aren't implemented
 - methods on `Wave`s can only be called on a stored variable. so you can't say `Wave::zero(2,44100,1).channel(0)` for example. you have to assign the wave to a variable then call the method on that variable
 - it's actually an Arc<Wave>, methods are called using Arc::make_mut.
@@ -468,7 +466,6 @@ s.save_wav16("awawawa.wav");            // save the wave as a 16-bit wav file
 - `.backend()` returns a SequencerBackend wrapped in a net. this way it can be used anywhere a net is usable
 - Sequencer itself can't be `play`ed or `tick`ed. do that to its backend (or a graph containing the backend)
 - methods `has_backend`, `replay_events`, and `time` aren't supported
-- time arguments are all f32 cast as f64
 - you can't clone frontends (and why would you want to?)
 - `.set_loop(start, end)` lets you set loop times in seconds. (0, inf) by default
 - `.set_time(t)` jumps to time

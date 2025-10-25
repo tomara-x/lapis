@@ -26,23 +26,23 @@ pub fn seq_methods(expr: &ExprMethodCall, lapis: &mut Lapis) -> Option<()> {
     match expr.method.to_string().as_str() {
         "edit" => {
             let id = eval_eventid(expr.args.first()?, lapis)?;
-            let end_time = eval_float(expr.args.get(1)?, lapis)? as f64;
-            let fade_out = eval_float(expr.args.get(2)?, lapis)? as f64;
+            let end_time = eval_float(expr.args.get(1)?, lapis)?;
+            let fade_out = eval_float(expr.args.get(2)?, lapis)?;
             let k = nth_path_ident(&expr.receiver, 0)?;
             let seq = lapis.seqmap.get_mut(&k)?;
             seq.edit(id, end_time, fade_out);
         }
         "edit_relative" => {
             let id = eval_eventid(expr.args.first()?, lapis)?;
-            let end_time = eval_float(expr.args.get(1)?, lapis)? as f64;
-            let fade_out = eval_float(expr.args.get(2)?, lapis)? as f64;
+            let end_time = eval_float(expr.args.get(1)?, lapis)?;
+            let fade_out = eval_float(expr.args.get(2)?, lapis)?;
             let k = nth_path_ident(&expr.receiver, 0)?;
             let seq = lapis.seqmap.get_mut(&k)?;
             seq.edit_relative(id, end_time, fade_out);
         }
         "set_sample_rate" => {
             let arg = expr.args.first()?;
-            let sr = eval_float(arg, lapis)? as f64;
+            let sr = eval_float(arg, lapis)?;
             let k = nth_path_ident(&expr.receiver, 0)?;
             let seq = lapis.seqmap.get_mut(&k)?;
             seq.set_sample_rate(sr);
@@ -53,14 +53,14 @@ pub fn seq_methods(expr: &ExprMethodCall, lapis: &mut Lapis) -> Option<()> {
             seq.reset();
         }
         "set_loop" => {
-            let start = eval_float(expr.args.get(0)?, lapis)? as f64;
-            let end = eval_float(expr.args.get(1)?, lapis)? as f64;
+            let start = eval_float(expr.args.get(0)?, lapis)?;
+            let end = eval_float(expr.args.get(1)?, lapis)?;
             let k = nth_path_ident(&expr.receiver, 0)?;
             let seq = lapis.seqmap.get_mut(&k)?;
             seq.set_loop(start, end);
         }
         "set_time" => {
-            let t = eval_float(expr.args.get(0)?, lapis)? as f64;
+            let t = eval_float(expr.args.get(0)?, lapis)?;
             let k = nth_path_ident(&expr.receiver, 0)?;
             let seq = lapis.seqmap.get_mut(&k)?;
             seq.set_time(t);
@@ -102,11 +102,11 @@ pub fn eval_eventid(expr: &Expr, lapis: &mut Lapis) -> Option<EventId> {
 fn method_eventid(expr: &ExprMethodCall, lapis: &mut Lapis) -> Option<EventId> {
     match expr.method.to_string().as_str() {
         "push" => {
-            let start_time = eval_float(expr.args.first()?, lapis)? as f64;
-            let end_time = eval_float(expr.args.get(1)?, lapis)? as f64;
+            let start_time = eval_float(expr.args.first()?, lapis)?;
+            let end_time = eval_float(expr.args.get(1)?, lapis)?;
             let fade = path_fade(expr.args.get(2)?)?;
-            let fade_in = eval_float(expr.args.get(3)?, lapis)? as f64;
-            let fade_out = eval_float(expr.args.get(4)?, lapis)? as f64;
+            let fade_in = eval_float(expr.args.get(3)?, lapis)?;
+            let fade_out = eval_float(expr.args.get(4)?, lapis)?;
             let unit = Box::new(eval_net(expr.args.get(5)?, lapis)?);
             let k = nth_path_ident(&expr.receiver, 0)?;
             let seq = lapis.seqmap.get_mut(&k)?;
@@ -121,11 +121,11 @@ fn method_eventid(expr: &ExprMethodCall, lapis: &mut Lapis) -> Option<EventId> {
             Some(seq.push(start_time, end_time, fade, fade_in, fade_out, unit))
         }
         "push_relative" => {
-            let start_time = eval_float(expr.args.first()?, lapis)? as f64;
-            let end_time = eval_float(expr.args.get(1)?, lapis)? as f64;
+            let start_time = eval_float(expr.args.first()?, lapis)?;
+            let end_time = eval_float(expr.args.get(1)?, lapis)?;
             let fade = path_fade(expr.args.get(2)?)?;
-            let fade_in = eval_float(expr.args.get(3)?, lapis)? as f64;
-            let fade_out = eval_float(expr.args.get(4)?, lapis)? as f64;
+            let fade_in = eval_float(expr.args.get(3)?, lapis)?;
+            let fade_out = eval_float(expr.args.get(4)?, lapis)?;
             let unit = Box::new(eval_net(expr.args.get(5)?, lapis)?);
             let k = nth_path_ident(&expr.receiver, 0)?;
             let seq = lapis.seqmap.get_mut(&k)?;
@@ -140,11 +140,11 @@ fn method_eventid(expr: &ExprMethodCall, lapis: &mut Lapis) -> Option<EventId> {
             Some(seq.push_relative(start_time, end_time, fade, fade_in, fade_out, unit))
         }
         "push_duration" => {
-            let start_time = eval_float(expr.args.first()?, lapis)? as f64;
-            let duration = eval_float(expr.args.get(1)?, lapis)? as f64;
+            let start_time = eval_float(expr.args.first()?, lapis)?;
+            let duration = eval_float(expr.args.get(1)?, lapis)?;
             let fade = path_fade(expr.args.get(2)?)?;
-            let fade_in = eval_float(expr.args.get(3)?, lapis)? as f64;
-            let fade_out = eval_float(expr.args.get(4)?, lapis)? as f64;
+            let fade_in = eval_float(expr.args.get(3)?, lapis)?;
+            let fade_out = eval_float(expr.args.get(4)?, lapis)?;
             let unit = Box::new(eval_net(expr.args.get(5)?, lapis)?);
             let k = nth_path_ident(&expr.receiver, 0)?;
             let seq = lapis.seqmap.get_mut(&k)?;

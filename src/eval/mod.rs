@@ -40,7 +40,7 @@ pub struct Lapis {
     pub sliders_window: bool,
     pub sliders: Vec<SliderSettings>,
     pub about: bool,
-    pub fmap: HashMap<String, f32>,
+    pub fmap: HashMap<String, f64>,
     pub vmap: HashMap<String, Vec<f32>>,
     pub gmap: HashMap<String, Net>,
     pub idmap: HashMap<String, NodeId>,

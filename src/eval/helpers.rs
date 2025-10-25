@@ -64,8 +64,8 @@ pub fn eval_meter(expr: &Expr, lapis: &Lapis) -> Option<Meter> {
             let val = eval_float(arg, lapis)?;
             if seg0 == "Meter" {
                 match seg1.as_str() {
-                    "Peak" => Some(Meter::Peak(val as f64)),
-                    "Rms" => Some(Meter::Rms(val as f64)),
+                    "Peak" => Some(Meter::Peak(val)),
+                    "Rms" => Some(Meter::Rms(val)),
                     _ => None,
                 }
             } else {
@@ -129,10 +129,20 @@ pub fn nth_path_generic(expr: &Expr, n: usize) -> Option<String> {
     None
 }
 
-pub fn accumulate_args(args: &Punctuated<Expr, Token!(,)>, lapis: &Lapis) -> Vec<f32> {
+pub fn accumulate_args_f64(args: &Punctuated<Expr, Token!(,)>, lapis: &Lapis) -> Vec<f64> {
     let mut vec = Vec::new();
     for arg in args {
         if let Some(n) = eval_float(arg, lapis) {
+            vec.push(n);
+        }
+    }
+    vec
+}
+
+pub fn accumulate_args(args: &Punctuated<Expr, Token!(,)>, lapis: &Lapis) -> Vec<f32> {
+    let mut vec = Vec::new();
+    for arg in args {
+        if let Some(n) = eval_float_f32(arg, lapis) {
             vec.push(n);
         }
     }

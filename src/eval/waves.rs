@@ -20,7 +20,7 @@ fn call_wave(expr: &ExprCall, lapis: &mut Lapis) -> Option<Wave> {
             let arg0 = expr.args.first()?;
             let arg1 = expr.args.get(1)?;
             let chans = eval_usize(arg0, lapis)?;
-            let sr = eval_float(arg1, lapis)? as f64;
+            let sr = eval_float(arg1, lapis)?;
             Some(Wave::new(chans, sr))
         }
         "with_capacity" => {
@@ -28,7 +28,7 @@ fn call_wave(expr: &ExprCall, lapis: &mut Lapis) -> Option<Wave> {
             let arg1 = expr.args.get(1)?;
             let arg2 = expr.args.get(2)?;
             let chans = eval_usize(arg0, lapis)?;
-            let sr = eval_float(arg1, lapis)? as f64;
+            let sr = eval_float(arg1, lapis)?;
             let cap = eval_usize(arg2, lapis)?;
             Some(Wave::with_capacity(chans, sr, cap))
         }
@@ -37,14 +37,14 @@ fn call_wave(expr: &ExprCall, lapis: &mut Lapis) -> Option<Wave> {
             let arg1 = expr.args.get(1)?;
             let arg2 = expr.args.get(2)?;
             let chans = eval_usize(arg0, lapis)?;
-            let sr = eval_float(arg1, lapis)? as f64;
-            let dur = eval_float(arg2, lapis)? as f64;
+            let sr = eval_float(arg1, lapis)?;
+            let dur = eval_float(arg2, lapis)?;
             Some(Wave::zero(chans, sr, dur))
         }
         "from_samples" => {
             let arg0 = expr.args.first()?;
             let arg1 = expr.args.get(1)?;
-            let sr = eval_float(arg0, lapis)? as f64;
+            let sr = eval_float(arg0, lapis)?;
             let samps = eval_vec(arg1, lapis)?;
             Some(Wave::from_samples(sr, &samps))
         }
@@ -52,8 +52,8 @@ fn call_wave(expr: &ExprCall, lapis: &mut Lapis) -> Option<Wave> {
             let arg0 = expr.args.first()?;
             let arg1 = expr.args.get(1)?;
             let arg2 = expr.args.get(2)?;
-            let sr = eval_float(arg0, lapis)? as f64;
-            let dur = eval_float(arg1, lapis)? as f64;
+            let sr = eval_float(arg0, lapis)?;
+            let dur = eval_float(arg1, lapis)?;
             let mut net = eval_net(arg2, lapis)?;
             if net.inputs() == 0 && net.outputs() > 0 && dur >= 0.0 {
                 Some(Wave::render(sr, dur, &mut net))
@@ -65,8 +65,8 @@ fn call_wave(expr: &ExprCall, lapis: &mut Lapis) -> Option<Wave> {
             let arg0 = expr.args.first()?;
             let arg1 = expr.args.get(1)?;
             let arg2 = expr.args.get(2)?;
-            let sr = eval_float(arg0, lapis)? as f64;
-            let dur = eval_float(arg1, lapis)? as f64;
+            let sr = eval_float(arg0, lapis)?;
+            let dur = eval_float(arg1, lapis)?;
             let mut net = eval_net(arg2, lapis)?;
             if net.inputs() == 0 && net.outputs() > 0 && dur >= 0.0 {
                 Some(Wave::render_latency(sr, dur, &mut net))
@@ -92,7 +92,7 @@ fn method_wave(expr: &ExprMethodCall, lapis: &mut Lapis) -> Option<Wave> {
         "filter" => {
             let arg0 = expr.args.first()?;
             let arg1 = expr.args.get(1)?;
-            let dur = eval_float(arg0, lapis)? as f64;
+            let dur = eval_float(arg0, lapis)?;
             let mut node = eval_net(arg1, lapis)?;
             let k = nth_path_ident(&expr.receiver, 0)?;
             let wave = lapis.wmap.get(&k)?;
@@ -105,7 +105,7 @@ fn method_wave(expr: &ExprMethodCall, lapis: &mut Lapis) -> Option<Wave> {
         "filter_latency" => {
             let arg0 = expr.args.first()?;
             let arg1 = expr.args.get(1)?;
-            let dur = eval_float(arg0, lapis)? as f64;
+            let dur = eval_float(arg0, lapis)?;
             let mut node = eval_net(arg1, lapis)?;
             let k = nth_path_ident(&expr.receiver, 0)?;
             let wave = lapis.wmap.get(&k)?;
@@ -123,7 +123,7 @@ pub fn wave_methods(expr: &ExprMethodCall, lapis: &mut Lapis) -> Option<()> {
     match expr.method.to_string().as_str() {
         "set_sample_rate" => {
             let arg0 = expr.args.first()?;
-            let sr = eval_float(arg0, lapis)? as f64;
+            let sr = eval_float(arg0, lapis)?;
             let k = nth_path_ident(&expr.receiver, 0)?;
             let wave = lapis.wmap.get_mut(&k)?;
             Arc::make_mut(wave).set_sample_rate(sr);
@@ -164,7 +164,7 @@ pub fn wave_methods(expr: &ExprMethodCall, lapis: &mut Lapis) -> Option<()> {
             let arg2 = expr.args.get(2)?;
             let chan = eval_usize(arg0, lapis)?;
             let index = eval_usize(arg1, lapis)?;
-            let val = eval_float(arg2, lapis)?;
+            let val = eval_float_f32(arg2, lapis)?;
             let k = nth_path_ident(&expr.receiver, 0)?;
             let wave = lapis.wmap.get_mut(&k)?;
             if chan < wave.channels() && index < wave.len() {
@@ -177,7 +177,7 @@ pub fn wave_methods(expr: &ExprMethodCall, lapis: &mut Lapis) -> Option<()> {
             let arg2 = expr.args.get(2)?;
             let chan = eval_usize(arg0, lapis)?;
             let index = eval_usize(arg1, lapis)?;
-            let val = eval_float(arg2, lapis)?;
+            let val = eval_float_f32(arg2, lapis)?;
             let k = nth_path_ident(&expr.receiver, 0)?;
             let wave = lapis.wmap.get_mut(&k)?;
             if chan < wave.channels() && index < wave.len() {
@@ -208,7 +208,7 @@ pub fn wave_methods(expr: &ExprMethodCall, lapis: &mut Lapis) -> Option<()> {
                         _ => {}
                     }
                 }
-            } else if let Some(val) = eval_float(arg, lapis) {
+            } else if let Some(val) = eval_float_f32(arg, lapis) {
                 let wave = lapis.wmap.get_mut(&k)?;
                 Arc::make_mut(wave).push(val);
             }
@@ -229,7 +229,7 @@ pub fn wave_methods(expr: &ExprMethodCall, lapis: &mut Lapis) -> Option<()> {
         }
         "fade_in" => {
             let arg = expr.args.first()?;
-            let time = eval_float(arg, lapis)? as f64;
+            let time = eval_float(arg, lapis)?;
             let k = nth_path_ident(&expr.receiver, 0)?;
             let wave = lapis.wmap.get_mut(&k)?;
             if time <= wave.duration() {
@@ -238,7 +238,7 @@ pub fn wave_methods(expr: &ExprMethodCall, lapis: &mut Lapis) -> Option<()> {
         }
         "fade_out" => {
             let arg = expr.args.first()?;
-            let time = eval_float(arg, lapis)? as f64;
+            let time = eval_float(arg, lapis)?;
             let k = nth_path_ident(&expr.receiver, 0)?;
             let wave = lapis.wmap.get_mut(&k)?;
             if time <= wave.duration() {
@@ -247,7 +247,7 @@ pub fn wave_methods(expr: &ExprMethodCall, lapis: &mut Lapis) -> Option<()> {
         }
         "fade" => {
             let arg = expr.args.first()?;
-            let time = eval_float(arg, lapis)? as f64;
+            let time = eval_float(arg, lapis)?;
             let k = nth_path_ident(&expr.receiver, 0)?;
             let wave = lapis.wmap.get_mut(&k)?;
             if time <= wave.duration() {
@@ -302,7 +302,7 @@ pub fn wave_methods(expr: &ExprMethodCall, lapis: &mut Lapis) -> Option<()> {
             Arc::make_mut(wave).retain(start, length);
         }
         "amplify" => {
-            let amp = eval_float(expr.args.first()?, lapis)?;
+            let amp = eval_float_f32(expr.args.first()?, lapis)?;
             let k = nth_path_ident(&expr.receiver, 0)?;
             let wave = lapis.wmap.get_mut(&k)?;
             Arc::make_mut(wave).amplify(amp);

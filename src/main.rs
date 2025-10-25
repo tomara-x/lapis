@@ -217,7 +217,7 @@ impl eframe::App for Lapis {
                             .on_hover_text("the variable linked to this slider (float or shared)");
                             let mut tmp = 0.;
                             if let Some(v) = self.fmap.get(&s.var) {
-                                tmp = *v;
+                                tmp = *v as f32;
                             } else if let Some(v) = self.smap.get(&s.var) {
                                 tmp = v.value();
                             }
@@ -235,7 +235,7 @@ impl eframe::App for Lapis {
                             ui.add(DragValue::new(&mut s.step_by).range(0. ..=1.))
                                 .on_hover_text("step size when dragging the slider (0 to disable)");
                             if let Some(v) = self.fmap.get_mut(&s.var) {
-                                *v = tmp;
+                                *v = tmp as f64;
                             } else if let Some(v) = self.smap.get(&s.var) {
                                 v.set(tmp);
                             }
