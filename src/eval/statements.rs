@@ -390,6 +390,8 @@ fn function_calls(expr: ExprCall, lapis: &mut Lapis, buffer: &mut String) -> Opt
             let step_by = eval_float(expr.args.get(4)?, lapis)? as f64;
             lapis.sliders.push(SliderSettings { min, max, speed, step_by, var });
         }
+        "drop_in_stream" => lapis.in_stream = None,
+        "drop_out_stream" => lapis.out_stream = None,
         _ => {}
     }
     None

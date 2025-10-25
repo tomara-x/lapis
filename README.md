@@ -189,7 +189,7 @@ g.play();
 ## deviations
 - every nodes is wrapped in a `Net`
 - mutability is ignored. everything is mutable
-- type annotations are ignored. types are inferred (`f32`, `Net`, `Vec<f32>`, `bool`, `NodeId`, `Arc<Wave>`, `Shared`, `Sequencer`, `EventId`, `Source`,)
+- type annotations are ignored. types are inferred (`f32`, `Net`, `Vec<f32>`, `bool`, `NodeId`, `Arc<Wave>`, `Shared`, `Sequencer`, `EventId`, `Source`, AtomicTable,)
 - all number variables are f32, even if you type it as `4` it's still `4.0`
 - when a function takes an integer or usize, if you type it as a literal integer, then they are parsed to the corresponding type. otherwise (a variable or an expression) they are evaluated as floats then cast to the needed type
 - an expression, like `variable`, `2 + 2`, `lowpass()`, or `[x, x+1, x+2]` will print that expression's value. for `Net`, `Wave`, `Sequencer`, `Shared`, `NodeId`, `EventId`, it will print info about them.
@@ -626,6 +626,10 @@ list_out_devices();
 
 set_in_device(1, 2, _, _, _); // selects host 1 (alsa), device 2 (sysdef...) from the input devices list
 set_out_device(1, 0, _, _, _); // selects host 1 (alsa), device 0 (pipewire) from the output list
+
+// to stope a stream you can use
+drop_in_stream();
+drop_out_stream();
 ```
 
 ### stream info
