@@ -4,7 +4,7 @@ use cpal::{
 };
 use crossbeam_channel::{Receiver, Sender, bounded};
 use eframe::egui::{Key, Modifiers};
-use fundsp::hacker32::*;
+use fundsp::hacker::*;
 use std::collections::HashMap;
 use std::sync::Arc;
 use syn::*;
