@@ -1,6 +1,7 @@
 use crate::eval::*;
 use cpal::traits::{DeviceTrait, HostTrait};
 use crossbeam_channel::bounded;
+use std::{thread, time::Duration};
 
 pub fn eval_stmt(s: Stmt, lapis: &mut Lapis) -> String {
     let mut buffer = String::new();
@@ -392,6 +393,12 @@ fn function_calls(expr: ExprCall, lapis: &mut Lapis, buffer: &mut String) -> Opt
         }
         "drop_in_stream" => lapis.in_stream = None,
         "drop_out_stream" => lapis.out_stream = None,
+        "sleep" => {
+            let d = eval_float(expr.args.first()?, lapis)?;
+            let d = Duration::try_from_secs_f32(d).ok()?;
+            thread::sleep(d);
+        }
+        "panic" => panic!(),
         _ => {}
     }
     None

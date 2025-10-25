@@ -776,6 +776,15 @@ add_slider("x", min, max, speed, step_by);
 add_slider("y", min, max, speed, step_by);
 ```
 
+### sleep and panic
+you can freeze or crash the app if you'd like. no judgement here
+```rust
+let duration = 2.5;
+sleep(duration); // sleep for 2.5 seconds
+
+panic(); // cause the app to crash
+```
+
 ## building
 
 - install rust: https://www.rust-lang.org/tools/install
