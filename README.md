@@ -812,6 +812,13 @@ x;
 
 ```
 
+### time
+you can access the time since the unix epoc (in milliseconds) using `time()`
+```rust
+time();
+// 1761485668922.0
+```
+
 ### sleep and panic
 you can freeze or crash the app if you'd like. no judgement here
 ```rust

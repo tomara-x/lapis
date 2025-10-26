@@ -259,6 +259,11 @@ fn unary_float(expr: &ExprUnary, lapis: &Lapis) -> Option<f64> {
 
 fn call_float(expr: &ExprCall, lapis: &Lapis) -> Option<f64> {
     let func = nth_path_ident(&expr.func, 0)?;
+    if func == "time" {
+        let epoch = std::time::UNIX_EPOCH;
+        let now = std::time::SystemTime::now();
+        return Some(now.duration_since(epoch).ok()?.as_millis() as f64);
+    }
     let args = accumulate_args_f64(&expr.args, lapis);
     match func.as_str() {
         "a_weight" => Some(a_weight(*args.first()?)),
