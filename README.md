@@ -14,7 +14,7 @@ execute `set_out_device(_,_,_,_,_);` for audio output to work
 - this isn't rust, you have a very small subset of the syntax
 - for functions that accept [`Shape`](https://docs.rs/fundsp/latest/fundsp/shape/trait.Shape.html) as input, `Adaptive` and `ShapeFn` aren't supported
 - no closures and therefore none of the functions that take closures as input (yet)
-- `input()` and file i/o Wave methods won't work in the wasm version
+- `input()`, `sleep()`, and file i/o `Wave` methods won't work in the wasm version
 
 ## additions
 - the `net.play()` method allows you to listen to an audio net (net must have 0 inputs and outputs equal to output stream channels)
