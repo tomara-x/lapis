@@ -187,9 +187,10 @@ g.play();
 - `ahr(a, h, r)` an attack-hold-release node
 
 ## deviations
+- this is using my [fork](https://codeberg.org/tomara-x/fundsp) of fundsp
 - every nodes is wrapped in a `Net`
 - mutability is ignored. everything is mutable
-- type annotations are ignored. types are inferred (`f64`, `Net`, `Vec<f32>`, `bool`, `NodeId`, `Arc<Wave>`, `Shared`, `Sequencer`, `EventId`, `Source`, AtomicTable,)
+- type annotations are ignored. types are inferred (`f64`, `Net`, `Vec<f32>`, `bool`, `NodeId`, `Arc<Wave>`, `Shared`, `Sequencer`, `EventId`, `Source`, `AtomicTable`, `String`,)
 - when a function takes an integer or usize, if you type it as a literal integer, then they are parsed to the corresponding type. otherwise (a variable or an expression) they are evaluated as f64 then cast to the needed type
 - an expression, like `variable`, `2 + 2`, `lowpass()`, or `[x, x+1, x+2]` will print that expression's value. for `Net`, `Wave`, `Sequencer`, `Shared`, `NodeId`, `EventId`, it will print info about them.
 - everything is global. nothing is limited to scope except for the loop variable in for loops
