@@ -1,0 +1,51 @@
+use crate::eval::*;
+
+pub fn eval_str_lit(expr: &Expr) -> Option<String> {
+    if let Expr::Lit(expr) = expr
+        && let Lit::Str(expr) = &expr.lit
+    {
+        return Some(expr.value());
+    }
+    None
+}
+
+pub fn eval_string(expr: &Expr, lapis: &Lapis) -> Option<String> {
+    match expr {
+        Expr::Call(expr) => call_string(expr, lapis),
+        Expr::Lit(expr) => lit_string(&expr.lit),
+        Expr::Path(expr) => path_string(&expr.path, lapis),
+        _ => None,
+    }
+}
+
+fn lit_string(expr: &Lit) -> Option<String> {
+    if let Lit::Str(expr) = expr {
+        return Some(expr.value());
+    }
+    None
+}
+
+fn path_string(expr: &Path, lapis: &Lapis) -> Option<String> {
+    let k = expr.segments.first()?.ident.to_string();
+    lapis.string_map.get(&k).cloned()
+}
+
+fn call_string(expr: &ExprCall, lapis: &Lapis) -> Option<String> {
+    let func = nth_path_ident(&expr.func, 0)?;
+    match func.as_str() {
+        "format" => {
+            let mut string = eval_string(expr.args.first()?, lapis)?;
+            let mut iter = expr.args.iter();
+            iter.next();
+            for arg in iter {
+                if let Some(f) = eval_float(arg, lapis) {
+                    string = string.replacen("$", &format!("{f}"), 1);
+                } else if let Some(s) = eval_string(arg, lapis) {
+                    string = string.replacen("$", &s, 1);
+                }
+            }
+            Some(string)
+        }
+        _ => None,
+    }
+}

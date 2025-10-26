@@ -67,6 +67,8 @@ fn eval_expr(expr: Expr, lapis: &mut Lapis, buffer: &mut String) {
         buffer.push_str(&format!("\n// {:?}", source));
     } else if let Some(event) = eval_eventid(&expr, lapis) {
         buffer.push_str(&format!("\n// {:?}", event));
+    } else if let Some(string) = eval_string(&expr, lapis) {
+        buffer.push_str(&format!("\n// \"{}\"", string));
     } else if let Expr::Call(expr) = expr {
         function_calls(expr, lapis, buffer);
     } else if let Expr::Binary(expr) = expr {
@@ -170,6 +172,9 @@ fn eval_local(expr: &Local, lapis: &mut Lapis) -> Option<()> {
             } else if let Some(event) = eval_eventid(&expr.expr, lapis) {
                 lapis.drop(&k);
                 lapis.eventmap.insert(k, event);
+            } else if let Some(string) = eval_string(&expr.expr, lapis) {
+                lapis.drop(&k);
+                lapis.string_map.insert(k, string);
             }
         }
     } else if let Pat::Tuple(pat) = &expr.pat
@@ -254,6 +259,10 @@ fn eval_assign(expr: &ExprAssign, lapis: &mut Lapis) {
                 && let Some(var) = lapis.eventmap.get_mut(&ident)
             {
                 *var = event;
+            } else if let Some(string) = eval_string(&expr.right, lapis)
+                && let Some(var) = lapis.string_map.get_mut(&ident)
+            {
+                *var = string;
             }
         }
         Expr::Index(left) => {
@@ -399,6 +408,14 @@ fn function_calls(expr: ExprCall, lapis: &mut Lapis, buffer: &mut String) -> Opt
             thread::sleep(d);
         }
         "panic" => panic!(),
+        "eval" => {
+            let code = eval_string(expr.args.first()?, lapis)?;
+            lapis.eval(&code);
+        }
+        "quiet_eval" => {
+            let code = eval_string(expr.args.first()?, lapis)?;
+            lapis.quiet_eval(&code);
+        }
         _ => {}
     }
     None

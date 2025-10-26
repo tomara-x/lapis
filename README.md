@@ -773,6 +773,44 @@ add_slider("x", min, max, speed, step_by);
 add_slider("y", min, max, speed, step_by);
 ```
 
+### strings
+you can assign strings to variables, do simple substitutions, and evaluate strings
+```rust
+let str1 = "hola!";
+
+// format will replace as many `$` in the string with the arguments you give it
+format("$$$$", 1, 3, 1, 2);
+// "1312"
+
+// format can also substitute string arguments, or a mixture of numbers and strings
+format("$ = $", "pi", 100);
+// "pi = 100"
+
+let x = 4;
+let y = 7;
+let str2 = format("pi = $, and tau = $", x, y);
+str2;
+// "pi = 4, and tau = 7"
+
+let n = 1;
+let str3 = format("let awa$$ = 1729;", "wawa", n);
+// now print str3
+str3;
+// "let awawawa1 = 1729;"
+// you can evaluate this string by doing
+eval(str3);
+// you can check that variable
+awawawa1;
+// 1729.0
+
+// you can also use quiet_eval() to avoid printing
+quiet_eval("let x = 1729;");
+// now try printing x
+x;
+// 1729.0
+
+```
+
 ### sleep and panic
 you can freeze or crash the app if you'd like. no judgement here
 ```rust

@@ -19,10 +19,11 @@ mod nets;
 mod sequencers;
 mod sources;
 mod statements;
+mod strings;
 mod waves;
 use {
     arrays::*, atomics::*, bools::*, floats::*, helpers::*, ints::*, nets::*, sequencers::*,
-    sources::*, statements::*, waves::*,
+    sources::*, statements::*, strings::*, waves::*,
 };
 
 pub struct SliderSettings {
@@ -51,6 +52,7 @@ pub struct Lapis {
     pub eventmap: HashMap<String, EventId>,
     pub srcmap: HashMap<String, Source>,
     pub atomic_table_map: HashMap<String, Arc<AtomicTable>>,
+    pub string_map: HashMap<String, String>,
     pub slot: Slot,
     pub out_stream: Option<(StreamConfig, Stream)>,
     pub in_stream: Option<(StreamConfig, Stream)>,
@@ -86,6 +88,7 @@ impl Lapis {
             eventmap: HashMap::new(),
             srcmap: HashMap::new(),
             atomic_table_map: HashMap::new(),
+            string_map: HashMap::new(),
             slot,
             out_stream: None,
             in_stream: None,
