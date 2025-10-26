@@ -1,14 +1,5 @@
 use crate::eval::*;
 
-pub fn eval_str_lit(expr: &Expr) -> Option<String> {
-    if let Expr::Lit(expr) = expr
-        && let Lit::Str(expr) = &expr.lit
-    {
-        return Some(expr.value());
-    }
-    None
-}
-
 pub fn eval_string(expr: &Expr, lapis: &Lapis) -> Option<String> {
     match expr {
         Expr::Call(expr) => call_string(expr, lapis),

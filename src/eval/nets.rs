@@ -962,7 +962,7 @@ fn call_net(expr: &ExprCall, lapis: &mut Lapis) -> Option<Net> {
         }
         "map" => None, //TODO i'll be seeing you...
         "f" => {
-            let f = eval_str_lit(expr.args.first()?)?;
+            let f = eval_string(expr.args.first()?, lapis)?;
             match f.as_str() {
                 "rise" => Some(Net::wrap(Box::new(maps::rise()))),
                 "fall" => Some(Net::wrap(Box::new(maps::fall()))),
@@ -1525,7 +1525,7 @@ fn call_net(expr: &ExprCall, lapis: &mut Lapis) -> Option<Net> {
         "bitcrush" => Some(Net::wrap(Box::new(maps::bitcrush()))),
         "gate" => Some(Net::wrap(Box::new(An(Gate::new(*args.first()? as f64))))),
         "phase_synth" => {
-            let table = eval_str_lit(expr.args.first()?)?;
+            let table = eval_string(expr.args.first()?, lapis)?;
             let table = match table.as_str() {
                 "hammond" => hammond_table(),
                 "organ" => organ_table(),
@@ -1558,7 +1558,7 @@ fn call_net(expr: &ExprCall, lapis: &mut Lapis) -> Option<Net> {
             if let Some(table) = lapis.atomic_table_map.get(&k) {
                 let mut synth = AtomicSynth::<f32>::new(table.clone());
                 if let Some(arg1) = expr.args.get(1)
-                    && let Some(interp) = eval_str_lit(arg1)
+                    && let Some(interp) = eval_string(arg1, lapis)
                 {
                     if interp == "linear" {
                         synth.set_interpolation(Interpolation::Linear);
