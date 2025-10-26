@@ -281,6 +281,7 @@ fn eval_assign(expr: &ExprAssign, lapis: &mut Lapis) {
                     match left.value().as_str() {
                         "keys" => lapis.keys_active = b,
                         "quiet" => lapis.quiet = b,
+                        "keys_repeat" => lapis.keys_repeat = b,
                         _ => {}
                     }
                 } else if let Some(right) = eval_string(&expr.right, lapis)

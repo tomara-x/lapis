@@ -182,7 +182,7 @@ g.play();
 </p>
 </details>
 
-- most of the nodes defined in [misc_nodes](https://codeberg.org/tomara-x/fundsp/src/branch/main/src/misc_nodes.rs) are available, but they have slightly different syntax here (to be documented)
+- most of the nodes defined in [misc_nodes.rs](https://codeberg.org/tomara-x/fundsp/src/branch/main/src/misc_nodes.rs) are available, but they have slightly different syntax here (to be documented)
 - `bitcrush()` a bit crusher node
 - `ahr(a, h, r)` an attack-hold-release node
 
@@ -593,6 +593,14 @@ shortcuts can be enabled/disabled using the "keys" toggle at the top of the ui
 
 note: always define the more specific shortcuts (more modifiers) involving the same key before the less specific ones, so `ctrl+shift+a` then `ctrl+a` and `shift+a` then `a`
 
+### ui toggles
+```rust
+// change ui toggles
+"quiet" = true;
+"keys" = true;
+"keys_repeat" = true;
+```
+
 ### device selection
 
 `list_in_devices` and `list_out_devices` will print an indexed list of hosts and the devices within them. you can use the indexes with `set_in_device` and `set_out_device` to select the devices lapis uses
@@ -648,8 +656,11 @@ in_stream.buffer;
 
 i can't support `map`. as a workaround we have `f`. it takes a str argument and outputs that function wrapped in a node. you don't get to define custom functions (at runtime), but at least you get a bunch of basic ones that can then be stitched together like other nodes
 
+the function definitions are here: [maps.rs](https://codeberg.org/tomara-x/fundsp/src/branch/main/src/maps.rs)
+
 ```rust
-let x = f(">")
+// this is equivalent to `map(|i: &Frame<f32, U2>| f32::from(i[0] > i[1]))`
+let x = f(">");
 x;
 // Inputs         : 2
 // Outputs        : 1
