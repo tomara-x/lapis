@@ -255,25 +255,19 @@ pub fn wave_methods(expr: &ExprMethodCall, lapis: &mut Lapis) -> Option<()> {
             }
         }
         "save_wav16" => {
-            let arg = expr.args.first()?;
+            let name = eval_string(expr.args.first()?, lapis)?;
             let k = nth_path_ident(&expr.receiver, 0)?;
             let wave = lapis.wmap.get(&k)?;
-            if wave.channels() > 0
-                && let Expr::Lit(expr) = arg
-                && let Lit::Str(expr) = &expr.lit
-            {
-                let _ = wave.save_wav16(expr.value());
+            if wave.channels() > 0 {
+                let _ = wave.save_wav16(name);
             }
         }
         "save_wav32" => {
-            let arg = expr.args.first()?;
+            let name = eval_string(expr.args.first()?, lapis)?;
             let k = nth_path_ident(&expr.receiver, 0)?;
             let wave = lapis.wmap.get(&k)?;
-            if wave.channels() > 0
-                && let Expr::Lit(expr) = arg
-                && let Lit::Str(expr) = &expr.lit
-            {
-                let _ = wave.save_wav32(expr.value());
+            if wave.channels() > 0 {
+                let _ = wave.save_wav32(name);
             }
         }
         "remove_channel" => {

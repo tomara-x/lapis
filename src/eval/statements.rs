@@ -393,7 +393,7 @@ fn function_calls(expr: ExprCall, lapis: &mut Lapis, buffer: &mut String) -> Opt
             lapis.set_out_device(h, d, channels, sr, buffer);
         }
         "add_slider" => {
-            let var = eval_str_lit(expr.args.first()?)?;
+            let var = eval_string(expr.args.first()?, lapis)?;
             let min = eval_float_f32(expr.args.get(1)?, lapis)?;
             let max = eval_float_f32(expr.args.get(2)?, lapis)?;
             let speed = eval_float(expr.args.get(3)?, lapis)?;
