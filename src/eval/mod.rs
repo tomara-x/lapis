@@ -150,6 +150,7 @@ impl Lapis {
         self.eventmap.remove(k);
         self.srcmap.remove(k);
         self.atomic_table_map.remove(k);
+        self.string_map.remove(k);
     }
     pub fn set_out_device(
         &mut self,
