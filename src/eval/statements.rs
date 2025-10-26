@@ -283,16 +283,14 @@ fn eval_assign(expr: &ExprAssign, lapis: &mut Lapis) {
                         "quiet" => lapis.quiet = b,
                         _ => {}
                     }
-                } else if let Expr::Lit(right) = &*expr.right
+                } else if let Some(right) = eval_string(&expr.right, lapis)
                     && let Some(shortcut) = parse_shortcut(left.value())
                 {
                     lapis.keys.remove(&shortcut);
-                    if let Lit::Str(right) = &right.lit {
-                        let key = shortcut.1.name();
-                        let code = right.value().replace("$key", key);
-                        if !code.is_empty() {
-                            lapis.keys.insert(shortcut, code);
-                        }
+                    let key = shortcut.1.name();
+                    let code = right.replace("$key", key);
+                    if !code.is_empty() {
+                        lapis.keys.insert(shortcut, code);
                     }
                 }
             }
