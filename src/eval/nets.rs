@@ -628,7 +628,7 @@ fn call_net(expr: &ExprCall, lapis: &mut Lapis) -> Option<Net> {
         "clip_to" => {
             let min = args.first()?;
             let max = args.get(1)?;
-            Some(Net::wrap(Box::new(clip_to(*min, *max))))
+            Some(Net::wrap(Box::new(clip_to(min.min(*max), max.max(*min)))))
         }
         "cymbal" => {
             let seed = eval_i64(expr.args.first()?, lapis)?;
