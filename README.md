@@ -785,8 +785,8 @@ reset(node, duration)  // resets the inner node every duration (node must be 0-i
 trig_reset(node)  // takes a 0-ins 1-out node and resets it whenever its input is non-zero
 reset_v(node)  // takes a 0-ins 1-out node and resets it every duration (its input)
 snh()  // sample and hold node. has 2 inputs (signal, trigger) samples when trigger is non-zero
-euclid()  // euiclidean rhythm generator has 4 inputs
-          // trigger (step forward when non-zero), length, pulses rotation
+euclid()  // euclidean rhythm generator. has 4 inputs
+          // trigger (step forward when non-zero), length, pulses, rotation
 resample1(node)  // resample but only works on 0-in 1-out nodes
 bitcrush()  // a bit crusher node. takes 2 inputs (signal, number of steps/2)
 gate(duration)  // gate. outputs 1 for duration, 0 after that
@@ -796,7 +796,7 @@ unsteady(Vec<f32>, bool)  // outputs impulses at the given durations
 unsteady_no_reset(Vec<f32>, bool)  // same but isn't affected by resets
 unsteady_ramp(Vec<f32>, bool)  // its output goes one integer up every given duration
                                // the bool is also sets looping
-step(node1, ...)  // steps forward through its nodes everytime its input is non-zero
+step(node1, ...)  // steps forward through its nodes when its input is non-zero
                   // nodes must be 0-in 1-out
 filter_step(node1, ...)  // same as step but takes 2 inputs
                          // (input passed to the selected node, trigger)
