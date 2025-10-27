@@ -2,6 +2,8 @@
 
 this is an interactive interpreter for [FunDSP](https://github.com/SamiPerttu/fundsp). it allows you to experiment/play without needing to compile your code.
 
+if you have questions, come to the [rust audio](https://discord.gg/3hfDXS6hhQ) server (the fundsp channel)
+
 if you notice something incorrect, missing, or confusing, please open an issue to tell me about it, or fix it in a pull request if you can.
 
 ## wasm
@@ -105,7 +107,6 @@ let f = (o+pass()) >> i;
 // capacity should be the number of samples that get processed at a time
 // (for a playing graph, that's 64 because we use the BlockRateAdapter)
 // (for ticking maually, that's 1)
-// always use 64 unless you know what you're doing
 let (i, o) = buffer(64);
 let f = (o+pass()) >> i;
 ```
@@ -200,10 +201,10 @@ g.play();
         multitap, multitap_linear, feedback2, map, oversample,
         resample, resynth, shape_fn, snoop, unit, update, var_fn
     - `flanger` and `phaser` are edited to accept modulation as a second input channel rather than a modulation function
-    - instead of generic resample, `resample1` accepts a node with 0 inputs and 1 output
 
 - all functions in the [math module](https://docs.rs/fundsp/latest/fundsp/math/index.html)
     - except for: ease_noise, fractal_ease_noise, hash1, hash2, identity
+    - i have 2 additional functions ([wrap and mirror](https://codeberg.org/tomara-x/fundsp/src/commit/47b301b7612c3c24eb46ef58dacd52b21077d336/src/math.rs#L762-L774))
 
 <details><summary>some f64 methods</summary>
 <p>
@@ -371,7 +372,7 @@ net.commit();
 > // x is still usable here
 > ```
 
-### [tick](https://docs.rs/fundsp/latest/fundsp/audiounit/trait.AudioUnit.html#tymethod.tick)
+### [tick](https://docs.rs/fundsp/latest/fundsp/audionode/trait.AudioNode.html#tymethod.tick)
 process one frame of samples through a graph
 
 ```rust
