@@ -182,10 +182,6 @@ g.play();
 </p>
 </details>
 
-- most of the nodes defined in [misc_nodes.rs](https://codeberg.org/tomara-x/fundsp/src/branch/main/src/misc_nodes.rs) are available, but they have slightly different syntax here (to be documented)
-- `bitcrush()` a bit crusher node
-- `ahr(a, h, r)` an attack-hold-release node
-
 ## deviations
 - this is using my [fork](https://codeberg.org/tomara-x/fundsp) of fundsp
 - every nodes is wrapped in a `Net`
@@ -768,6 +764,43 @@ x;
 
 </p>
 </details>
+
+### additional nodes
+ most of the nodes defined in [misc_nodes.rs](https://codeberg.org/tomara-x/fundsp/src/branch/main/src/misc_nodes.rs) are available, but some have slightly different syntax here
+
+```rust
+ahr(attack, hold, release)  // an attack-hold-release node (times in seconds)
+select(node1, ...)  // takes any number of 0-in 1-out nodes and selects based on the input (index)
+fade_select(node1, ...)  // same as select but does crossfading on fractional indexes
+seq(node1, ...)  // takes any number of 0-in 1-out nodes. it has 4 inputs
+                 // (trigger, index, delay, duration)
+                 // pushes an event of index node when trigger is non-zero
+shift_reg()  // an 8-output shift register (cascading sample and hold)
+             // takes 2 inputs (signal, trigger)
+quantizer(Vec<f32>)  // quantizes its input to the given values
+                     // (values must be non-negative and in ascending order)
+kr(node, n, bool)  // subsamples a node (of any arity) (tick it every n samples)
+                   // (the bool.. just set it to true, see source for more info)
+reset(node, duration)  // resets the inner node every duration (node must be 0-ins 1-out)
+trig_reset(node)  // takes a 0-ins 1-out node and resets it whenever its input is non-zero
+reset_v(node)  // takes a 0-ins 1-out node and resets it every duration (its input)
+snh()  // sample and hold node. has 2 inputs (signal, trigger) samples when trigger is non-zero
+euclid()  // euiclidean rhythm generator has 4 inputs
+          // trigger (step forward when non-zero), length, pulses rotation
+resample1(node)  // resample but only works on 0-in 1-out nodes
+bitcrush()  // a bit crusher node. takes 2 inputs (signal, number of steps/2)
+gate(duration)  // gate. outputs 1 for duration, 0 after that
+t()  // outputs node time (subsampled to ~2ms, cause it uses envelope())
+unsteady(Vec<f32>, bool)  // outputs impulses at the given durations
+                          // the bool is whether or not to loop
+unsteady_no_reset(Vec<f32>, bool)  // same but isn't affected by resets
+unsteady_ramp(Vec<f32>, bool)  // its output goes one integer up every given duration
+                               // the bool is also sets looping
+step(node1, ...)  // steps forward through its nodes everytime its input is non-zero
+                  // nodes must be 0-in 1-out
+filter_step(node1, ...)  // same as step but takes 2 inputs
+                         // (input passed to the selected node, trigger)
+```
 
 ### sliders
 you can add sliders in the sliders window and link them to variables (floats and shared variables will work).
