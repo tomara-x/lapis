@@ -268,7 +268,7 @@ let out = osc3 >> f;
 let x = 42;
 x = 56;         // x is still a number. this works
 x += 1;         // binary assignment works. (+=, -=, *=, /=, and %=)
-x = sine();     // x is a number. can't assign an audio node (x is still 56.0)
+x = sine();     // x is a number. can't assign an audio node (x is still 57.0)
 let x = sine(); // x is now a sine()
 ```
 ### if conditions
@@ -294,6 +294,7 @@ let node = Net::new(0,0);
 for i in 0..=9 {
     node = node | dc(i);
 }
+
 // over array elements
 let arr = [1,2,3];
 for i in [4,6,8] {
@@ -858,7 +859,7 @@ x;
 ```
 
 ### time
-you can access the time since the unix epoc (in milliseconds) using `time()`
+you can access the time since the unix epoch (in milliseconds) using `time()`
 ```rust
 time();
 // 1761485668922.0
