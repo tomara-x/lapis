@@ -888,6 +888,9 @@ cd lapis
 cargo run --release
 ```
 
+## init file
+the contents of the file `init.rs` (in the working directory) will be evaluated at startup
+
 ## thanks
 
 - fundsp https://github.com/SamiPerttu/fundsp
