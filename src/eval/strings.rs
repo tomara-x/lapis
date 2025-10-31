@@ -28,6 +28,19 @@ fn call_string(expr: &ExprCall, lapis: &Lapis) -> Option<String> {
             let path = eval_string(expr.args.first()?, lapis)?;
             std::fs::read_to_string(path).ok()
         }
+        "replace" => {
+            let string = eval_string(expr.args.first()?, lapis)?;
+            let from = eval_string(expr.args.get(1)?, lapis)?;
+            let to = eval_string(expr.args.get(2)?, lapis)?;
+            Some(string.replace(&from, &to))
+        }
+        "replacen" => {
+            let string = eval_string(expr.args.first()?, lapis)?;
+            let from = eval_string(expr.args.get(1)?, lapis)?;
+            let to = eval_string(expr.args.get(2)?, lapis)?;
+            let n = eval_usize(expr.args.get(3)?, lapis)?;
+            Some(string.replacen(&from, &to, n))
+        }
         "format" => {
             let mut string = eval_string(expr.args.first()?, lapis)?;
             let mut iter = expr.args.iter();

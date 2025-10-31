@@ -859,6 +859,12 @@ x;
 // you can load the contents of a file into a string
 let str4 = file("../path/to/file.rs");
 
+// replace
+let str4 = replace(str4, "awa", "awawawa");
+
+// replacen
+let str4 = replacen(str4, "awawawa", "awa", 2);
+
 ```
 
 ### clear

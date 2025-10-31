@@ -1543,7 +1543,7 @@ fn call_net(expr: &ExprCall, lapis: &mut Lapis) -> Option<Net> {
             let looping = eval_bool(expr.args.get(1)?, lapis)?;
             Some(Net::wrap(Box::new(An(Unsteady::new(times, looping)))))
         }
-        "unsteady_no_reset" => {
+        "unsteady_no_reset" | "unsteady_nr" => {
             let times = eval_vec(expr.args.first()?, lapis)?;
             let looping = eval_bool(expr.args.get(1)?, lapis)?;
             Some(Net::wrap(Box::new(An(Unsteady::new(times, looping).no_reset()))))
