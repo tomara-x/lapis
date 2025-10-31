@@ -415,6 +415,18 @@ fn function_calls(expr: ExprCall, lapis: &mut Lapis, buffer: &mut String) -> Opt
             let code = eval_string(expr.args.first()?, lapis)?;
             lapis.quiet_eval(&code);
         }
+        "eval_file" => {
+            let path = eval_string(expr.args.first()?, lapis)?;
+            if let Ok(file) = std::fs::read_to_string(path) {
+                lapis.eval(&file);
+            }
+        }
+        "quiet_eval_file" => {
+            let path = eval_string(expr.args.first()?, lapis)?;
+            if let Ok(file) = std::fs::read_to_string(path) {
+                lapis.quiet_eval(&file);
+            }
+        }
         _ => {}
     }
     None

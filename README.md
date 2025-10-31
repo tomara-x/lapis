@@ -865,6 +865,15 @@ time();
 // 1761485668922.0
 ```
 
+### file evaluation
+```rust
+// evaluate the contents of the file dance.rs
+eval_file("dance.rs");
+
+// evaluate without printing contents or output
+quiet_eval_file("dance.rs");
+```
+
 ### sleep and panic
 you can freeze or crash the app if you'd like. no judgement here
 ```rust
