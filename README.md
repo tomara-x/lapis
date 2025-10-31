@@ -861,6 +861,21 @@ let str4 = file("../path/to/file.rs");
 
 ```
 
+### clear
+```rust
+// clear all defined keybindings
+clear_keys();
+
+// clear sliders
+clear_sliders();
+
+// clear all variable bindings
+clear_maps();
+
+// all of the above
+clear();
+```
+
 ### time
 you can access the time since the unix epoch (in milliseconds) using `time()`
 ```rust

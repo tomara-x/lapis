@@ -152,6 +152,39 @@ impl Lapis {
         self.atomic_table_map.remove(k);
         self.string_map.remove(k);
     }
+    pub fn clear_sliders(&mut self) {
+        self.sliders.clear();
+    }
+    pub fn clear_keys(&mut self) {
+        self.keys.clear();
+        self.keys.shrink_to_fit();
+    }
+    pub fn clear_maps(&mut self) {
+        self.fmap.clear();
+        self.fmap.shrink_to_fit();
+        self.vmap.clear();
+        self.vmap.shrink_to_fit();
+        self.gmap.clear();
+        self.gmap.shrink_to_fit();
+        self.idmap.clear();
+        self.idmap.shrink_to_fit();
+        self.bmap.clear();
+        self.bmap.shrink_to_fit();
+        self.smap.clear();
+        self.smap.shrink_to_fit();
+        self.wmap.clear();
+        self.wmap.shrink_to_fit();
+        self.seqmap.clear();
+        self.seqmap.shrink_to_fit();
+        self.eventmap.clear();
+        self.eventmap.shrink_to_fit();
+        self.srcmap.clear();
+        self.srcmap.shrink_to_fit();
+        self.atomic_table_map.clear();
+        self.atomic_table_map.shrink_to_fit();
+        self.string_map.clear();
+        self.string_map.shrink_to_fit();
+    }
     pub fn set_out_device(
         &mut self,
         host: Option<usize>,

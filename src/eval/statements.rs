@@ -415,6 +415,20 @@ fn function_calls(expr: ExprCall, lapis: &mut Lapis, buffer: &mut String) -> Opt
             let code = eval_string(expr.args.first()?, lapis)?;
             lapis.quiet_eval(&code);
         }
+        "clear_sliders" => {
+            lapis.clear_sliders();
+        }
+        "clear_keys" => {
+            lapis.clear_keys();
+        }
+        "clear_maps" => {
+            lapis.clear_maps();
+        }
+        "clear" => {
+            lapis.clear_sliders();
+            lapis.clear_keys();
+            lapis.clear_maps();
+        }
         _ => {}
     }
     None
