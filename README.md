@@ -856,6 +856,9 @@ quiet_eval("let x = 1729;");
 x;
 // 1729.0
 
+// you can load the contents of a file into a string
+let str4 = file("../path/to/file.rs");
+
 ```
 
 ### time
@@ -863,15 +866,6 @@ you can access the time since the unix epoch (in milliseconds) using `time()`
 ```rust
 time();
 // 1761485668922.0
-```
-
-### file evaluation
-```rust
-// evaluate the contents of the file dance.rs
-eval_file("dance.rs");
-
-// evaluate without printing contents or output
-quiet_eval_file("dance.rs");
 ```
 
 ### sleep and panic

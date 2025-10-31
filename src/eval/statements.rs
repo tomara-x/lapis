@@ -68,7 +68,7 @@ fn eval_expr(expr: Expr, lapis: &mut Lapis, buffer: &mut String) {
     } else if let Some(event) = eval_eventid(&expr, lapis) {
         buffer.push_str(&format!("\n// {:?}", event));
     } else if let Some(string) = eval_string(&expr, lapis) {
-        buffer.push_str(&format!("\n// \"{}\"", string));
+        buffer.push_str(&format!("\n/* \"{}\" */", string));
     } else if let Expr::Call(expr) = expr {
         function_calls(expr, lapis, buffer);
     } else if let Expr::Binary(expr) = expr {
@@ -414,18 +414,6 @@ fn function_calls(expr: ExprCall, lapis: &mut Lapis, buffer: &mut String) -> Opt
         "quiet_eval" => {
             let code = eval_string(expr.args.first()?, lapis)?;
             lapis.quiet_eval(&code);
-        }
-        "eval_file" => {
-            let path = eval_string(expr.args.first()?, lapis)?;
-            if let Ok(file) = std::fs::read_to_string(path) {
-                lapis.eval(&file);
-            }
-        }
-        "quiet_eval_file" => {
-            let path = eval_string(expr.args.first()?, lapis)?;
-            if let Ok(file) = std::fs::read_to_string(path) {
-                lapis.quiet_eval(&file);
-            }
         }
         _ => {}
     }

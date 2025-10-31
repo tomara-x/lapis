@@ -24,6 +24,10 @@ fn path_string(expr: &Path, lapis: &Lapis) -> Option<String> {
 fn call_string(expr: &ExprCall, lapis: &Lapis) -> Option<String> {
     let func = nth_path_ident(&expr.func, 0)?;
     match func.as_str() {
+        "file" => {
+            let path = eval_string(expr.args.first()?, lapis)?;
+            std::fs::read_to_string(path).ok()
+        }
         "format" => {
             let mut string = eval_string(expr.args.first()?, lapis)?;
             let mut iter = expr.args.iter();
