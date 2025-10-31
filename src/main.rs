@@ -22,7 +22,11 @@ fn main() -> eframe::Result {
         centered: true,
         ..Default::default()
     };
-    eframe::run_native("awawawa", options, Box::new(|_| Ok(Box::new(Lapis::new()))))
+    let mut lapis = Lapis::new();
+    if let Ok(init) = std::fs::read_to_string("init.rs") {
+        lapis.eval(&init);
+    }
+    eframe::run_native("awawawa", options, Box::new(|_| Ok(Box::new(lapis))))
 }
 
 #[cfg(target_arch = "wasm32")]
