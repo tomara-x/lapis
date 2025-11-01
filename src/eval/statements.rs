@@ -429,6 +429,10 @@ fn function_calls(expr: ExprCall, lapis: &mut Lapis, buffer: &mut String) -> Opt
             lapis.clear_keys();
             lapis.clear_maps();
         }
+        "zoom_factor" => {
+            let factor = eval_float_f32(expr.args.first()?, lapis)?;
+            lapis.zoom_factor = factor;
+        }
         _ => {}
     }
     None

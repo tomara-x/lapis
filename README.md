@@ -591,12 +591,15 @@ shortcuts can be enabled/disabled using the "keys" toggle at the top of the ui
 
 note: always define the more specific shortcuts (more modifiers) involving the same key before the less specific ones, so `ctrl+shift+a` then `ctrl+a` and `shift+a` then `a`
 
-### ui toggles
+### ui things
 ```rust
 // change ui toggles
 "quiet" = true;
 "keys" = true;
 "keys_repeat" = true;
+
+// set zoom factor
+zoom_factor(1.5);
 ```
 
 ### device selection
