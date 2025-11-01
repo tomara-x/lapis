@@ -798,7 +798,7 @@ gate(duration)  // gate. outputs 1 for duration, 0 after that
 t()  // outputs node time (subsampled to ~2ms, cause it uses envelope())
 unsteady(Vec<f32>, bool)  // outputs impulses at the given durations
                           // the bool is whether or not to loop
-unsteady_no_reset(Vec<f32>, bool)  // same but isn't affected by resets
+unsteady_nr(Vec<f32>, bool)  // same but isn't affected by resets
 unsteady_ramp(Vec<f32>, bool)  // its output goes one integer up every given duration
                                // the bool also sets looping
 step(node1, ...)  // steps forward through its nodes when its input is non-zero
