@@ -797,11 +797,12 @@ unsteady(Vec<f32>, bool)  // outputs impulses at the given durations
                           // the bool is whether or not to loop
 unsteady_no_reset(Vec<f32>, bool)  // same but isn't affected by resets
 unsteady_ramp(Vec<f32>, bool)  // its output goes one integer up every given duration
-                               // the bool is also sets looping
+                               // the bool also sets looping
 step(node1, ...)  // steps forward through its nodes when its input is non-zero
+                  // a node gets reset when it's selected
                   // nodes must be 0-in 1-out
-filter_step(node1, ...)  // same as step but takes 2 inputs
-                         // (input passed to the selected node, trigger)
+filter_step(node1, ...)  // same as step but takes 1-in 1-out nodes
+                         // and has 2 inputs (input passed to the selected node, trigger)
 ```
 
 ### sliders
