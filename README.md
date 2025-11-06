@@ -585,11 +585,16 @@ you can bind snippets of code to keyboard shortcuts. keys follow the [egui key n
 "!shift+a" = "
     // statements evaluated when `a` is released while shift is held
 "
+
+// an `@` sign in the assigned string will be substituted with the key name
+// when pressing the f key, `let XOF = 0;` will be evaluated
+"f" = "let XO@ = 0;"
 ```
 
 shortcuts can be enabled/disabled using the "keys" toggle at the top of the ui
 
 note: always define the more specific shortcuts (more modifiers) involving the same key before the less specific ones, so `ctrl+shift+a` then `ctrl+a` and `shift+a` then `a`
+
 
 ### ui things
 ```rust
