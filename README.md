@@ -580,15 +580,15 @@ you can bind snippets of code to keyboard shortcuts. keys follow the [egui key n
 // starting a shortcut with `!` means this block is evaluated on the release of that shortcut
 "!a" = "
     // statements evaluated when `a` is released
-"
+";
 
 "!shift+a" = "
     // statements evaluated when `a` is released while shift is held
-"
+";
 
-// an `@` sign in the assigned string will be substituted with the key name
-// when pressing the f key, `let XOF = 0;` will be evaluated
-"f" = "let XO@ = 0;"
+// `@` signs in the assigned string will be substituted with the key name
+// e.g. when pressing the f key, `let XOF = 0;` will be evaluated
+"f" = "let XO@ = 0;";
 ```
 
 shortcuts can be enabled/disabled using the "keys" toggle at the top of the ui
