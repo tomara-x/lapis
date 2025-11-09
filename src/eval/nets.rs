@@ -105,36 +105,34 @@ fn bin_expr_net(expr: &ExprBinary, lapis: &mut Lapis) -> Option<Net> {
     let right_net = eval_net(&expr.right, lapis);
     let left_float = eval_float_f32(&expr.left, lapis);
     let right_float = eval_float_f32(&expr.right, lapis);
-    if left_net.is_some() && right_net.is_some() {
-        let (left, right) = (left_net.unwrap(), right_net.unwrap());
-        let (li, lo) = (left.inputs(), left.outputs());
-        let (ri, ro) = (right.inputs(), right.outputs());
-        match expr.op {
-            BinOp::BitAnd(_) if li == ri && lo == ro => Some(left & right),
-            BinOp::BitOr(_) => Some(left | right),
-            BinOp::BitXor(_) if li == ri => Some(left ^ right),
-            BinOp::Shr(_) if lo == ri => Some(left >> right),
-            BinOp::Sub(_) if lo == ro => Some(left - right),
-            BinOp::Mul(_) if lo == ro => Some(left * right),
-            BinOp::Add(_) if lo == ro => Some(left + right),
-            _ => None,
+    match (left_net, right_net, left_float, right_float) {
+        (Some(left), Some(right), _, _) => {
+            let (li, lo) = (left.inputs(), left.outputs());
+            let (ri, ro) = (right.inputs(), right.outputs());
+            match expr.op {
+                BinOp::BitAnd(_) if li == ri && lo == ro => Some(left & right),
+                BinOp::BitOr(_) => Some(left | right),
+                BinOp::BitXor(_) if li == ri => Some(left ^ right),
+                BinOp::Shr(_) if lo == ri => Some(left >> right),
+                BinOp::Sub(_) if lo == ro => Some(left - right),
+                BinOp::Mul(_) if lo == ro => Some(left * right),
+                BinOp::Add(_) if lo == ro => Some(left + right),
+                _ => None,
+            }
         }
-    } else if let (Some(left), Some(right)) = (left_net, right_float) {
-        match expr.op {
+        (Some(left), _, _, Some(right)) => match expr.op {
             BinOp::Sub(_) => Some(left - right),
             BinOp::Mul(_) => Some(left * right),
             BinOp::Add(_) => Some(left + right),
             _ => None,
-        }
-    } else if let (Some(left), Some(right)) = (left_float, right_net) {
-        match expr.op {
+        },
+        (_, Some(right), Some(left), _) => match expr.op {
             BinOp::Sub(_) => Some(left - right),
             BinOp::Mul(_) => Some(left * right),
             BinOp::Add(_) => Some(left + right),
             _ => None,
-        }
-    } else {
-        None
+        },
+        _ => None,
     }
 }
 

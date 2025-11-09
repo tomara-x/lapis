@@ -2,6 +2,8 @@
 
 this is an interactive interpreter for [FunDSP](https://github.com/SamiPerttu/fundsp). it allows you to experiment/play without needing to compile your code.
 
+for a command line version, see: [codeberg.org/tomara-x/lazurite](https://codeberg.org/tomara-x/lazurite)
+
 if you have questions, come to the [rust audio](https://discord.gg/3hfDXS6hhQ) server (the fundsp channel)
 
 if you notice something incorrect, missing, or confusing, please open an issue to tell me about it, or fix it in a pull request if you can.
