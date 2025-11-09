@@ -107,7 +107,7 @@ impl Lapis {
         if !input.is_empty() {
             self.buffer.push('\n');
             self.buffer.push_str(input);
-            match parse_str::<Stmt>(&format!("{{{}}}", input)) {
+            match parse_str::<Stmt>(&format!("{{{}\n}}", input)) {
                 Ok(stmt) => {
                     let out = eval_stmt(stmt, self);
                     self.buffer.push_str(&out);
@@ -120,7 +120,7 @@ impl Lapis {
     }
     pub fn eval_input(&mut self) {
         if !self.input.is_empty() {
-            match parse_str::<Stmt>(&format!("{{{}}}", self.input)) {
+            match parse_str::<Stmt>(&format!("{{{}\n}}", self.input)) {
                 Ok(stmt) => {
                     self.buffer.push('\n');
                     self.buffer.push_str(&std::mem::take(&mut self.input));
@@ -134,7 +134,7 @@ impl Lapis {
         }
     }
     pub fn quiet_eval(&mut self, input: &str) {
-        if let Ok(stmt) = parse_str::<Stmt>(&format!("{{{}}}", input)) {
+        if let Ok(stmt) = parse_str::<Stmt>(&format!("{{{}\n}}", input)) {
             eval_stmt(stmt, self);
         }
     }
