@@ -906,7 +906,8 @@ time();
 ### plotting
 when compiled with the `plot` feature (`cargo r --features plot`), you can use the plot function to plot a graph and output that plot to a png file
 ```rust
-let g = saw_hz(4) | sine_hz(5) | organ_hz(6);
+let delays = pass() ^ delay(0.01) ^ delay(0.02) ^ delay(0.03) ^ delay(0.04) ^ delay(0.05);
+let g = saw_hz(4).phase(0) >> delays;
 let seconds = 1;
 let sr = 44100;
 let ymin = -1;
