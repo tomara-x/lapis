@@ -920,10 +920,13 @@ plot(g.clone(), seconds, sr, ymin, ymax); // you should find a file named plot.p
 // and those same defaults will be used
 plot(g.clone(), _, _, _, _); // this is identical to the previous call
 
+// you can provide a hue offset value (in 0..1 range)
+plot(g.clone(), _, _, _, _, 0.5);
+
 // you can specify the output file path, and its width and height
 let w = 1000; // in pixels
 let h = 500;
-plot(g.clone(), _, _, _, _, "plots/extra_special_plot", w, h);
+plot(g.clone(), _, _, _, _, _, "plots/extra_special_plot", w, h);
 // (path has to be existing)
 ```
 

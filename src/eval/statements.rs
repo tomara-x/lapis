@@ -441,19 +441,25 @@ fn function_calls(expr: ExprCall, lapis: &mut Lapis, buffer: &mut String) -> Opt
             let sr = eval_float_f32(expr.args.get(2)?, lapis).unwrap_or(44100.);
             let ymin = eval_float_f32(expr.args.get(3)?, lapis).unwrap_or(-1.);
             let ymax = eval_float_f32(expr.args.get(4)?, lapis).unwrap_or(1.);
-            let mut path = format!("plot.png");
-            let (mut w, mut h) = (1280, 640);
+            let mut hue = 0.;
             if let Some(arg) = expr.args.get(5)
+                && let Some(v) = eval_float(arg, lapis)
+            {
+                hue = v;
+            }
+            let mut path = String::from("plot.png");
+            let (mut w, mut h) = (1280, 640);
+            if let Some(arg) = expr.args.get(6)
                 && let Some(v) = eval_string(arg, lapis)
             {
                 path = format!("{}.png", v);
             }
-            if let Some(arg) = expr.args.get(6)
+            if let Some(arg) = expr.args.get(7)
                 && let Some(v) = eval_usize(arg, lapis)
             {
                 w = v as u32;
             }
-            if let Some(arg) = expr.args.get(7)
+            if let Some(arg) = expr.args.get(8)
                 && let Some(v) = eval_usize(arg, lapis)
             {
                 h = v as u32;
@@ -481,11 +487,12 @@ fn function_calls(expr: ExprCall, lapis: &mut Lapis, buffer: &mut String) -> Opt
             net.process_big(samps, &input, &mut output);
 
             for (i, chan) in output.iter().enumerate() {
+                let h = wrap((i as f64 / outs as f64) + hue);
                 chart
                     .draw_series(
                         LineSeries::new(
                             (0..samps).map(|x| (x as f32 / sr, chan[x])),
-                            HSLColor(i as f64 / outs as f64, 1., 0.4).stroke_width(2),
+                            HSLColor(h, 1., 0.4).stroke_width(2),
                         )
                         .point_size(1),
                     )
