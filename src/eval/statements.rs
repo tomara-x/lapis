@@ -485,7 +485,7 @@ fn function_calls(expr: ExprCall, lapis: &mut Lapis, buffer: &mut String) -> Opt
                     .draw_series(
                         LineSeries::new(
                             (0..samps).map(|x| (x as f32 / sr, chan[x])),
-                            HSLColor(i as f64 / outs as f64, 1., 0.55).stroke_width(2),
+                            HSLColor(i as f64 / outs as f64, 1., 0.4).stroke_width(2),
                         )
                         .point_size(1),
                     )
