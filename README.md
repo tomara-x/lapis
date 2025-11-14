@@ -528,6 +528,9 @@ table.set(3, 0.);
 // atomic_synth can take an extra argument specifying the interpolation type ("nearest" by default)
 atomic_synth(table, "linear");
 atomic_synth(table, "cubic");
+
+// or using a phase reader, atomic_phase has the same syntax as atomic_synth
+let g = ramp_hz(frequency) >> atomic_phase(table, "cubic") >> pan(0);
 ```
 
 ### [phase synth](https://docs.rs/fundsp/latest/fundsp/wavetable/struct.PhaseSynth.html)
