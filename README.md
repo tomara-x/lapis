@@ -903,6 +903,29 @@ time();
 // 1761485668922.0
 ```
 
+### plotting
+when compiled with the `plot` feature (`cargo r --features plot`), you can use the plot function to plot a graph and output that plot to a png file
+```rust
+let g = saw_hz(4) | sine_hz(5) | organ_hz(6);
+let seconds = 1;
+let sr = 44100;
+let ymin = -1;
+let ymax = 1;
+plot(g.clone(), seconds, sr, ymin, ymax); // you should find a file named plot.png
+                                          // in your working directory
+
+// arguments other than the graph can be omitted
+// (with something that evaluates to none, like `_`)
+// and those same defaults will be used
+plot(g.clone(), _, _, _, _); // this is identical to the previous call
+
+// you can specify the output file path, and its width and height
+let w = 1000; // in pixels
+let h = 500;
+plot(g.clone(), _, _, _, _, "plots/extra_special_plot", w, h);
+// (path has to be existing)
+```
+
 ### sleep and panic
 you can freeze or crash the app if you'd like. no judgement here
 ```rust

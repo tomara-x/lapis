@@ -14,6 +14,10 @@ egui_extras = {version = "0.33.0", default-features = false, features = ["syntec
 syn = {version = "2.0.107", features = ["full", "extra-traits"]}
 crossbeam-channel = "0.5.15"
 log = "0.4.28"
+plotters = {version = "0.3.7", optional = true}
+
+[features]
+plot = ["dep:plotters"]
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 wasm-bindgen-futures = "0.4.54"

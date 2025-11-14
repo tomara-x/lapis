@@ -433,6 +433,65 @@ fn function_calls(expr: ExprCall, lapis: &mut Lapis, buffer: &mut String) -> Opt
             let factor = eval_float_f32(expr.args.first()?, lapis)?;
             lapis.zoom_factor = factor;
         }
+        #[cfg(feature = "plot")]
+        "plot" => {
+            use plotters::prelude::*;
+            let net = eval_net(expr.args.first()?, lapis)?;
+            let seconds = eval_float_f32(expr.args.get(1)?, lapis).unwrap_or(1.);
+            let sr = eval_float_f32(expr.args.get(2)?, lapis).unwrap_or(44100.);
+            let ymin = eval_float_f32(expr.args.get(3)?, lapis).unwrap_or(-1.);
+            let ymax = eval_float_f32(expr.args.get(4)?, lapis).unwrap_or(1.);
+            let mut path = format!("plot.png");
+            let (mut w, mut h) = (1280, 640);
+            if let Some(arg) = expr.args.get(5)
+                && let Some(v) = eval_string(arg, lapis)
+            {
+                path = format!("{}.png", v);
+            }
+            if let Some(arg) = expr.args.get(6)
+                && let Some(v) = eval_usize(arg, lapis)
+            {
+                w = v as u32;
+            }
+            if let Some(arg) = expr.args.get(7)
+                && let Some(v) = eval_usize(arg, lapis)
+            {
+                h = v as u32;
+            }
+            let root = BitMapBackend::new(&path, (w, h)).into_drawing_area();
+            root.fill(&WHITE).ok()?;
+            let mut chart = ChartBuilder::on(&root)
+                .margin(5)
+                .x_label_area_size(30)
+                .y_label_area_size(30)
+                .build_cartesian_2d(0f32..seconds, ymin..ymax)
+                .ok()?;
+
+            chart.configure_mesh().draw().ok()?;
+
+            let samps = (seconds * sr) as usize;
+            let ins = net.inputs();
+            let outs = net.outputs();
+            let input = vec![vec![0.; samps]; ins];
+            let input: Vec<_> = input.iter().map(|x| x.as_slice()).collect();
+            let mut output = vec![vec![0.; samps]; outs];
+            let mut output: Vec<_> = output.iter_mut().map(|x| x.as_mut_slice()).collect();
+            let mut net = BigBlockAdapter::new(Box::new(net));
+            net.set_sample_rate(sr as f64);
+            net.process_big(samps, &input, &mut output);
+
+            for (i, chan) in output.iter().enumerate() {
+                chart
+                    .draw_series(
+                        LineSeries::new(
+                            (0..samps).map(|x| (x as f32 / sr, chan[x])),
+                            HSLColor(i as f64 / outs as f64, 1., 0.55).stroke_width(2),
+                        )
+                        .point_size(1),
+                    )
+                    .ok()?;
+            }
+        }
         _ => {}
     }
     None
