@@ -1398,7 +1398,7 @@ dependencies = [
 [[package]]
 name = "fundsp"
 version = "0.20.0"
-source = "git+https://github.com/tomara-x/fundsp#87ae877a8a6efd7ec92526e102bca049617f2f58"
+source = "git+https://github.com/tomara-x/fundsp#e59f26fc4fb0199061cfe39e18edac104f837bd3"
 dependencies = [
  "crossbeam-channel",
  "dyn-clone",

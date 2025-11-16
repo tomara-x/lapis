@@ -1613,6 +1613,21 @@ fn call_net(expr: &ExprCall, lapis: &mut Lapis) -> Option<Net> {
             }
             Some(Net::wrap(Box::new(maps::atomic_phase(table.clone(), interp))))
         }
+        "wave_at" => {
+            let k = nth_path_ident(expr.args.first()?, 0)?;
+            let wave = lapis.wmap.get(&k)?.clone();
+            Some(Net::wrap(Box::new(maps::wave_at(wave))))
+        }
+        "wave_set" => {
+            let k = nth_path_ident(expr.args.first()?, 0)?;
+            let wave = lapis.wmap.get(&k)?.clone();
+            Some(Net::wrap(Box::new(maps::wave_set(wave))))
+        }
+        "wave_mix" => {
+            let k = nth_path_ident(expr.args.first()?, 0)?;
+            let wave = lapis.wmap.get(&k)?.clone();
+            Some(Net::wrap(Box::new(maps::wave_mix(wave))))
+        }
         _ => None,
     }
 }

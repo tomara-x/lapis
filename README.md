@@ -403,6 +403,7 @@ s.set(s.value() + 42);
 <details><summary>deviations</summary>
 <p>
 
+- the optional loop point argument of wavech and wavech_at can be specified as a number or omitted (no Some(n)/None)
 - the `remove` method removes the channel but doesn't return a vec
 - the `channel` method returns a cloned vec
 - output from methods `channels` and `len` is cast as f64
@@ -442,6 +443,9 @@ let w2 = wavech(wave, 1);
 // useless knowledge:
 // if you're using `play()`, it has to be called twice for an old graph to be dropped
 // since it uses a Slot, which keeps the previous graph for morphing
+
+// similar to the set and mix methods, you can use unsafe_set and unsafe_mix
+// (but should you?)
 ```
 
 </p>
@@ -451,6 +455,9 @@ let w2 = wavech(wave, 1);
 let w = Wave::load("./guidance.wav");   // load from file
 w;                                      // prints info about the loaded wave
 // Wave(ch:1, sr:11025, len:1101250, dur:99.88662131519274)
+
+let player = wavech(w, 0);              // a player of channel 0 with no looping
+let looping_player = wavech(w, 0, 0);   // jumps to sample 0 when it finishes (don't use Some(0)
 
 let osc = sine_hz(134) | saw_hz(42);
 let s = Wave::render(44100, 1, osc);    // render 1 second of the given graph
@@ -816,6 +823,9 @@ step(node1, ...)  // steps forward through its nodes when its input is non-zero
                   // nodes must be 0-in 1-out
 filter_step(node1, ...)  // same as step but takes 1-in 1-out nodes
                          // and has 2 inputs (input passed to the selected node, trigger)
+wave_at(Arc<Wave>) // read from a wave. takes 2 channels (channel, index)
+wave_set(Arc<Wave>) // set a value in a wave. takes 3 channels (channel, index, value)
+wave_mix(Arc<Wave>) // same but mixes
 ```
 
 ### sliders

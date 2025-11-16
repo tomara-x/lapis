@@ -184,6 +184,32 @@ pub fn wave_methods(expr: &ExprMethodCall, lapis: &mut Lapis) -> Option<()> {
                 Arc::make_mut(wave).mix(chan, index, val);
             }
         }
+        "unsafe_set" => {
+            let chan = eval_usize(expr.args.first()?, lapis)?;
+            let index = eval_usize(expr.args.get(1)?, lapis)?;
+            let val = eval_float_f32(expr.args.get(2)?, lapis)?;
+            let k = nth_path_ident(&expr.receiver, 0)?;
+            let wave = lapis.wmap.get_mut(&k)?;
+            if chan < wave.channels() && index < wave.len() {
+                let ptr = Arc::as_ptr(wave).cast_mut();
+                // SAFETY: it's not :3
+                let wave = unsafe { &mut *ptr };
+                wave.set(chan, index, val);
+            }
+        }
+        "unsafe_mix" => {
+            let chan = eval_usize(expr.args.first()?, lapis)?;
+            let index = eval_usize(expr.args.get(1)?, lapis)?;
+            let val = eval_float_f32(expr.args.get(2)?, lapis)?;
+            let k = nth_path_ident(&expr.receiver, 0)?;
+            let wave = lapis.wmap.get_mut(&k)?;
+            if chan < wave.channels() && index < wave.len() {
+                let ptr = Arc::as_ptr(wave).cast_mut();
+                // SAFETY: it's not :3
+                let wave = unsafe { &mut *ptr };
+                wave.mix(chan, index, val);
+            }
+        }
         "push" => {
             let arg = expr.args.first()?;
             let k = nth_path_ident(&expr.receiver, 0)?;
