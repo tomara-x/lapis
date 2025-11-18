@@ -1485,7 +1485,12 @@ fn call_net(expr: &ExprCall, lapis: &mut Lapis) -> Option<Net> {
         "kr" => {
             let unit = Box::new(eval_net(expr.args.first()?, lapis)?);
             let n = eval_usize(expr.args.get(1)?, lapis)?;
-            let preserve_time = eval_bool(expr.args.get(2)?, lapis)?;
+            let mut preserve_time = true;
+            if let Some(arg) = expr.args.get(2)
+                && let Some(b) = eval_bool(arg, lapis)
+            {
+                preserve_time = b;
+            }
             Some(Net::wrap(Box::new(Kr::new(unit, n, preserve_time))))
         }
         "reset" => {

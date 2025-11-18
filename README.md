@@ -403,7 +403,7 @@ s.set(s.value() + 42);
 <details><summary>deviations</summary>
 <p>
 
-- the optional loop point argument of wavech and wavech_at can be specified as a number or omitted (no Some(n)/None)
+- the optional loop point argument of wavech and wavech_at can be specified as a number or omitted (or as `Some(n)`)
 - the `remove` method removes the channel but doesn't return a vec
 - the `channel` method returns a cloned vec
 - output from methods `channels` and `len` is cast as f64
@@ -457,7 +457,7 @@ w;                                      // prints info about the loaded wave
 // Wave(ch:1, sr:11025, len:1101250, dur:99.88662131519274)
 
 let player = wavech(w, 0);              // a player of channel 0 with no looping
-let looping_player = wavech(w, 0, 0);   // jumps to sample 0 when it finishes (don't use Some(0)
+let looping_player = wavech(w, 0, 0);   // jumps to sample 0 when it finishes
 
 let osc = sine_hz(134) | saw_hz(42);
 let s = Wave::render(44100, 1, osc);    // render 1 second of the given graph
@@ -801,8 +801,8 @@ shift_reg()  // an 8-output shift register (cascading sample and hold)
              // takes 2 inputs (signal, trigger)
 quantizer(Vec<f32>)  // quantizes its input to the given values
                      // (values must be non-negative and in ascending order)
-kr(node, n, bool)  // subsamples a node (of any arity) (tick it every n samples)
-                   // (the bool.. just set it to true, see source for more info)
+kr(node, n)  // subsamples a node (of any arity) (tick it every n samples)
+                   // (there's an additional bool arg, but it's bad for you)
 reset(node, duration)  // resets the inner node every duration (node must be 0-ins 1-out)
 trig_reset(node)  // takes a 0-ins 1-out node and resets it whenever its input is non-zero
 reset_v(node)  // takes a 0-ins 1-out node and resets it every duration (its input)

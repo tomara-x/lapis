@@ -343,6 +343,7 @@ fn call_float(expr: &ExprCall, lapis: &Lapis) -> Option<f64> {
         "xerp11" => Some(xerp11(*args.first()?, *args.get(1)?, *args.get(2)?)),
         "wrap" => Some(wrap(*args.first()?)),
         "mirror" => Some(mirror(*args.first()?)),
+        "Some" => Some(*args.first()?),
         _ => None,
     }
 }
