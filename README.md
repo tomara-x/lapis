@@ -404,13 +404,13 @@ s.set(s.value() + 42);
 <p>
 
 - the optional loop point argument of wavech and wavech_at can be specified as a number or omitted (or as `Some(n)`)
-- the `remove` method removes the channel but doesn't return a vec
+- the `remove_channel` method removes the channel but doesn't return a vec
 - the `channel` method returns a cloned vec
 - output from methods `channels` and `len` is cast as f64
 - `is_empty`, `channel_mut`, `write_wav16`, `write_wav32`, `load_slice`, `load_slice_track` aren't implemented
-- methods on `Wave`s can only be called on a stored variable. so you can't say `Wave::zero(2,44100,1).channel(0)` for example. you have to assign the wave to a variable then call the method on that variable
-- it's actually an Arc<Wave>, methods are called using Arc::make_mut.
-- can't be cloned
+- methods (other than filter/filter_latency) can only be called on a stored variable. so you can't say `Wave::zero(2,44100,1).channel(0)` for example. you have to assign the wave to a variable then call the method on that variable
+- what's stored in variables is an `Arc<Wave>`. editing methods are called using `Arc::make_mut`, cloning the wave if more than one referece exists. or they can be prefixed with `unsafe_` (e.g. `wave.unsafe_set(...)`) to avoid that (but should you?)
+- `clone` clones the arc, not the wave
 
 </p>
 </details>
@@ -419,10 +419,12 @@ s.set(s.value() + 42);
 <p>
 
 ```rust
-// waves use Arc. they're cloned when mutated while other references exist
-// (Arc::make_mut)
+// waves are stored as Arc<Wave>
+// the underlying wave is cloned when mutated while other references exist
+// (Arc::make_mut) (unless you use the unsafe methods)
 
 // (keep a system monitor open to watch the memory use)
+// (or keep an eye on the arc count in the wave info)
 // load a song
 let wave = Wave::load("song.mp3");
 
@@ -443,9 +445,6 @@ let w2 = wavech(wave, 1);
 // useless knowledge:
 // if you're using `play()`, it has to be called twice for an old graph to be dropped
 // since it uses a Slot, which keeps the previous graph for morphing
-
-// similar to the set and mix methods, you can use unsafe_set and unsafe_mix
-// (but should you?)
 ```
 
 </p>
@@ -454,7 +453,7 @@ let w2 = wavech(wave, 1);
 ```rust
 let w = Wave::load("./guidance.wav");   // load from file
 w;                                      // prints info about the loaded wave
-// Wave(ch:1, sr:11025, len:1101250, dur:99.88662131519274)
+// Wave(ch:1, sr:11025, len:1101250, dur:99.88662131519274, arcs:1)
 
 let player = wavech(w, 0);              // a player of channel 0 with no looping
 let looping_player = wavech(w, 0, 0);   // jumps to sample 0 when it finishes
@@ -462,7 +461,7 @@ let looping_player = wavech(w, 0, 0);   // jumps to sample 0 when it finishes
 let osc = sine_hz(134) | saw_hz(42);
 let s = Wave::render(44100, 1, osc);    // render 1 second of the given graph
 s;                                      // print info
-// Wave(ch:2, sr:44100, len:44100, dur:1)
+// Wave(ch:2, sr:44100, len:44100, dur:1, arcs:1)
 s.save_wav16("awawawa.wav");            // save the wave as a 16-bit wav file
 ```
 

@@ -36,21 +36,14 @@ fn eval_expr(expr: Expr, lapis: &mut Lapis, buffer: &mut String) {
         buffer.push_str(&format!("\n// {:?}", b));
     } else if let Some(s) = eval_shared(&expr, lapis) {
         buffer.push_str(&format!("\n// Shared({})", s.value()));
-    } else if let Some(w) = path_wave(&expr, lapis) {
-        buffer.push_str(&format!(
-            "\n// Wave(ch:{}, sr:{}, len:{}, dur:{})",
-            w.channels(),
-            w.sample_rate(),
-            w.len(),
-            w.duration()
-        ));
     } else if let Some(w) = eval_wave(&expr, lapis) {
         buffer.push_str(&format!(
-            "\n// Wave(ch:{}, sr:{}, len:{}, dur:{})",
+            "\n// Wave(ch:{}, sr:{}, len:{}, dur:{}, arcs:{})",
             w.channels(),
             w.sample_rate(),
             w.len(),
-            w.duration()
+            w.duration(),
+            Arc::strong_count(&w) - 1
         ));
     } else if let Some(seq) = path_seq(&expr, lapis).or(call_seq(&expr, lapis).as_ref()) {
         let info = format!(
@@ -69,6 +62,10 @@ fn eval_expr(expr: Expr, lapis: &mut Lapis, buffer: &mut String) {
         buffer.push_str(&format!("\n// {:?}", event));
     } else if let Some(string) = eval_string(&expr, lapis) {
         buffer.push_str(&format!("\n/* \"{}\" */", string));
+    } else if let Some(k) = nth_path_ident(&expr, 0)
+        && let Some(t) = lapis.atomic_table_map.get(&k)
+    {
+        buffer.push_str(&format!("\n// AtomicTable(len:{})", t.len()));
     } else if let Expr::Call(expr) = expr {
         function_calls(expr, lapis, buffer);
     } else if let Expr::Binary(expr) = expr {
@@ -161,8 +158,7 @@ fn eval_local(expr: &Local, lapis: &mut Lapis) -> Option<()> {
                 lapis.smap.insert(k, s);
             } else if let Some(w) = eval_wave(&expr.expr, lapis) {
                 lapis.drop(&k);
-                let wave = Arc::new(w);
-                lapis.wmap.insert(k, wave);
+                lapis.wmap.insert(k, w);
             } else if let Some(seq) = call_seq(&expr.expr, lapis) {
                 lapis.drop(&k);
                 lapis.seqmap.insert(k, seq);

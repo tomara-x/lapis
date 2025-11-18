@@ -1410,8 +1410,7 @@ fn call_net(expr: &ExprCall, lapis: &mut Lapis) -> Option<Net> {
             let arg0 = expr.args.first()?;
             let arg1 = expr.args.get(1)?;
             let arg2 = expr.args.get(2);
-            let k = nth_path_ident(arg0, 0)?;
-            let wave = lapis.wmap.get(&k)?.clone();
+            let wave = eval_wave(arg0, lapis)?;
             let chan = eval_usize(arg1, lapis)?;
             if chan < wave.channels() {
                 let loop_point = if let Some(arg) = arg2 { eval_usize(arg, lapis) } else { None };
@@ -1426,8 +1425,7 @@ fn call_net(expr: &ExprCall, lapis: &mut Lapis) -> Option<Net> {
             let arg2 = expr.args.get(2)?;
             let arg3 = expr.args.get(3)?;
             let arg4 = expr.args.get(4);
-            let k = nth_path_ident(arg0, 0)?;
-            let wave = lapis.wmap.get(&k)?.clone();
+            let wave = eval_wave(arg0, lapis)?;
             let chan = eval_usize(arg1, lapis)?;
             let start = eval_usize(arg2, lapis)?;
             let end = eval_usize(arg3, lapis)?;
@@ -1619,18 +1617,15 @@ fn call_net(expr: &ExprCall, lapis: &mut Lapis) -> Option<Net> {
             Some(Net::wrap(Box::new(maps::atomic_phase(table.clone(), interp))))
         }
         "wave_at" => {
-            let k = nth_path_ident(expr.args.first()?, 0)?;
-            let wave = lapis.wmap.get(&k)?.clone();
+            let wave = eval_wave(expr.args.first()?, lapis)?;
             Some(Net::wrap(Box::new(maps::wave_at(wave))))
         }
         "wave_set" => {
-            let k = nth_path_ident(expr.args.first()?, 0)?;
-            let wave = lapis.wmap.get(&k)?.clone();
+            let wave = eval_wave(expr.args.first()?, lapis)?;
             Some(Net::wrap(Box::new(maps::wave_set(wave))))
         }
         "wave_mix" => {
-            let k = nth_path_ident(expr.args.first()?, 0)?;
-            let wave = lapis.wmap.get(&k)?.clone();
+            let wave = eval_wave(expr.args.first()?, lapis)?;
             Some(Net::wrap(Box::new(maps::wave_mix(wave))))
         }
         _ => None,

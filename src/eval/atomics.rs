@@ -43,7 +43,7 @@ pub fn shared_methods(expr: &ExprMethodCall, lapis: &Lapis) -> Option<()> {
 pub fn eval_atomic_table(expr: &Expr, lapis: &mut Lapis) -> Option<AtomicTable> {
     if let Expr::Call(expr) = expr {
         let func = nth_path_ident(&expr.func, 0)?;
-        if func == "atomic_table" {
+        if func == "atomic_table" || func == "AtomicTable" {
             let wave = eval_vec(expr.args.first()?, lapis)?;
             if wave.len().is_power_of_two() {
                 return Some(AtomicTable::new(&wave));
