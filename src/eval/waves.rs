@@ -79,13 +79,8 @@ fn call_wave(expr: &ExprCall, lapis: &mut Lapis) -> Option<Arc<Wave>> {
             }
         }
         "load" => {
-            let arg0 = expr.args.first()?;
-            if let Expr::Lit(expr) = arg0
-                && let Lit::Str(expr) = &expr.lit
-            {
-                return Some(Arc::new(Wave::load(expr.value()).ok()?));
-            }
-            None
+            let path = eval_string(expr.args.first()?, lapis)?;
+            Some(Arc::new(Wave::load(path).ok()?))
         }
         _ => None,
     }
