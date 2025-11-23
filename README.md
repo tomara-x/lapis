@@ -913,7 +913,7 @@ time();
 ```
 
 ### plotting
-when compiled with the `plot` feature (`cargo r --features plot`), you can use the plot function to plot a graph and output that plot to a png file
+when compiled with the `plot` feature (adding `--features plot` to the cargo command), you can use the plot function to plot a graph and output to a png file
 ```rust
 let delays = pass() ^ delay(0.01) ^ delay(0.02) ^ delay(0.03) ^ delay(0.04) ^ delay(0.05);
 let g = saw_hz(4).phase(0) >> delays;
@@ -955,11 +955,15 @@ panic(); // cause the app to crash
 - clone lapis
 ```
 git clone https://codeberg.org/tomara-x/lapis.git
-```
-- build it
-```
 cd lapis
+```
+- build and run
+```
 cargo run --release
+```
+- or build and install
+```
+cargo install --path .
 ```
 
 ## init file
@@ -973,6 +977,7 @@ the contents of the file `init.rs` (in the working directory) will be evaluated 
 - cpal https://github.com/rustaudio/cpal
 - crossbeam_channel https://github.com/crossbeam-rs/crossbeam
 - eframe_template https://github.com/emilk/eframe_template
+- plotters https://github.com/plotters-rs/plotters
 
 ## license
 
