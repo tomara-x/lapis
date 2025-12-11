@@ -548,8 +548,8 @@ phase_synth takes a str argument specifying the wave
 // 2 operator phase modulation example
 let depth = shared(0);
 let modulator = ramp() >> phase_synth("sine");
-let carrier = (ramp() + modulator * var(depth)) >> phase_synth("sine");
-let g = dc(55) >> split::<U2>() >> (pass() | mul(0.5)) >> carrier >> pan(0);
+let carrier = ramp() + modulator * var(depth) >> phase_synth("sine");
+let g = dc(55) >> (pass() ^ mul(0.5)) >> carrier >> pan(0);
 g.play();
 // change modulation depth
 depth.set(0.4);
